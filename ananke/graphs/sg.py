@@ -2,7 +2,7 @@
 Class for segregated graphs (SGs)
 """
 
-from graphs.graph import Graph
+from .graph import Graph
 
 
 class SG(Graph):

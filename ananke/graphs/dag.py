@@ -3,8 +3,8 @@ Class for Directed Acyclic Graphs (DAGs)
 """
 
 
-from graphs.admg import ADMG
-from graphs.cg import CG
+from .admg import ADMG
+from .cg import CG
 
 
 class DAG(ADMG, CG):

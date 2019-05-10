@@ -3,7 +3,7 @@ Class for Bidirected Graphs (BGs)
 """
 
 
-from graphs.admg import ADMG
+from .admg import ADMG
 
 
 class BG(ADMG):
