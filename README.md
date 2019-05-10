@@ -12,6 +12,6 @@ python3 -m venv env
 
 source env/bin/activate # this activates your environment
 
-pip3 -e install .
+pip3 install -e .
 ```
 Now you are ready to develop!
