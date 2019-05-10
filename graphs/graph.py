@@ -296,7 +296,7 @@ class Graph:
 
         return subgraph
 
-    def draw(self):
+    def draw(self, direction=None):
         """
         Visualize the graph
 
@@ -304,8 +304,13 @@ class Graph:
         """
 
         dot = Digraph()
+
+        # set direction from left to right if that's preferred
+        if direction == 'LR':
+            dot.graph_attr['rankdir'] = direction
+
         for v in self.vertices.values():
-            dot.node(v.name, shape='square' if v.fixed else 'circle')
+            dot.node(v.name, shape='square' if v.fixed else 'plaintext', height='.5', width='.5')
 
         for parent, child in self.di_edges:
             # special clause for SWIGs

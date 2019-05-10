@@ -27,7 +27,7 @@ class OneLineID:
         # dictionary mapping the fixing order for each p(D | do(V\D) )
         self.fixing_orders = {}
 
-    def draw_swig(self):
+    def draw_swig(self, direction=None):
         """
         Draw the proper SWIG corresponding to the causal query
 
@@ -54,7 +54,7 @@ class OneLineID:
             # just for nicer visualization
             swig.add_diedge(A, A.lower())
 
-        return swig.draw()
+        return swig.draw(direction)
 
     def id(self):
         """
@@ -115,7 +115,8 @@ if __name__ == '__main__':
     bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
     G = ADMG(vertices, di_edges, bi_edges)
     one_id = OneLineID(G, ['A'], ['Y'])
-    #one_id.draw_swig().render()
+    one_id.draw_swig(direction='LR').render()
+    #G.draw(direction='LR').render()
     print(one_id.ystar)
     print(one_id.id())
     print(one_id.functional())
