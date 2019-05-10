@@ -1,4 +1,6 @@
 *~
+*.egg-info
 *.idea
 *.pyc
 *.ipynb_checkpoints
+env/

@@ -3,7 +3,7 @@ Class for Lauritzen-Wermuth-Frydenberg chain graphs (LWF-CGs/CGs)
 """
 
 
-from graphs.sg import SG
+from .sg import SG
 
 
 class CG(SG):

@@ -5,7 +5,7 @@ TODO: Add error checking
 """
 
 
-from graphs.vertex import Vertex
+from .vertex import Vertex
 from graphviz import Digraph
 
 

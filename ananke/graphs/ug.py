@@ -3,7 +3,7 @@ Class for Undirected Graphs (UGs)
 """
 
 
-from graphs.cg import CG
+from .cg import CG
 
 
 class UG(CG):

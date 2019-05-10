@@ -3,7 +3,7 @@ Class for one line ID
 """
 
 import copy
-from graphs.admg import ADMG
+from ..graphs.admg import ADMG
 
 
 class OneLineID:

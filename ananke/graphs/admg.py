@@ -3,7 +3,7 @@ Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs)
 """
 
 import copy
-from graphs.sg import SG
+from .sg import SG
 
 
 class ADMG(SG):
