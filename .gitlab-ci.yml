@@ -1,5 +1,5 @@
-before_script:
-  - pip3 install .
 tests:
   script:
+    - apt-get install -y python-dev python-pip
+    - pip install -r requirements.txt
     - python3 -m unittest discover -s tests/
