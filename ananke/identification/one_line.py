@@ -71,6 +71,7 @@ class OneLineID:
 
             fixable, order = self.graph.fixable(vertices - district)
 
+            # if any piece is not ID, return not ID
             if not fixable:
                 return False
 
