@@ -2,6 +2,7 @@
 Class for segregated graphs (SGs)
 """
 
+import copy
 from .graph import Graph
 
 
@@ -178,7 +179,7 @@ class SG(Graph):
 
         # Add all vertices to the district_map
         for vertex in self.vertices.values():
-            if vertex not in self._block_map:
+            if vertex not in self._block_map and not vertex.fixed:
                 self._dfs_block(vertex, block_counter)
                 block_counter += 1
 
@@ -288,6 +289,81 @@ class SG(Graph):
         super().delete_udedge(neb1, neb2)
         if recompute: self._calculate_blocks()
 
+    def fix(self, vertices):
+        """
+        Perform the graphical operation of fixing on a set of vertices
+
+        :param vertices: Name(s) of vertices to be fixed
+        :return: None
+        """
+
+        if isinstance(vertices, str):
+            vertices = [vertices]
+
+        for v in vertices:
+
+            self.vertices[v].fixed = True
+
+            # delete incoming directed edges
+            parents = [p.name for p in self.vertices[v].parents]
+            for p in parents:
+                self.delete_diedge(p, v)
+
+            # delete bidirected edges
+            siblings = [s.name for s in self.vertices[v].siblings]
+            for s in siblings:
+                self.delete_biedge(s, v, recompute=False)
+
+            # delete undirected edges
+            neighbors = [n.name for n in self.vertices[v].neighbors]
+            for n in neighbors:
+                if n.fixed:
+                    self.delete_udedge(n, v, recompute=False)
+
+        # recompute the districts and blocks as they may have changed
+        self._calculate_districts()
+        self._calculate_blocks()
+
+    def fixable(self, vertices):
+        """
+        Check if there exists a valid fixing order and return such
+        an order in the form of a list, else returns an empty list
+
+        :param vertices:
+        :return: A boolean indicating whether the set was fixable and a valid fixing order as a stack
+        """
+
+        # if it's just a single vertex we're checking it's easy
+        if isinstance(vertices, str):
+            if len(self.descendants(vertices).intersection(self.district(vertices))) == 1:
+                return True, [vertices]
+            return False, []
+
+        remaining_vertices = set(vertices)
+        fixing_order = []
+        fixed = True  # flag to check if we fixed a variable on each pass
+        G = copy.deepcopy(self)
+
+        # while we have more vertices to fix, and were able to perform a fix
+        while remaining_vertices and fixed:
+
+            fixed = False
+
+            for v in remaining_vertices:
+
+                # Check if any nodes are reachable via -> AND <->
+                # by looking at intersection of district and descendants
+                if len(G.descendants(v).intersection(G.district(v))) == 1:
+                    G.fix(v)
+                    remaining_vertices.remove(v)
+                    fixing_order.append(v)
+                    fixed = True
+                    break
+
+            if not fixed:
+                return False, fixing_order
+
+        return True, fixing_order
 
 # some simple tests for the segregated graph class
 if __name__ == "__main__":

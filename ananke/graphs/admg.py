@@ -89,6 +89,55 @@ class ADMG(SG):
 
         return True, fixing_order
 
+    def m_connecting_paths(self, x, y, Z=set()):
+        """
+        Get all m-connecting paths between x and y after conditioning on Z using BFS
+
+        :param x: name of vertex x
+        :param y: name of vertex y
+        :param Z: name of set of vertices Z being conditioned on
+        :return: list of m-connecting paths
+        """
+
+        queue = [(self.vertices[x], [self.vertices[x]], [])]
+        y = self.vertices[y]
+        Z = [self.vertices[z] for z in Z]
+        ancestors_z = self._ancestors(Z)
+
+        while queue:
+
+            (vertex, vertex_path, edge_path) = queue.pop(0)
+
+            for v in vertex.children - set(vertex_path):
+
+                if vertex in Z:
+                    continue
+
+                if v == y:
+                    yield edge_path + [(vertex.name, v.name, '->')]
+                else:
+                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '->')]))
+
+            # check colliders before doing parents/siblings
+            # if it is a collider v must be in ancestors_z
+            if edge_path and (edge_path[-1][-1] == '->' or edge_path[-1][-1] == '<->'):
+                if vertex not in ancestors_z:
+                    continue
+
+            for v in vertex.parents - set(vertex_path):
+
+                if v == y:
+                    yield edge_path + [(vertex.name, v.name, '<-')]
+                else:
+                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<-')]))
+
+            for v in vertex.siblings - set(vertex_path):
+
+                if v == y:
+                    yield edge_path + [(vertex.name, v.name, '<->')]
+                else:
+                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<->')]))
+
     def subgraph(self, vertices):
         """
         Return a subgraph on the given vertices (i.e. a graph containing only
@@ -128,3 +177,17 @@ if __name__ == "__main__":
     G = ADMG(vertices, di_edges, bi_edges)
     print(G.districts())
     print(G.district('X2'))
+    #G.draw().render()
+    paths = list(G.m_connecting_paths('X1', 'Y2'))
+    print('-------------' * 5)
+    for path in paths:
+        print(path)
+    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1'])))
+    print('-------------'*5)
+    for path in paths:
+        print(path)
+
+    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1', 'X2'])))
+    print('-------------' * 5)
+    for path in paths:
+        print(path)
