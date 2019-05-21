@@ -3,6 +3,7 @@ Class for one line ID
 """
 
 import copy
+import os
 from ..graphs.admg import ADMG
 
 
@@ -34,7 +35,7 @@ class OneLineID:
         :return: dot language representation of the SWIG
         """
 
-        swig = copy.deepcopy(G)
+        swig = copy.deepcopy(self.graph)
 
         # add fixed vertices for each intervention
         for A in self.interventions:
@@ -103,9 +104,42 @@ class OneLineID:
         return functional
 
     # TODO export intermediate CADMGs for visualization
-    def export_intermediates(self):
+    def export_intermediates(self, folder="intermediates"):
+        """
+        Export intermediate CADMGs obtained during fixing
 
-        pass
+        :param folder: string specifying path to folder where the files will be written
+        :return: None
+        """
+
+        # make the folder if it doesn't exist
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+
+        # clear the directory
+        for f in os.listdir(folder):
+            file_path = os.path.join(folder, f)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
+        # do the fixings and render intermediate CADMGs
+        for district in self.fixing_orders:
+
+            G = copy.deepcopy(self.graph)
+
+            fixed_vars = ""
+            dis_name = "".join(district)
+
+            for v in self.fixing_orders[district]:
+
+                fixed_vars += v
+                G.fix(v)
+                G.draw().render(os.path.join(folder,
+                                             "phi" + fixed_vars + "_dis" + dis_name + ".gv"))
+
 
 
 if __name__ == '__main__':
@@ -121,6 +155,7 @@ if __name__ == '__main__':
     print(one_id.ystar)
     print(one_id.id())
     print(one_id.functional())
+    one_id.export_intermediates()
 
     # non ID test
     vertices = ['A', 'B', 'C', 'D', 'Y']
