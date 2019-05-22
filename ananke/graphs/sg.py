@@ -366,62 +366,62 @@ class SG(Graph):
         return True, fixing_order
 
 # some simple tests for the segregated graph class
-if __name__ == "__main__":
-
-    try:
-        # non-segregated graph
-        vertices = ['A', 'B', 'C']
-        bi_edges = [('A', 'B')]
-        ud_edges = [('B', 'C')]
-        G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
-        print('-'*10)
-
-    except AssertionError as error:
-        print(error)
-
-    try:
-        # directed cycle graph
-        vertices = ['A', 'B', 'C']
-        bi_edges = [('A', 'B')]
-        di_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
-        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges)
-        print(G.blocks())
-        print('-' * 10)
-
-    except AssertionError as error:
-        print(error)
-
-    try:
-        # partially directed cycle graph
-        vertices = ['A', 'B', 'C']
-        bi_edges = []
-        ud_edges = [('A', 'B'), ('B', 'C')]
-        di_edges = [('C', 'A')]
-        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges, ud_edges=ud_edges)
-        print('-' * 10)
-
-    except AssertionError as error:
-        print(error)
-
-    # undirected cycle graph this is valid
-    vertices = ['A', 'B', 'C']
-    bi_edges = []
-    ud_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
-    G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
-    print(G.blocks())
-    print('-' * 10)
-
-
-
-    # simple tests
-    vertices = ['A', 'B', 'C', 'D', 'Y']
-    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-    G = SG(vertices, di_edges, bi_edges)
-    print(G.districts())
-    print(G.district('A'))
-
-    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
+#if __name__ == "__main__":
+#
+#    try:
+#        # non-segregated graph
+#        vertices = ['A', 'B', 'C']
+#        bi_edges = [('A', 'B')]
+#        ud_edges = [('B', 'C')]
+#        G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
+#        print('-'*10)
+#
+#    except AssertionError as error:
+#        print(error)
+#
+#    try:
+#        # directed cycle graph
+#        vertices = ['A', 'B', 'C']
+#        bi_edges = [('A', 'B')]
+#        di_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
+#        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges)
+#        print(G.blocks())
+#        print('-' * 10)
+#
+#    except AssertionError as error:
+#        print(error)
+#
+#    try:
+#        # partially directed cycle graph
+#        vertices = ['A', 'B', 'C']
+#        bi_edges = []
+#        ud_edges = [('A', 'B'), ('B', 'C')]
+#        di_edges = [('C', 'A')]
+#        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges, ud_edges=ud_edges)
+#        print('-' * 10)
+#
+#    except AssertionError as error:
+#        print(error)
+#
+#    # undirected cycle graph this is valid
+#    vertices = ['A', 'B', 'C']
+#    bi_edges = []
+#    ud_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
+#    G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
+#    print(G.blocks())
+#    print('-' * 10)
+#
+#
+#
+#    # simple tests
+#    vertices = ['A', 'B', 'C', 'D', 'Y']
+#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
+#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
+#    G = SG(vertices, di_edges, bi_edges)
+#    print(G.districts())
+#    print(G.district('A'))
+#
+#    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
     di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
                 ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
     bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
