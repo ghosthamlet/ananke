@@ -422,14 +422,14 @@ class SG(Graph):
 #    print(G.district('A'))
 #
 #    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
-    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
-                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
-    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
-    G = SG(vertices, di_edges, bi_edges)
-    print(G.districts())
-    print(G.district('X2'))
-    print(G.ancestors('A2'))
-    print(G.ancestors('A1'))
-    print(G.ancestors(['A1', 'A2']))
-    print(G.descendants(['A1', 'A2']))
-    #G.draw().render()
+#    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
+#                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
+#    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
+#    G = SG(vertices, di_edges, bi_edges)
+#    print(G.districts())
+#    print(G.district('X2'))
+#    print(G.ancestors('A2'))
+#    print(G.ancestors('A1'))
+#    print(G.ancestors(['A1', 'A2']))
+#    print(G.descendants(['A1', 'A2']))
+#    #G.draw().render()

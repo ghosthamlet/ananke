@@ -50,8 +50,8 @@ class TestSG(unittest.TestCase):
         G = SG(vertices, di_edges, bi_edges)
         self.assertEqual(sorted([{'A', 'C'}, {'D', 'Y', 'B'}]), sorted(G.districts()))
         self.assertEqual({'A', 'C'}, G.district('A'))
-        print(G.districts())
-        print(G.district('A'))
+        #print(G.districts())
+        #print(G.district('A'))
 
     def test_genealogical_sets_correct(self):
         vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
@@ -60,17 +60,17 @@ class TestSG(unittest.TestCase):
         bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
         G = SG(vertices, di_edges, bi_edges)
         self.assertEqual(sorted(G.districts()), [{'X2', 'X1', 'U'}, {'A1'}, {'A2'}, {'Y2', 'Y1'}])
-        print(G.districts())
+        #print(G.districts())
         self.assertEqual(G.district('X2'), {'X2', 'X1', 'U'})
-        print(G.district('X2'))
+        #print(G.district('X2'))
         self.assertEqual(G.ancestors('A2'), {'X2', 'A2', 'U'})
-        print(G.ancestors('A2'))
+        #print(G.ancestors('A2'))
         self.assertEqual(G.ancestors('A1'), {'X1', 'A1', 'U'})
-        print(G.ancestors('A1'))
+        #print(G.ancestors('A1'))
         self.assertEqual(G.ancestors(['A1', 'A2']), {'X2', 'A1', 'X1', 'U', 'A2'})
-        print(G.ancestors(['A1', 'A2']))
+        #print(G.ancestors(['A1', 'A2']))
         self.assertEqual(G.descendants(['A1', 'A2']), {'Y2', 'Y1', 'A1', 'A2'})
-        print(G.descendants(['A1', 'A2']))
+        #print(G.descendants(['A1', 'A2']))
 
 if __name__ == '__main__':
     unittest.main()
