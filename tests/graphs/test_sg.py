@@ -84,6 +84,7 @@ class TestSG(unittest.TestCase):
             print(g, [s.name for s in G.vertices[g].siblings])
         print(G.districts())
 
-        print(G.bi_edges)
+        self.assertEqual(sorted([{"X_2", "Y"}, {"W"}]), G.districts())
+
 if __name__ == '__main__':
     unittest.main()

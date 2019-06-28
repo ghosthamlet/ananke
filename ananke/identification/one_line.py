@@ -152,18 +152,14 @@ def get_intrinsic_sets(graph):
     vertices = set(graph.vertices)
     fixed_vertices = set()
     for v in graph.vertices:
-        if graph.vertices[v].fixed==True:
+        if graph.vertices[v].fixed == True:
             fixed_vertices.add(v)
-
-    #fixable_vertices = set(v for v in graph.vertices if graph.vertices[v].fixed==True)
-    print(fixed_vertices)
 
     for var in vertices:
         fixable, _ = graph.fixable(vertices - set(var) - fixed_vertices)
 
         if fixable:
             intrinsic.add(frozenset([var]))
-    print(graph.districts())
     for district in graph.districts():
         # There is possibly a more efficient way of doing this
         for pset in powerset(district, 2):
@@ -185,22 +181,23 @@ class OneLineGZID(OneLineID):
 
     def _allowed_intrinsic_sets(self, experiments):
         allowed_intrinsic_sets = set()
+        allowed_intrinsic_dict = dict()
         for experiment in experiments:
             swig = copy.deepcopy(self.graph)
             swig.fix(experiment)
-            print(swig.vertices)
             intrinsic_sets = get_intrinsic_sets(swig)
             allowed_intrinsic_sets.update(intrinsic_sets)
+            for s in intrinsic_sets:
+                allowed_intrinsic_dict[frozenset(s)] = experiment
+            #allowed_intrinsic_dict[frozenset(experiment)] = intrinsic_sets
 
-        return allowed_intrinsic_sets
+        return allowed_intrinsic_sets, allowed_intrinsic_dict
 
-
-    def _is_id(self, experiments=[set()]):
+    def id(self, experiments=[set()]):
         required_intrinsic_sets = self._required_intrinsic_sets()
-        allowed_intrinsic_sets = self._allowed_intrinsic_sets(experiments)
+        allowed_intrinsic_sets, allowed_intrinsic_dict = self._allowed_intrinsic_sets(experiments)
+        print(allowed_intrinsic_dict)
 
-        print(allowed_intrinsic_sets)
-        print(required_intrinsic_sets)
         is_id = False
 
         if allowed_intrinsic_sets >= required_intrinsic_sets:

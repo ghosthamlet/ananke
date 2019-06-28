@@ -6,7 +6,6 @@ TODO: Add error checking
 
 
 from .vertex import Vertex
-from graphviz import Digraph
 
 
 class Graph:
@@ -302,6 +301,7 @@ class Graph:
 
         :return : dot language representation of the graph
         """
+        from graphviz import Digraph
 
         dot = Digraph()
 

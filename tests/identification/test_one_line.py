@@ -66,15 +66,6 @@ class TestOneLine(unittest.TestCase):
         self.assertEqual(truth, result)
 
 class TestOneLineGZID(unittest.TestCase):
-    def test_fix(self):
-        vertices = ["X_1", "X_2", "W", "Y"]
-        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
-        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
-        G = ADMG(vertices, di_edges, bi_edges)
-        G.fix(["X_1"])
-        S = identification.get_intrinsic_sets(G)
-
-        print(S)
 
 
     def test_is_id(self):
@@ -85,11 +76,11 @@ class TestOneLineGZID(unittest.TestCase):
         interventions = ["X_1", "X_2"]
         outcomes = ["Y"]
         ol = identification.OneLineGZID(G, interventions, outcomes)
-        status = ol._is_id()
+        status = ol.id()
 
         self.assertFalse(status)
 
-        second = ol._is_id([{"X_1"}, {"X_2"}])
+        second = ol.id([{"X_1"}, {"X_2"}])
         self.assertTrue(second)
 
 
