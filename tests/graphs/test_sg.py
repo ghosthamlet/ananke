@@ -72,5 +72,18 @@ class TestSG(unittest.TestCase):
         self.assertEqual(G.descendants(['A1', 'A2']), {'Y2', 'Y1', 'A1', 'A2'})
         #print(G.descendants(['A1', 'A2']))
 
+    def test_fix(self):
+
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G = SG(vertices, di_edges, bi_edges)
+        G.fix(["X_1"])
+        self.assertTrue(G.vertices["X_1"].fixed)
+        for g in G.vertices:
+            print(g, [s.name for s in G.vertices[g].siblings])
+        print(G.districts())
+
+        print(G.bi_edges)
 if __name__ == '__main__':
     unittest.main()

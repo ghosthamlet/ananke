@@ -5,6 +5,7 @@ Class for one line ID
 import copy
 import os
 from ..graphs.admg import ADMG
+from itertools import chain, combinations
 
 
 class OneLineID:
@@ -134,16 +135,81 @@ class OneLineID:
             dis_name = "".join(district)
 
             for v in self.fixing_orders[district]:
-
                 fixed_vars += v
                 G.fix(v)
                 G.draw().render(os.path.join(folder,
                                              "phi" + fixed_vars + "_dis" + dis_name + ".gv"))
 
 
+def powerset(iterable, min_size):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return chain.from_iterable((combinations(s, r)) for r in range(min_size, len(s) + 1))
+
+
+def get_intrinsic_sets(graph):
+    intrinsic = set()
+    vertices = set(graph.vertices)
+    fixed_vertices = set()
+    for v in graph.vertices:
+        if graph.vertices[v].fixed==True:
+            fixed_vertices.add(v)
+
+    #fixable_vertices = set(v for v in graph.vertices if graph.vertices[v].fixed==True)
+    print(fixed_vertices)
+
+    for var in vertices:
+        fixable, _ = graph.fixable(vertices - set(var) - fixed_vertices)
+
+        if fixable:
+            intrinsic.add(frozenset([var]))
+    print(graph.districts())
+    for district in graph.districts():
+        # There is possibly a more efficient way of doing this
+        for pset in powerset(district, 2):
+            fixable, _ = graph.fixable(vertices - set(pset) - fixed_vertices)
+            if fixable:
+                intrinsic.add(frozenset(pset))
+
+    return intrinsic
+
+
+class OneLineGZID(OneLineID):
+
+    def __init__(self, graph, interventions, outcomes):
+        super().__init__(graph=graph, interventions=interventions, outcomes=outcomes)
+
+    def _required_intrinsic_sets(self):
+        required_intrinsic_sets = get_intrinsic_sets(self.Gystar)
+        return required_intrinsic_sets
+
+    def _allowed_intrinsic_sets(self, experiments):
+        allowed_intrinsic_sets = set()
+        for experiment in experiments:
+            swig = copy.deepcopy(self.graph)
+            swig.fix(experiment)
+            print(swig.vertices)
+            intrinsic_sets = get_intrinsic_sets(swig)
+            allowed_intrinsic_sets.update(intrinsic_sets)
+
+        return allowed_intrinsic_sets
+
+
+    def _is_id(self, experiments=[set()]):
+        required_intrinsic_sets = self._required_intrinsic_sets()
+        allowed_intrinsic_sets = self._allowed_intrinsic_sets(experiments)
+
+        print(allowed_intrinsic_sets)
+        print(required_intrinsic_sets)
+        is_id = False
+
+        if allowed_intrinsic_sets >= required_intrinsic_sets:
+            is_id = True
+
+        return is_id
+
 
 if __name__ == '__main__':
-
     # ID test
     vertices = ['A', 'B', 'C', 'D', 'Y']
     di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
@@ -151,11 +217,22 @@ if __name__ == '__main__':
     G = ADMG(vertices, di_edges, bi_edges)
     one_id = OneLineID(G, ['A'], ['Y'])
     one_id.draw_swig(direction='LR').render()
-    #G.draw(direction='LR').render()
+    # G.draw(direction='LR').render()
     print(one_id.ystar)
     print(one_id.id())
     print(one_id.functional())
     one_id.export_intermediates()
+
+    vertices = ["A", "D", "C", "Y"]
+    di_edges = [('D', 'Y'), ('D', 'A'), ('A', 'Y'), ('C', 'A'), ('C', 'Y')]
+    bi_edges = []
+    G = ADMG(vertices, di_edges, bi_edges)
+    one_id = OneLineID(G, ['A'], ['Y', 'A'])
+    one_id.draw_swig(direction='LR').render()
+    # G.draw(direction='LR').render()
+    print(one_id.ystar)
+    print(one_id.id())
+    print(one_id.functional())
 
     # non ID test
     vertices = ['A', 'B', 'C', 'D', 'Y']

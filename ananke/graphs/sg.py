@@ -150,7 +150,6 @@ class SG(Graph):
         :param vertex: name of the vertex
         :return: set corresponding to district
         """
-
         district = self._districts[self._district_map[self.vertices[vertex]]]
         return {v.name for v in district}
 
@@ -260,7 +259,7 @@ class SG(Graph):
         :return: None
         """
 
-        super().add_biedge(sib1, sib2)
+        super().delete_biedge(sib1, sib2)
         if recompute: self._calculate_districts()
 
     def add_udedge(self, neb1, neb2, recompute=True):

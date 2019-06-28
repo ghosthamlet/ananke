@@ -25,3 +25,4 @@ class Vertex:
         self.neighbors = set()
         self.fixed = fixed
         self.cardinality = cardinality
+

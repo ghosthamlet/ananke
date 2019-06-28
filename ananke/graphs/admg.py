@@ -18,7 +18,7 @@ class ADMG(SG):
         """
 
         # initialize vertices
-        SG.__init__(self, vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
+        super().__init__(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
 
     def fix(self, vertices):
         """
