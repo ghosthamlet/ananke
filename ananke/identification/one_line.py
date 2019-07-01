@@ -8,6 +8,13 @@ from ..graphs.admg import ADMG
 from itertools import chain, combinations
 
 
+class NotIdentifiedError(Exception):
+    """
+    Custom error for when desired functional is not identified
+    """
+    pass
+
+
 class OneLineID:
 
     def __init__(self, graph, interventions, outcomes):
@@ -90,7 +97,7 @@ class OneLineID:
         """
 
         if not self.id():
-            return "Cannot create functional, query is not ID"
+            raise NotIdentifiedError
 
         # create and return the functional
         functional = '' if set(self.ystar) == set(self.outcomes) else '\u03A3'
@@ -150,53 +157,101 @@ def powerset(iterable, min_size):
 def get_intrinsic_sets(graph):
     intrinsic = set()
     vertices = set(graph.vertices)
+    order_dict = dict()
     fixed_vertices = set()
     for v in graph.vertices:
         if graph.vertices[v].fixed == True:
             fixed_vertices.add(v)
 
     for var in vertices:
-        fixable, _ = graph.fixable(vertices - set(var) - fixed_vertices)
+        fixable, order = graph.fixable(vertices - set(var) - fixed_vertices)
 
         if fixable:
-            intrinsic.add(frozenset([var]))
+            intrinsic_set = frozenset([var])
+            intrinsic.add(intrinsic_set)
+            order_dict[intrinsic_set] = order
     for district in graph.districts():
         # There is possibly a more efficient way of doing this
         for pset in powerset(district, 2):
-            fixable, _ = graph.fixable(vertices - set(pset) - fixed_vertices)
+            fixable, order = graph.fixable(vertices - set(pset) - fixed_vertices)
             if fixable:
-                intrinsic.add(frozenset(pset))
+                intrinsic_set = frozenset(list(pset))
+                intrinsic.add(intrinsic_set)
+                order_dict[intrinsic_set] = order
 
-    return intrinsic
+    return intrinsic, order_dict
 
 
-class OneLineGZID(OneLineID):
+class OneLineGZID:
 
     def __init__(self, graph, interventions, outcomes):
-        super().__init__(graph=graph, interventions=interventions, outcomes=outcomes)
+        self.graph = graph
+        self.interventions = interventions
+        self.outcomes = outcomes
+        self.swig = copy.deepcopy(graph)
+        self.swig.fix(self.interventions)
+        self.ystar = {v for v in self.swig.ancestors(self.outcomes) if not self.swig.vertices[v].fixed}
+        self.Gystar = self.graph.subgraph(self.ystar)
 
     def _required_intrinsic_sets(self):
-        required_intrinsic_sets = get_intrinsic_sets(self.Gystar)
+        required_intrinsic_sets, _ = get_intrinsic_sets(self.Gystar)
         return required_intrinsic_sets
 
     def _allowed_intrinsic_sets(self, experiments):
         allowed_intrinsic_sets = set()
         allowed_intrinsic_dict = dict()
+        fixing_orders = dict()
         for experiment in experiments:
             swig = copy.deepcopy(self.graph)
             swig.fix(experiment)
-            intrinsic_sets = get_intrinsic_sets(swig)
+            intrinsic_sets, order_dict = get_intrinsic_sets(swig)
             allowed_intrinsic_sets.update(intrinsic_sets)
+            fixing_orders[frozenset(experiment)] = order_dict
             for s in intrinsic_sets:
                 allowed_intrinsic_dict[frozenset(s)] = experiment
-            #allowed_intrinsic_dict[frozenset(experiment)] = intrinsic_sets
+            # allowed_intrinsic_dict[frozenset(experiment)] = intrinsic_sets
 
-        return allowed_intrinsic_sets, allowed_intrinsic_dict
+        return allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders
+
+    def functional(self, experiments=[set()]):
+        if not self.id(experiments=experiments):
+            raise NotIdentifiedError
+
+        # create and return the functional
+        functional = '' if set(self.ystar) == set(self.outcomes) else '\u03A3'
+
+        for y in self.ystar:
+            if y not in self.outcomes:
+                functional += y
+        if len(self.ystar) > 1: functional += ' '
+
+        # guarantee a deterministic printing order
+        fixing = []
+        items = []
+        for item in self.required_intrinsic_sets:
+            fixed = self.allowed_intrinsic_dict[item]
+            fixing.append(list(fixed))
+            items.append(item)
+
+        sorted_items = sorted(items, key=dict(zip(items, fixing)).get)
+        sorted_fixing = sorted(fixing)
+
+        for i, item in enumerate(sorted_items):
+            fixed = sorted_fixing[i]
+
+            correct_order = self.fixing_orders[frozenset(fixed)][frozenset(item) - frozenset(fixed)]
+
+            functional += '\u03A6' + ','.join(reversed(correct_order)) + ' p(V \ {0} | do({0}))'.format(",".join(fixed))
+
+        return functional
 
     def id(self, experiments=[set()]):
         required_intrinsic_sets = self._required_intrinsic_sets()
-        allowed_intrinsic_sets, allowed_intrinsic_dict = self._allowed_intrinsic_sets(experiments)
-        print(allowed_intrinsic_dict)
+        allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders = self._allowed_intrinsic_sets(experiments)
+        self.required_intrinsic_sets = required_intrinsic_sets
+        self.allowed_intrinsic_sets = allowed_intrinsic_sets
+        self.allowed_intrinsic_dict = allowed_intrinsic_dict
+        self.fixing_orders = fixing_orders
 
         is_id = False
 
