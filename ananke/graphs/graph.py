@@ -8,9 +8,9 @@ TODO: Add error checking
 from .vertex import Vertex
 
 
-class Graph:
+class Graph(object):
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set()):
+    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor
 
@@ -19,6 +19,8 @@ class Graph:
         :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
         :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y
         """
+        assert not kwargs, "Unrecognised kwargs: {}".format(kwargs)
+        super().__init__()
 
         # initialize vertices
         self.vertices = {v: Vertex(v) for v in vertices}

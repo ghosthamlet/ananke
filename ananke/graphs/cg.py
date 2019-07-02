@@ -3,12 +3,15 @@ Class for Lauritzen-Wermuth-Frydenberg chain graphs (LWF-CGs/CGs)
 """
 
 
+import logging
 from .sg import SG
+
+logger = logging.getLogger(__name__)
 
 
 class CG(SG):
 
-    def __init__(self, vertices, di_edges=set(), ud_edges=set()):
+    def __init__(self, vertices, di_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor
 
@@ -18,4 +21,5 @@ class CG(SG):
         """
 
         # initialize vertices
-        SG.__init__(self, vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        super().__init__(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges, **kwargs)
+        logger.debug("CG")

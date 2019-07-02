@@ -8,7 +8,7 @@ from .admg import ADMG
 
 class BG(ADMG):
 
-    def __init__(self, vertices, bi_edges=set()):
+    def __init__(self, vertices, bi_edges=set(), **kwargs):
         """
         Constructor
 
@@ -17,4 +17,4 @@ class BG(ADMG):
         """
 
         # initialize vertices
-        ADMG.__init__(self, vertices=vertices, bi_edges=bi_edges)
+        super().__init__(vertices=vertices, bi_edges=bi_edges, **kwargs)

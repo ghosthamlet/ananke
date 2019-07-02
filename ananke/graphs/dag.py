@@ -1,15 +1,17 @@
 """
 Class for Directed Acyclic Graphs (DAGs)
 """
-
+import logging
 
 from .admg import ADMG
 from .cg import CG
 
+logger = logging.getLogger(__name__)
+
 
 class DAG(ADMG, CG):
 
-    def __init__(self, vertices, di_edges=set()):
+    def __init__(self, vertices, di_edges=set(), **kwargs):
         """
         Constructor
 
@@ -18,5 +20,7 @@ class DAG(ADMG, CG):
         """
 
         # initialize vertices
-        ADMG.__init__(self, vertices=vertices, di_edges=di_edges)
-        CG.__init__(self, vertices=vertices, di_edges=di_edges)
+        # ADMG.__init__(self, vertices=vertices, di_edges=di_edges)
+        # CG.__init__(self, vertices=vertices, di_edges=di_edges)
+        super().__init__(vertices=vertices, di_edges=di_edges, **kwargs)
+        logger.debug("DAG")

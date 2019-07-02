@@ -1,14 +1,17 @@
 """
 Class for segregated graphs (SGs)
 """
-
 import copy
+import logging
+
 from .graph import Graph
+
+logger = logging.getLogger(__name__)
 
 
 class SG(Graph):
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set()):
+    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor
 
@@ -18,8 +21,9 @@ class SG(Graph):
         :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y
         """
 
-        # initialize vertices
-        Graph.__init__(self, vertices=vertices, di_edges=di_edges, bi_edges=bi_edges, ud_edges=ud_edges)
+        # initialize vertices in SG
+        super().__init__(vertices, di_edges=di_edges, bi_edges=bi_edges, ud_edges=ud_edges, **kwargs)
+        logger.debug("SG")
 
         assert self._segregated(), "TypeError: Graph is not segregated"
         assert self._acyclic(), "TypeError: Graph is not acyclic"
@@ -365,7 +369,7 @@ class SG(Graph):
         return True, fixing_order
 
 # some simple tests for the segregated graph class
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #
 #    try:
 #        # non-segregated graph

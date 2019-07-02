@@ -8,7 +8,7 @@ from .cg import CG
 
 class UG(CG):
 
-    def __init__(self, vertices, ud_edges=set()):
+    def __init__(self, vertices, ud_edges=set(), **kwargs):
         """
         Constructor
 
@@ -17,5 +17,5 @@ class UG(CG):
         """
 
         # initialize vertices
-        CG.__init__(self, vertices=vertices, ud_edges=ud_edges)
+        super().__init__(vertices=vertices, ud_edges=ud_edges, **kwargs)
 

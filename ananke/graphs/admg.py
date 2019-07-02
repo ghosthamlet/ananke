@@ -1,14 +1,15 @@
 """
 Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs)
 """
-
+import logging
 import copy
 from .sg import SG
 
+logger = logging.getLogger(__name__)
 
 class ADMG(SG):
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set()):
+    def __init__(self, vertices, di_edges=set(), bi_edges=set(), **kwargs):
         """
         Constructor
 
@@ -17,8 +18,9 @@ class ADMG(SG):
         :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
         """
 
-        # initialize vertices
-        super().__init__(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
+        # initialize vertices in ADMG
+        super().__init__(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges, **kwargs)
+        logger.debug("ADMG")
 
     def fix(self, vertices):
         """
