@@ -6,3 +6,4 @@ from .graph import *
 from .sg import SG
 from .ug import UG
 from .vertex import Vertex
+from .ig import IG

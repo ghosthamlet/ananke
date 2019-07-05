@@ -8,7 +8,7 @@ TODO: Add error checking
 from .vertex import Vertex
 
 
-class Graph(object):
+class Graph:
 
     def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
@@ -20,7 +20,6 @@ class Graph(object):
         :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y
         """
         assert not kwargs, "Unrecognised kwargs: {}".format(kwargs)
-        super().__init__()
 
         # initialize vertices
         self.vertices = {v: Vertex(v) for v in vertices}

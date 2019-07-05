@@ -1,11 +1,14 @@
 """
 Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs)
 """
-import logging
 import copy
+import logging
+
+from ananke.utils import powerset
 from .sg import SG
 
 logger = logging.getLogger(__name__)
+
 
 class ADMG(SG):
 
@@ -49,6 +52,34 @@ class ADMG(SG):
 
         # recompute the districts as they may have changed
         self._calculate_districts()
+
+    def get_reachable_closure(self, vertices):
+        """
+        Obtain reachable closure for a set of vertices.
+
+        :param vertices:
+        :return:
+        """
+        remaining_vertices = set(self.vertices) - set(vertices)
+        fixing_order = []
+        fixed = True
+        G = copy.deepcopy(self)
+
+        while remaining_vertices and fixed:
+            fixed = False
+
+            for v in remaining_vertices:
+                if len(G.descendants([v]).intersection(G.district(v))) == 1:
+                    G.fix([v])
+                    remaining_vertices.remove(v)
+                    fixing_order.append(v)
+                    fixed = True
+                    break
+
+        reachable_closure = (set(G.vertices) - set(fixing_order))
+
+        return reachable_closure
+
 
     def fixable(self, vertices):
         """
@@ -162,34 +193,80 @@ class ADMG(SG):
         return subgraph
 
 
-if __name__ == "__main__":
 
-    # simple tests
-    vertices = ['A', 'B', 'C', 'D', 'Y']
-    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-    G = ADMG(vertices, di_edges, bi_edges)
-    print(G.districts())
-    print(G.district('A'))
+    def get_intrinsic_sets(self):
+        """
+        Computes intrinsic sets (and returns the fixing order for each intrinsic set)
 
-    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
-    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
-                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
-    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
-    G = ADMG(vertices, di_edges, bi_edges)
-    print(G.districts())
-    print(G.district('X2'))
-    #G.draw().render()
-    paths = list(G.m_connecting_paths('X1', 'Y2'))
-    print('-------------' * 5)
-    for path in paths:
-        print(path)
-    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1'])))
-    print('-------------'*5)
-    for path in paths:
-        print(path)
 
-    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1', 'X2'])))
-    print('-------------' * 5)
-    for path in paths:
-        print(path)
+        :return:
+        """
+        intrinsic_sets, fixing_orders = get_intrinsic_sets(self)
+
+        return intrinsic_sets, fixing_orders
+
+
+def get_intrinsic_sets(graph):
+    """
+    Computes all intrinsic sets given an ADMG. Allows for fixed variables.
+
+    :param graph: ADMG
+    :return:
+    """
+    intrinsic = set()
+    vertices = set(graph.vertices)
+    order_dict = dict()
+    fixed_vertices = set()
+    for v in graph.vertices:
+        if graph.vertices[v].fixed:
+            fixed_vertices.add(v)
+
+    for var in vertices:
+        fixable, order = graph.fixable(vertices - set(var) - fixed_vertices)
+
+        if fixable:
+            intrinsic_set = frozenset([var])
+            intrinsic.add(intrinsic_set)
+            order_dict[intrinsic_set] = order
+    for district in graph.districts():
+        # There is possibly a more efficient way of doing this
+        for pset in powerset(district, 2):
+            fixable, order = graph.fixable(vertices - set(pset) - fixed_vertices)
+            if fixable:
+                intrinsic_set = frozenset(list(pset))
+                intrinsic.add(intrinsic_set)
+                order_dict[intrinsic_set] = order
+
+    return intrinsic, order_dict
+
+# if __name__ == "__main__":
+#
+#    # simple tests
+#    vertices = ['A', 'B', 'C', 'D', 'Y']
+#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
+#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
+#    G = ADMG(vertices, di_edges, bi_edges)
+#    print(G.districts())
+#    print(G.district('A'))
+#
+#    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
+#    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
+#                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
+#    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
+#    G = ADMG(vertices, di_edges, bi_edges)
+#    print(G.districts())
+#    print(G.district('X2'))
+#    #G.draw().render()
+#    paths = list(G.m_connecting_paths('X1', 'Y2'))
+#    print('-------------' * 5)
+#    for path in paths:
+#        print(path)
+#    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1'])))
+#    print('-------------'*5)
+#    for path in paths:
+#        print(path)
+#
+#    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1', 'X2'])))
+#    print('-------------' * 5)
+#    for path in paths:
+#        print(path)

@@ -9,6 +9,9 @@ class TestDAG(unittest.TestCase):
         dag = DAG(vertices, di_edges=di_edges)
         self.assertTrue(DAG)
 
+    def test_intrinsic_sets_are_singletons(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

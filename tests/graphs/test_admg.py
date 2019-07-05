@@ -36,6 +36,15 @@ class TestADMG(unittest.TestCase):
         self.assertEqual(sorted_true_paths,
                          [sorted(path) for path in sorted(paths)])
 
+    def test_reachable_closure(self):
+        vertices = ["A", "B", "C"]
+        di_edges = [("A", "B"), ("C", "B"), ("C", "A")]
+        bi_edges = [("A", "B")]
+        G = ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
+        cl = G.get_reachable_closure(["B"])
+        self.assertEqual({"A", "B"}, set(cl))
+
+
 
 if __name__ == '__main__':
     unittest.main()

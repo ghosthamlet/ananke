@@ -46,21 +46,7 @@ class TestOneLine(unittest.TestCase):
         one_id = OneLineID(G, ['A', 'B'], ['Y'])
         self.assertFalse(one_id.id())
 
-    def test_get_intrinsic_sets(self):
-        vertices = ["X_1", "X_2", "W", "Y"]
-        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
-        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
-        G = ADMG(vertices, di_edges, bi_edges)
 
-        result, _ = identification.get_intrinsic_sets(G)
-        truth = {frozenset({"W", "X_1"}),
-                 frozenset({"X_2"}),
-                 frozenset({"X_1"}),
-                 frozenset({"X_1", "X_2"}),
-                 frozenset({"X_1", "X_2", "W"}),
-                 frozenset({"X_1", "X_2", "W", "Y"})}
-
-        self.assertEqual(truth, result)
 
 
 class TestOneLineGZID(unittest.TestCase):
