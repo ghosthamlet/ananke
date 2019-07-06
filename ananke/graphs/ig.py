@@ -15,12 +15,13 @@ class IG(ADMG):
         retained_bi_edges = []
 
         for u, v in admg.bi_edges:
-            if not admg.descendants(u).intersection(v) and not admg.descendants(v).intersection(u):
-                retained_bi_edges.append((frozenset(u), frozenset(v)))
+            retained_bi_edges.append((frozenset(u), frozenset(v)))
 
         self.digraph = networkx.DiGraph()
         for v in vertices:
             self.digraph.add_node(v)
+
+        logger.debug(retained_bi_edges)
 
         super().__init__(vertices=vertices, bi_edges=retained_bi_edges, di_edges=set())
 
@@ -89,7 +90,9 @@ class IG(ADMG):
 
         :return:
         """
+        print(self.bi_edges)
         while len(self.bi_edges) > 0:
+            print(self.bi_edges)
             u, v = next(iter(self.bi_edges))
             self.merge(u, v)
 
