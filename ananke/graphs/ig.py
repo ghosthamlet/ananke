@@ -14,16 +14,26 @@ class IG(ADMG):
         vertices = [frozenset(v) for v in admg.vertices]
         retained_bi_edges = []
 
-        for u, v in admg.bi_edges:
-            retained_bi_edges.append((frozenset(u), frozenset(v)))
 
         self.digraph = networkx.DiGraph()
+        rc_vertices = []
         for v in vertices:
-            self.digraph.add_node(v)
+            print(frozenset(admg.get_reachable_closure(v)))
+            reachable_closure = frozenset(admg.get_reachable_closure(v))
+
+
+            self.digraph.add_node(reachable_closure)
+            rc_vertices.append(reachable_closure)
+        for u, v in admg.bi_edges:
+            u_rc = frozenset(admg.get_reachable_closure(u))
+            v_rc = frozenset(admg.get_reachable_closure(v))
+            print("u", u_rc)
+            print("v", v_rc)
+            retained_bi_edges.append((u_rc, v_rc))
 
         logger.debug(retained_bi_edges)
 
-        super().__init__(vertices=vertices, bi_edges=retained_bi_edges, di_edges=set())
+        super().__init__(vertices=rc_vertices, bi_edges=retained_bi_edges, di_edges=set())
 
     def insert(self, vertex):
         for v in set(self.vertices):
@@ -43,7 +53,6 @@ class IG(ADMG):
         for u, v in digraph_edges:
             self.add_diedge(u, v)
 
-
     def find_candidate_neighbors(self, v, vertex):
         for node in v:
             for i in self.admg.district(node):
@@ -53,7 +62,7 @@ class IG(ADMG):
 
     def add_extra_biedges(self, vertex):
         """
-        Naive O(|I(G)| choose 2) implementation
+        Naive O(|I(G)| choose 2) implementation. Must ensure that biedges not added to ancestors.
         :param vertex:
         :return:
         """
@@ -90,9 +99,9 @@ class IG(ADMG):
 
         :return:
         """
-        print(self.bi_edges)
+        #print(self.bi_edges)
         while len(self.bi_edges) > 0:
-            print(self.bi_edges)
+            #print(self.bi_edges)
             u, v = next(iter(self.bi_edges))
             self.merge(u, v)
 
