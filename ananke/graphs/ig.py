@@ -42,8 +42,6 @@ class IG(ADMG):
             elif v.issuperset(vertex):
                 self.digraph.add_edge(vertex, v)
 
-        self.digraph = networkx.algorithms.dag.transitive_reduction(self.digraph)
-
         digraph_edges = self.digraph.edges()
         self.add_vertex(vertex)
         for u, v in self.di_edges.copy():
