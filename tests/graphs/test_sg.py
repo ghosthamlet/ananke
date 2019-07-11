@@ -82,8 +82,10 @@ class TestSG(unittest.TestCase):
         self.assertTrue(G.vertices["X_1"].fixed)
         for g in G.vertices:
             print(g, [s.name for s in G.vertices[g].siblings])
+        G_dis = {frozenset(s) for s in G.districts()}
 
-        self.assertEqual(sorted([{"X_2", "Y"}, {"W"}]), G.districts())
+
+        self.assertEqual({frozenset({"X_2", "Y"}), frozenset({"W"})}, G_dis)
         self.assertEqual(sorted([("X_1", "W"), ("W", "Y"), ("X_2", "Y")]), sorted(list(G.di_edges)))
 
 if __name__ == '__main__':
