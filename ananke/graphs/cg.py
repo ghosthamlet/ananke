@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class CG(SG):
 
-    def __init__(self, vertices, di_edges=set(), ud_edges=set(), **kwargs):
+    def __init__(self, vertices=[], di_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor.
 

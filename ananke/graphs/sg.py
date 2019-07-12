@@ -3,8 +3,6 @@ Class for segregated graphs (SGs).
 """
 import copy
 import logging
-from functools import wraps
-
 from .graph import Graph
 
 logger = logging.getLogger(__name__)
@@ -12,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class SG(Graph):
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
+    def __init__(self, vertices=[], di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor
 
@@ -154,6 +152,7 @@ class SG(Graph):
         if not self._districts:
             self.districts
         return self._districts[self._district_map[vertex]]
+        #return self.districts[self._district_map[vertex]]
 
     #### BLOCK CODE ####
     def _calculate_blocks(self):
@@ -282,7 +281,7 @@ class SG(Graph):
         """
         Perform the graphical operation of fixing on a set of vertices.
 
-        :param vertices: name(s) of vertices to be fixed.
+        :param vertices: iterable of vertices to be fixed.
         :return: None.
         """
 

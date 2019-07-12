@@ -10,7 +10,7 @@ from .vertex import Vertex
 
 class Graph:
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
+    def __init__(self, vertices=[], di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
         Constructor.
 
@@ -144,52 +144,45 @@ class Graph:
         """
         Get parents of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names.
+        :param vertices: iterable of vertex names.
         :return: set of parents.
         """
 
-        if isinstance(vertices, str):
-            return {p.name for p in self.vertices[vertices].parents}
-        else:
-            parents = set()
-            for v in vertices:
-                for p in self.vertices[v].parents:
-                    parents.add(p.name)
-            return parents
+        #if isinstance(vertices, str):
+        #    return {p.name for p in self.vertices[vertices].parents}
+        parents = set()
+        for v in vertices:
+            for p in self.vertices[v].parents:
+                parents.add(p.name)
+        return parents
 
     def children(self, vertices):
         """
         Get children of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names.
+        :param vertices: iterable of vertex names.
         :return: set of children.
         """
 
-        if isinstance(vertices, str):
-            return {c.name for c in self.vertices[vertices].children}
-        else:
-            children = set()
-            for v in vertices:
-                for c in self.vertices[v].children:
-                    children.add(c.name)
-            return children
+        children = set()
+        for v in vertices:
+            for c in self.vertices[v].children:
+                children.add(c.name)
+        return children
 
     def neighbors(self, vertices):
         """
         Get neighbors of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names.
+        :param vertices: iterable of vertex names.
         :return: set of neighbors.
         """
 
-        if isinstance(vertices, str):
-            return {n.name for n in self.vertices[vertices].neighbors}
-        else:
-            neighbors = set()
-            for v in vertices:
-                for n in self.vertices[v].neighbors:
-                    neighbors.add(n.name)
-            return neighbors
+        neighbors = set()
+        for v in vertices:
+            for n in self.vertices[v].neighbors:
+                neighbors.add(n.name)
+        return neighbors
 
     def siblings(self, vertices):
         """
@@ -199,14 +192,11 @@ class Graph:
         :return: set of neighbors.
         """
 
-        if isinstance(vertices, str):
-            return {s.name for s in self.vertices[vertices].siblings}
-        else:
-            siblings = set()
-            for v in vertices:
-                for s in self.vertices[v].siblings:
-                    siblings.add(s.name)
-            return siblings
+        siblings = set()
+        for v in vertices:
+            for s in self.vertices[v].siblings:
+                siblings.add(s.name)
+        return siblings
 
     def ancestors(self, vertices):
         """
@@ -218,10 +208,11 @@ class Graph:
 
         ancestors = set()
 
-        if isinstance(vertices, str):
-            visit_stack = [self.vertices[vertices]]
-        else:
-            visit_stack = list([self.vertices[v] for v in vertices])
+        #if isinstance(vertices, str):
+        #    visit_stack = [self.vertices[vertices]]
+        #else:
+        #    visit_stack = list([self.vertices[v] for v in vertices])
+        visit_stack = list([self.vertices[v] for v in vertices])
 
         while visit_stack:
             v = visit_stack.pop()
@@ -240,10 +231,7 @@ class Graph:
 
         descendants = set()
 
-        if isinstance(vertices, str):
-            visit_stack = [self.vertices[vertices]]
-        else:
-            visit_stack = list([self.vertices[v] for v in vertices])
+        visit_stack = list([self.vertices[v] for v in vertices])
 
         while visit_stack:
             v = visit_stack.pop()

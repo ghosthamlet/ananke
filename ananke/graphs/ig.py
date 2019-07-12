@@ -1,31 +1,41 @@
 """
-Class for a mixed graph used to compute intrinsic sets of an ADMG
-in polynomial time.
+Class for Intrinsic Graphs (IGs) -- a mixed graph used to compute intrinsic sets
+of an ADMG in polynomial time.
 """
 
 import logging
-import networkx
-from .admg import ADMG
+from .graph import Graph
+from .dag import DAG
 
 logger = logging.getLogger(__name__)
 
 
-class IG(ADMG):
+class IG(Graph):
 
     def __init__(self, admg):
+        """
+        Constructor.
+
+        :param admg: ADMG object to calculate intrinsic sets for.
+        """
+
         self.admg = admg
+        self.digraph = DAG()
+
+        # the IG is initialized with vertices corresponding to
+        # reachable closures of singletons (these are guaranteed to be intrinsic)
         vertices = [frozenset(v) for v in admg.vertices]
         retained_bi_edges = []
 
 
-        self.digraph = networkx.DiGraph()
+        #self.digraph = networkx.DiGraph()
         rc_vertices = []
         for v in vertices:
             print(frozenset(admg.reachable_closure(v)))
             reachable_closure = frozenset(admg.reachable_closure(v))
 
 
-            self.digraph.add_node(reachable_closure)
+            self.digraph.add_vertex(reachable_closure)
             rc_vertices.append(reachable_closure)
         for u, v in admg.bi_edges:
             u_rc = frozenset(admg.reachable_closure(u))
@@ -41,9 +51,9 @@ class IG(ADMG):
     def insert(self, vertex):
         for v in set(self.vertices):
             if v.issubset(vertex):
-                self.digraph.add_edge(v, vertex)
+                self.digraph.add_diedge(v, vertex)
             elif v.issuperset(vertex):
-                self.digraph.add_edge(vertex, v)
+                self.digraph.add_diedge(vertex, v)
 
         digraph_edges = self.digraph.edges()
         self.add_vertex(vertex)

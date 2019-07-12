@@ -10,7 +10,7 @@ class TestADMG(unittest.TestCase):
         bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
         G = ADMG(vertices, di_edges, bi_edges)
         #print(G.districts())
-        self.assertCountEqual(([{'C', 'A'}, {'Y', 'B', 'D'}]), (G.districts()))
+        self.assertCountEqual(([{'C', 'A'}, {'Y', 'B', 'D'}]), (G.districts))
         #print(G.district('A'))
         self.assertEqual({'C', 'A'}, G.district('A'))
 
@@ -21,7 +21,7 @@ class TestADMG(unittest.TestCase):
         bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
         G = ADMG(vertices, di_edges, bi_edges)
         #print(G.districts())
-        self.assertCountEqual(([{'X1', 'X2', 'U'}, {'A1'}, {'A2'}, {'Y1', 'Y2'}]), (G.districts()))
+        self.assertCountEqual(([{'X1', 'X2', 'U'}, {'A1'}, {'A2'}, {'Y1', 'Y2'}]), (G.districts))
         #print(G.district('X2'))
         self.assertEqual(G.district('X2'), {'X1', 'X2', 'U'})
 

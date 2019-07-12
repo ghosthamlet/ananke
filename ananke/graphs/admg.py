@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class ADMG(SG):
 
-    def __init__(self, vertices, di_edges=set(), bi_edges=set(), **kwargs):
+    def __init__(self, vertices=[], di_edges=set(), bi_edges=set(), **kwargs):
         """
         Constructor.
 
@@ -134,7 +134,7 @@ class ADMG(SG):
         queue = [(self.vertices[x], [self.vertices[x]], [])]
         y = self.vertices[y]
         Z = [self.vertices[z] for z in Z]
-        ancestors_z = self._ancestors(Z)
+        ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])
 
         while queue:
 
@@ -236,34 +236,3 @@ def get_intrinsic_sets(graph):
 
     return intrinsic, order_dict
 
-# if __name__ == "__main__":
-#
-#    # simple tests
-#    vertices = ['A', 'B', 'C', 'D', 'Y']
-#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-#    G = ADMG(vertices, di_edges, bi_edges)
-#    print(G.districts())
-#    print(G.district('A'))
-#
-#    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
-#    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
-#                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
-#    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
-#    G = ADMG(vertices, di_edges, bi_edges)
-#    print(G.districts())
-#    print(G.district('X2'))
-#    #G.draw().render()
-#    paths = list(G.m_connecting_paths('X1', 'Y2'))
-#    print('-------------' * 5)
-#    for path in paths:
-#        print(path)
-#    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1'])))
-#    print('-------------'*5)
-#    for path in paths:
-#        print(path)
-#
-#    paths = list(G.m_connecting_paths('X1', 'Y2', set(['U', 'A1', 'X2'])))
-#    print('-------------' * 5)
-#    for path in paths:
-#        print(path)

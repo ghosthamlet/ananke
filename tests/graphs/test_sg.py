@@ -59,8 +59,8 @@ class TestSG(unittest.TestCase):
         G = SG(vertices, di_edges, bi_edges)
         self.assertCountEqual((G.districts), [{'X2', 'X1', 'U'}, {'A1'}, {'A2'}, {'Y2', 'Y1'}])
         self.assertEqual(G.district('X2'), {'X2', 'X1', 'U'})
-        self.assertEqual(G.ancestors('A2'), {'X2', 'A2', 'U'})
-        self.assertEqual(G.ancestors('A1'), {'X1', 'A1', 'U'})
+        self.assertEqual(G.ancestors(['A2']), {'X2', 'A2', 'U'})
+        self.assertEqual(G.ancestors(['A1']), {'X1', 'A1', 'U'})
         self.assertEqual(G.ancestors(['A1', 'A2']), {'X2', 'A1', 'X1', 'U', 'A2'})
         self.assertEqual(G.descendants(['A1', 'A2']), {'Y2', 'Y1', 'A1', 'A2'})
 
