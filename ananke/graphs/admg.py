@@ -51,7 +51,7 @@ class ADMG(SG):
                 self.delete_biedge(s, v, recompute=False)
 
         # recompute the districts as they may have changed
-        self._calculate_districts()
+        self._districts = self._calculate_districts()
 
     def reachable_closure(self, vertices):
         """

@@ -3,6 +3,7 @@ Class for segregated graphs (SGs).
 """
 import copy
 import logging
+from functools import wraps
 
 from .graph import Graph
 
@@ -32,7 +33,6 @@ class SG(Graph):
         # and a list of districts
         self._district_map = {}
         self._districts = []
-        self._calculate_districts()
 
         # a mapping of vertices to their block ids
         # and a list of blocks
@@ -100,26 +100,32 @@ class SG(Graph):
         return True
 
     #### DISTRICT CODE ####
+    @property
+    def districts(self):
+        return self._calculate_districts()
+
     def _calculate_districts(self):
         """
         Update districts in the graph.
 
-        :return: None.
+        :return: List of districts.
         """
 
         self._district_map = {}
         district_counter = 0
 
         # Add all vertices to the district_map
-        for vertex in self.vertices.values():
-            if vertex not in self._district_map and not vertex.fixed:
-                self._dfs_district(vertex, district_counter)
+        for vertex in self.vertices:
+            if vertex not in self._district_map and not self.vertices[vertex].fixed:
+                self._dfs_district(self.vertices[vertex], district_counter)
                 district_counter += 1
 
         # Now process the district_map into a list of lists
-        self._districts = [set() for _ in range(district_counter)]
+        districts = [set() for _ in range(district_counter)]
         for vertex, district_id in self._district_map.items():
-            self._districts[district_id].add(vertex)
+            districts[district_id].add(vertex)
+        self._districts = districts
+        return districts
 
     def _dfs_district(self, vertex, district_id):
         """
@@ -134,18 +140,8 @@ class SG(Graph):
         visit_stack = [vertex]
         while visit_stack:
             v = visit_stack.pop()
-            self._district_map[v] = district_id
-            visit_stack.extend(s for s in v.siblings if s not in self._district_map)
-
-    def _district(self, vertex):
-        """
-        Returns the district of a vertex.
-
-        :param vertex: vertex object.
-        :return: set corresponding to district.
-        """
-
-        return self._districts[self._district_map[vertex]]
+            self._district_map[v.name] = district_id
+            visit_stack.extend(s for s in v.siblings if s.name not in self._district_map)
 
     def district(self, vertex):
         """
@@ -154,20 +150,8 @@ class SG(Graph):
         :param vertex: name of the vertex.
         :return: set corresponding to district.
         """
-        district = self._districts[self._district_map[self.vertices[vertex]]]
-        return {v.name for v in district}
 
-    def districts(self):
-        """
-        Returns list of all districts in the graph.
-
-        :return: list of lists corresponding to districts in the graph.
-        """
-
-        districts = []
-        for district in self._districts:
-            districts.append({v.name for v in district})
-        return districts
+        return self._districts[self._district_map[vertex]]
 
     #### BLOCK CODE ####
     def _calculate_blocks(self):
@@ -251,7 +235,7 @@ class SG(Graph):
         """
 
         super().add_biedge(sib1, sib2)
-        if recompute: self._calculate_districts()
+        if recompute: self._districts = self._calculate_districts()
 
     def delete_biedge(self, sib1, sib2, recompute=True):
         """
@@ -264,7 +248,7 @@ class SG(Graph):
         """
 
         super().delete_biedge(sib1, sib2)
-        if recompute: self._calculate_districts()
+        if recompute: self._districts = self._calculate_districts()
 
     def add_udedge(self, neb1, neb2, recompute=True):
         """
@@ -277,7 +261,7 @@ class SG(Graph):
         """
 
         super().add_udedge(neb1, neb2)
-        if recompute: self._calculate_blocks()
+        if recompute: self._blocks = self._calculate_blocks()
 
     def delete_udedge(self, neb1, neb2, recompute=True):
         """
@@ -290,7 +274,7 @@ class SG(Graph):
         """
 
         super().delete_udedge(neb1, neb2)
-        if recompute: self._calculate_blocks()
+        if recompute: self._blocks = self._calculate_blocks()
 
     def fix(self, vertices):
         """
@@ -324,8 +308,8 @@ class SG(Graph):
                     self.delete_udedge(n, v, recompute=False)
 
         # recompute the districts and blocks as they may have changed
-        self._calculate_districts()
-        self._calculate_blocks()
+        self._districts = self._calculate_districts()
+        self._blocks = self._calculate_blocks()
 
     def fixable(self, vertices):
         """
@@ -367,72 +351,3 @@ class SG(Graph):
                 return False, fixing_order
 
         return True, fixing_order
-
-# some simple tests for the segregated graph class
-# if __name__ == "__main__":
-#
-#    try:
-#        # non-segregated graph
-#        vertices = ['A', 'B', 'C']
-#        bi_edges = [('A', 'B')]
-#        ud_edges = [('B', 'C')]
-#        G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
-#        print('-'*10)
-#
-#    except AssertionError as error:
-#        print(error)
-#
-#    try:
-#        # directed cycle graph
-#        vertices = ['A', 'B', 'C']
-#        bi_edges = [('A', 'B')]
-#        di_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
-#        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges)
-#        print(G.blocks())
-#        print('-' * 10)
-#
-#    except AssertionError as error:
-#        print(error)
-#
-#    try:
-#        # partially directed cycle graph
-#        vertices = ['A', 'B', 'C']
-#        bi_edges = []
-#        ud_edges = [('A', 'B'), ('B', 'C')]
-#        di_edges = [('C', 'A')]
-#        G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges, ud_edges=ud_edges)
-#        print('-' * 10)
-#
-#    except AssertionError as error:
-#        print(error)
-#
-#    # undirected cycle graph this is valid
-#    vertices = ['A', 'B', 'C']
-#    bi_edges = []
-#    ud_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
-#    G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
-#    print(G.blocks())
-#    print('-' * 10)
-#
-#
-#
-#    # simple tests
-#    vertices = ['A', 'B', 'C', 'D', 'Y']
-#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-#    G = SG(vertices, di_edges, bi_edges)
-#    print(G.districts())
-#    print(G.district('A'))
-#
-#    vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
-#    di_edges = [('X1', 'A1'), ('X1', 'Y1'), ('A1', 'Y1'), ('X2', 'A2'), ('X2', 'Y2'), ('A2', 'Y2'),
-#                ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
-#    bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
-#    G = SG(vertices, di_edges, bi_edges)
-#    print(G.districts())
-#    print(G.district('X2'))
-#    print(G.ancestors('A2'))
-#    print(G.ancestors('A1'))
-#    print(G.ancestors(['A1', 'A2']))
-#    print(G.descendants(['A1', 'A2']))
-#    #G.draw().render()

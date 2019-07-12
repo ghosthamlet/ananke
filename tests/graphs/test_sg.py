@@ -48,10 +48,8 @@ class TestSG(unittest.TestCase):
         di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
         bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
         G = SG(vertices, di_edges, bi_edges)
-        self.assertCountEqual(([{'A', 'C'}, {'D', 'Y', 'B'}]), (G.districts()))
+        self.assertCountEqual(([{'A', 'C'}, {'D', 'Y', 'B'}]), G.districts)
         self.assertEqual({'A', 'C'}, G.district('A'))
-        #print(G.districts())
-        #print(G.district('A'))
 
     def test_genealogical_sets_correct(self):
         vertices = ['X1', 'U', 'X2', 'A1', 'A2', 'Y1', 'Y2']
@@ -59,18 +57,12 @@ class TestSG(unittest.TestCase):
                     ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
         bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
         G = SG(vertices, di_edges, bi_edges)
-        self.assertCountEqual((G.districts()), [{'X2', 'X1', 'U'}, {'A1'}, {'A2'}, {'Y2', 'Y1'}])
-        #print(G.districts())
+        self.assertCountEqual((G.districts), [{'X2', 'X1', 'U'}, {'A1'}, {'A2'}, {'Y2', 'Y1'}])
         self.assertEqual(G.district('X2'), {'X2', 'X1', 'U'})
-        #print(G.district('X2'))
         self.assertEqual(G.ancestors('A2'), {'X2', 'A2', 'U'})
-        #print(G.ancestors('A2'))
         self.assertEqual(G.ancestors('A1'), {'X1', 'A1', 'U'})
-        #print(G.ancestors('A1'))
         self.assertEqual(G.ancestors(['A1', 'A2']), {'X2', 'A1', 'X1', 'U', 'A2'})
-        #print(G.ancestors(['A1', 'A2']))
         self.assertEqual(G.descendants(['A1', 'A2']), {'Y2', 'Y1', 'A1', 'A2'})
-        #print(G.descendants(['A1', 'A2']))
 
     def test_fix_gives_correct_graph(self):
 
@@ -82,7 +74,7 @@ class TestSG(unittest.TestCase):
         self.assertTrue(G.vertices["X_1"].fixed)
         for g in G.vertices:
             print(g, [s.name for s in G.vertices[g].siblings])
-        G_dis = {frozenset(s) for s in G.districts()}
+        G_dis = {frozenset(s) for s in G.districts}
 
 
         self.assertEqual({frozenset({"X_2", "Y"}), frozenset({"W"})}, G_dis)

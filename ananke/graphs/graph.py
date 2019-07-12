@@ -30,16 +30,18 @@ class Graph:
         self.ud_edges = set()
 
         # read in directed edges
+        # explicit reference to Graph so that overridden functions
+        # aren't called that make calls to recompute districts etc.
         for parent, child in di_edges:
-            self.add_diedge(parent, child)
+            Graph.add_diedge(self, parent, child)
 
         # read in bidirected edges
         for sib1, sib2 in bi_edges:
-            self.add_biedge(sib1, sib2)
+            Graph.add_biedge(self, sib1, sib2)
 
         # read in undirected edges
         for neb1, neb2 in ud_edges:
-            self.add_udedge(neb1, neb2)
+            Graph.add_udedge(self, neb1, neb2)
 
     def add_vertex(self, name):
         """
