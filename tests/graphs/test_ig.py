@@ -14,60 +14,60 @@ class TestIG(unittest.TestCase):
         ig = IG(admg=admg)
         print(ig.bi_edges)
 
-    def test_insert(self):
-        vertices = ["A", "B", "C"]
-        di_edges = []
-        bi_edges = [("A", "B"), ("B", "C"), ("A", "C")]
+    # def test_insert(self):
+    #     vertices = ["A", "B", "C"]
+    #     di_edges = []
+    #     bi_edges = [("A", "B"), ("B", "C"), ("A", "C")]
+    #
+    #     admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
+    #
+    #     ig = IG(admg=admg)
+    #
+    #     ig.insert(frozenset(["A", "C"]))
+    #
+    #     self.assertEqual(set(ig.vertices),
+    #                      set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
+    #     #self.assertEqual(2, len(ig.di_edges))
+    #
+    #     ig.insert(frozenset(["A", "B", "C"]))
+    #     self.assertEqual(set(ig.vertices), set(
+    #         [frozenset(["A", "B", "C"]), frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
+    #     #self.assertEqual(4, len(ig.di_edges))
 
-        admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
+    # def test_add_extra_biedges(self):
+    #     vertices = ["A", "B", "C"]
+    #     di_edges = []
+    #     bi_edges = [("A", "B"), ("B", "C"), ("A", "C")]
+    #
+    #     admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
+    #
+    #     ig = IG(admg=admg)
+    #
+    #     ig.insert(frozenset(["A", "C"]))
+    #     ig.add_extra_biedges(frozenset(["A", "C"]))
+    #
+    #     self.assertEqual(set(ig.vertices),
+    #                      set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
+    #     #self.assertEqual(set(ig.district(frozenset(["A", "C"]))),
+    #     #                 set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
 
-        ig = IG(admg=admg)
-
-        ig.insert(frozenset(["A", "C"]))
-
-        self.assertEqual(set(ig.vertices),
-                         set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
-        #self.assertEqual(2, len(ig.di_edges))
-
-        ig.insert(frozenset(["A", "B", "C"]))
-        self.assertEqual(set(ig.vertices), set(
-            [frozenset(["A", "B", "C"]), frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
-        #self.assertEqual(4, len(ig.di_edges))
-
-    def test_add_extra_biedges(self):
-        vertices = ["A", "B", "C"]
-        di_edges = []
-        bi_edges = [("A", "B"), ("B", "C"), ("A", "C")]
-
-        admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
-
-        ig = IG(admg=admg)
-
-        ig.insert(frozenset(["A", "C"]))
-        ig.add_extra_biedges(frozenset(["A", "C"]))
-
-        self.assertEqual(set(ig.vertices),
-                         set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
-        #self.assertEqual(set(ig.district(frozenset(["A", "C"]))),
-        #                 set([frozenset(["A"]), frozenset(["B"]), frozenset(["C"]), frozenset(["A", "C"])]))
-
-    def test_merge_on_three_var_graph(self):
-        vertices = ["A", "B", "C"]
-        di_edges = [("A", "B")]
-        bi_edges = [("B", "C"), ("A", "C")]
-
-        admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
-
-        ig = IG(admg=admg)
-
-        ig.merge(frozenset(["B"]), frozenset(["C"]))
-        self.assertEqual(len(ig.bi_edges), 1)
-        #self.assertEqual(len(ig.di_edges), 3)
-        ig.merge(frozenset(["A"]), frozenset(["C"]))
-        ig.merge(frozenset(["B"]), frozenset(["A", "C"]))
-        ig.merge(frozenset(["A", "B", "C"]), frozenset(["A", "C"]))
-        #self.assertEqual(4, len(ig.di_edges))
-        self.assertEqual(len(ig.bi_edges), 0)
+    # def test_merge_on_three_var_graph(self):
+    #     vertices = ["A", "B", "C"]
+    #     di_edges = [("A", "B")]
+    #     bi_edges = [("B", "C"), ("A", "C")]
+    #
+    #     admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
+    #
+    #     ig = IG(admg=admg)
+    #
+    #     ig.merge(frozenset(["B"]), frozenset(["C"]))
+    #     self.assertEqual(len(ig.bi_edges), 1)
+    #     #self.assertEqual(len(ig.di_edges), 3)
+    #     ig.merge(frozenset(["A"]), frozenset(["C"]))
+    #     ig.merge(frozenset(["B"]), frozenset(["A", "C"]))
+    #     ig.merge(frozenset(["A", "B", "C"]), frozenset(["A", "C"]))
+    #     #self.assertEqual(4, len(ig.di_edges))
+    #     self.assertEqual(len(ig.bi_edges), 0)
 
     def test_get_intrinsic_sets_three_var_graph(self):
         vertices = ["A", "B", "C"]
@@ -90,6 +90,7 @@ class TestIG(unittest.TestCase):
         admg = ADMG(vertices=vertices, bi_edges=bi_edges, di_edges=di_edges)
         ig = IG(admg=admg)
         intrinsic_sets = ig.get_intrinsic_sets()
+        print(intrinsic_sets)
         self.assertEqual({frozenset({"A"}), frozenset({"B"}), frozenset({"C"}),
                           frozenset({"A", "B"}), frozenset({"A", "C"}), frozenset({"B", "C"}),
                           frozenset({"A", "B", "C"})},

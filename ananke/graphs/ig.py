@@ -5,7 +5,8 @@ of an ADMG in polynomial time.
 
 import logging
 from .graph import Graph
-from .dag import DAG
+import itertools
+
 
 logger = logging.getLogger(__name__)
 
@@ -20,87 +21,97 @@ class IG(Graph):
         """
 
         self.admg = admg
-        self.digraph = DAG()
+        super().__init__()
 
         # the IG is initialized with vertices corresponding to
         # reachable closures of singletons (these are guaranteed to be intrinsic)
-        vertices = [frozenset(v) for v in admg.vertices]
-        retained_bi_edges = []
+        for v in admg.vertices:
+            rc = frozenset(self.admg.reachable_closure(v))
+            self.add_vertex(rc)
 
+            # add di/bi edges that fulfill subset relation
+            for i in self.vertices:
 
-        #self.digraph = networkx.DiGraph()
-        rc_vertices = []
-        for v in vertices:
-            print(frozenset(admg.reachable_closure(v)))
-            reachable_closure = frozenset(admg.reachable_closure(v))
+                if i < rc:
+                    self.add_diedge(i, rc)
+                elif rc < i:
+                    self.add_diedge(rc, i)
 
+                if not(i in self.ancestors([rc]) or rc in self.ancestors([i])) and self.bidirected_connected(i, rc):
+                    self.add_biedge(i, rc)
 
-            self.digraph.add_vertex(reachable_closure)
-            rc_vertices.append(reachable_closure)
-        for u, v in admg.bi_edges:
-            u_rc = frozenset(admg.reachable_closure(u))
-            v_rc = frozenset(admg.reachable_closure(v))
-            print("u", u_rc)
-            print("v", v_rc)
-            retained_bi_edges.append((u_rc, v_rc))
+        print(self.di_edges)
+        print(self.bi_edges)
 
-        logger.debug(retained_bi_edges)
+    def bidirected_connected(self, s1, s2):
+        """
+        Check if two sets are bidirected connected in the original ADMG
 
-        super().__init__(vertices=rc_vertices, bi_edges=retained_bi_edges, di_edges=set())
+        :param s1: First set corresponding to a vertex in the IG.
+        :param s2: Second set corresponding to a vertex in the IG.
+        :return: boolean corresponding to connectedness.
+        """
 
-    def insert(self, vertex):
-        for v in set(self.vertices):
-            if v.issubset(vertex):
-                self.digraph.add_diedge(v, vertex)
-            elif v.issuperset(vertex):
-                self.digraph.add_diedge(vertex, v)
-
-        digraph_edges = self.digraph.edges()
-        self.add_vertex(vertex)
-        for u, v in self.di_edges.copy():
-            if (u, v) not in digraph_edges:
-                self.delete_diedge(u, v)
-
-        for u, v in digraph_edges:
-            self.add_diedge(u, v)
-
-    def find_candidate_neighbors(self, v, vertex):
-        for node in v:
-            for i in self.admg.district(node):
-                if i in vertex and v not in self.ancestors([vertex]):
-                    return True
+        possible_endpoints = itertools.product(*[s1, s2])
+        for combination in possible_endpoints:
+            if self.admg.has_biedge(*combination):
+                return True
         return False
 
-    def add_extra_biedges(self, vertex):
+    def maintain_subset_relation(self, s):
+        """
+        Add di edges to a newly inserted vertex s so as to maintain
+        the subset relation.
+        :param s: Frozenset corresponding to the new vertex.
+        :return: None.
+        """
+
+        for i in self.vertices:
+            if i < s:
+                self.add_diedge(i, s)
+            elif s < i:
+                self.add_diedge(s, i)
+
+    def add_new_biedges(self, s):
         """
         Naive O(|I(G)| choose 2) implementation. Must ensure that biedges not added to ancestors.
-        :param vertex:
-        :return:
+
+        :param s: Frozen set corresponding to the new vertex.
+        :return: None.
         """
-        candidate_neighbours = set()
-        for v in set(self.vertices):
-            if self.find_candidate_neighbors(v, vertex):
-                candidate_neighbours.add(v)
 
-        for c in candidate_neighbours:
-            self.add_biedge(c, vertex)
+        ancestors_s = self.ancestors([s])
 
-    def merge(self, vertex1, vertex2):
+        for i in self.vertices:
 
-        s3c = set(vertex1)
-        s3c.update(set(vertex2))
+            if i not in ancestors_s and self.bidirected_connected(i, s):
+                self.add_biedge(i, s)
+
+    def merge(self, s1, s2):
+        """
+        Merge operation on two sets s1 and s2 to give a (possibly)
+        new intrinsic set s3.
+
+        :param s1: First set corresponding to a vertex in the IG.
+        :param s2: Second set corresponding to a vertex in the IG.
+        :return: None.
+        """
+
+        s3c = set(s1)
+        s3c.update(set(s2))
         s3 = frozenset(self.admg.reachable_closure(s3c))
+        self.delete_biedge(s1, s2)
 
-        self.delete_biedge(vertex1, vertex2)
+        # if the intrinsic set already exists, ignore it
+        if s3 in self.vertices:
+            return
 
-        if s3 in set(self.vertices):
-            return None
-        else:
-            self.insert(s3)
+        # add the vertex and add di edges
+        self.add_vertex(s3)
+        self.maintain_subset_relation(s3)
 
-        self.add_extra_biedges(vertex=s3)
-
-        return None
+        # add new bi edges to the added vertex
+        self.add_new_biedges(s3)
 
     def get_intrinsic_sets(self):
         """
@@ -110,9 +121,12 @@ class IG(Graph):
 
         :return:
         """
-        #print(self.bi_edges)
+
+        # keep merging vertices that are connected
+        # by bidirected edges to obtain new intrinsic
+        # sets until there are none left
         while len(self.bi_edges) > 0:
-            #print(self.bi_edges)
+
             u, v = next(iter(self.bi_edges))
             self.merge(u, v)
 

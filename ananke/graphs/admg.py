@@ -109,7 +109,7 @@ class ADMG(SG):
 
                 # Check if any nodes are reachable via -> AND <->
                 # by looking at intersection of district and descendants
-                if len(G.descendants(v).intersection(G.district(v))) == 1:
+                if len(G.descendants([v]).intersection(G.district(v))) == 1:
                     G.fix(v)
                     remaining_vertices.remove(v)
                     fixing_order.append(v)

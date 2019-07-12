@@ -109,6 +109,19 @@ class Graph:
         self.vertices[sib1].siblings.remove(self.vertices[sib2])
         self.vertices[sib2].siblings.remove(self.vertices[sib1])
 
+    def has_biedge(self, sib1, sib2):
+        """
+        Check existence of a bidirected edge.
+
+        :param sib1: endpoint 1 of edge.
+        :param sib2: endpoint 2 of edge.
+        :return: boolean result of existence.
+        """
+
+        if (sib1, sib2) in self.bi_edges or (sib2, sib1) in self.bi_edges:
+            return True
+        return False
+
     def add_udedge(self, neb1, neb2):
         """
         Add an undirected edge to the graph.
