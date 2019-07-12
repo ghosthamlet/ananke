@@ -6,7 +6,6 @@ import copy
 import os
 
 
-
 class NotIdentifiedError(Exception):
     """
     Custom error for when desired functional is not identified.
@@ -224,38 +223,3 @@ class OneLineGZID:
             is_id = True
 
         return is_id
-
-
-#if __name__ == '__main__':
-#    # ID test
-#    vertices = ['A', 'B', 'C', 'D', 'Y']
-#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-#    G = ADMG(vertices, di_edges, bi_edges)
-#    one_id = OneLineID(G, ['A'], ['Y'])
-#    one_id.draw_swig(direction='LR').render()
-#    # G.draw(direction='LR').render()
-#    print(one_id.ystar)
-#    print(one_id.id())
-#    print(one_id.functional())
-#    one_id.export_intermediates()
-#
-#    vertices = ["A", "D", "C", "Y"]
-#    di_edges = [('D', 'Y'), ('D', 'A'), ('A', 'Y'), ('C', 'A'), ('C', 'Y')]
-#    bi_edges = []
-#    G = ADMG(vertices, di_edges, bi_edges)
-#    one_id = OneLineID(G, ['A'], ['Y', 'A'])
-#    one_id.draw_swig(direction='LR').render()
-#    # G.draw(direction='LR').render()
-#    print(one_id.ystar)
-#    print(one_id.id())
-#    print(one_id.functional())
-#
-#    # non ID test
-#    vertices = ['A', 'B', 'C', 'D', 'Y']
-#    di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
-#    bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
-#    G = ADMG(vertices, di_edges, bi_edges)
-#    one_id = OneLineID(G, ['A', 'B'], ['Y'])
-#    print(one_id.id())
-#    print(one_id.functional())

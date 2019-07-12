@@ -120,6 +120,8 @@ class TestIG(unittest.TestCase):
         truth = {frozenset({'D'}), frozenset({'C', 'A'}), frozenset({'Y'}), frozenset({'D', 'B'}), frozenset({'B'}), frozenset({'A'}), frozenset({'C', 'Y', 'A'})}
         self.assertEqual(truth, intrinsic_sets)
         print(intrinsic_sets)
+        print('-'*20)
+        print(ig.get_heads_tails())
 
 
 if __name__ == '__main__':

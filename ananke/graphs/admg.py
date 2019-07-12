@@ -58,7 +58,8 @@ class ADMG(SG):
         Obtain reachable closure for a set of vertices.
 
         :param vertices: set of vertices to get reachable closure for.
-        :return: set corresponding to the reachable closure.
+        :return: set corresponding to the reachable closure, the fixing order for vertices
+                 outside of the closure, and the CADMG corresponding to the closure.
         """
         remaining_vertices = set(self.vertices) - set(vertices)
         fixing_order = []
@@ -78,7 +79,7 @@ class ADMG(SG):
 
         reachable_closure = (set(G.vertices) - set(fixing_order))
 
-        return reachable_closure
+        return reachable_closure, fixing_order, G
 
     def fixable(self, vertices):
         """

@@ -41,7 +41,7 @@ class TestADMG(unittest.TestCase):
         di_edges = [("A", "B"), ("C", "B"), ("C", "A")]
         bi_edges = [("A", "B")]
         G = ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
-        cl = G.reachable_closure(["B"])
+        cl, _, _ = G.reachable_closure(["B"])
         self.assertEqual({"A", "B"}, set(cl))
 
 

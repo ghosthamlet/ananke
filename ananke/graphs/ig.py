@@ -21,13 +21,18 @@ class IG(Graph):
         """
 
         self.admg = admg
+        self.iset_cadmg_map = {} # dictionary mapping intrinsic sets to the reachable CADMG
         super().__init__()
 
         # the IG is initialized with vertices corresponding to
         # reachable closures of singletons (these are guaranteed to be intrinsic)
         for v in admg.vertices:
-            rc = frozenset(self.admg.reachable_closure(v))
+
+            # TODO: Jaron, the fixing order can be obtained here from the _
+            rc, _, G = self.admg.reachable_closure(v)
+            rc = frozenset(rc)
             self.add_vertex(rc)
+            self.iset_cadmg_map[rc] = G
 
             # add di/bi edges that fulfill subset relation
             for i in self.vertices:
@@ -39,9 +44,6 @@ class IG(Graph):
 
                 if not(i in self.ancestors([rc]) or rc in self.ancestors([i])) and self.bidirected_connected(i, rc):
                     self.add_biedge(i, rc)
-
-        print(self.di_edges)
-        print(self.bi_edges)
 
     def bidirected_connected(self, s1, s2):
         """
@@ -99,7 +101,9 @@ class IG(Graph):
 
         s3c = set(s1)
         s3c.update(set(s2))
-        s3 = frozenset(self.admg.reachable_closure(s3c))
+        # TODO: Jaron, the fixing order can be obtained here from the _
+        s3, _, G = self.admg.reachable_closure(s3c)
+        s3 = frozenset(s3)
         self.delete_biedge(s1, s2)
 
         # if the intrinsic set already exists, ignore it
@@ -108,6 +112,7 @@ class IG(Graph):
 
         # add the vertex and add di edges
         self.add_vertex(s3)
+        self.iset_cadmg_map[s3] = G
         self.maintain_subset_relation(s3)
 
         # add new bi edges to the added vertex
@@ -131,3 +136,37 @@ class IG(Graph):
             self.merge(u, v)
 
         return set(self.vertices)
+
+    def get_heads_tails(self):
+        """
+        Iterate through all intrinsic sets and get the heads and tails.
+
+        :return: List of tuples corresponding to (head, tail).
+        """
+
+        # make sure that the graph is fully initialized
+        try:
+            assert len(self.bi_edges) == 0
+
+        except AssertionError:
+            print("There are still bidirected edges indicating more intrinsic sets can be merged")
+
+        heads_and_tails = []
+        # go through each intrinsic set
+        for iset in self.vertices:
+
+            # look at the reachable CADMG to determine head/tail
+            reachable_cadmg = self.iset_cadmg_map[iset]
+            head = set()
+
+            # heads are vertices that are childless in the corresponding reachable CADMG
+            for v in iset:
+                if len(reachable_cadmg.children([v])) == 0:
+                    head.add(v)
+
+            # tail is the remaining intrinsic set + parents of the intrinsic set
+            tail = set(iset - head)
+            tail = tail.union(reachable_cadmg.parents(iset))
+            heads_and_tails.append((head, tail))
+
+        return heads_and_tails
