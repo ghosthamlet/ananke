@@ -151,6 +151,8 @@ class SG(Graph):
         :return: set corresponding to district.
         """
 
+        if not self._districts:
+            self.districts
         return self._districts[self._district_map[vertex]]
 
     #### BLOCK CODE ####

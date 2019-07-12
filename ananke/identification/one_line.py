@@ -75,7 +75,7 @@ class OneLineID:
         vertices = set(self.graph.vertices)
 
         # check if each p(D | do(V\D) ) corresponding to districts in Gystar is ID
-        for district in self.Gystar.districts():
+        for district in self.Gystar.districts:
 
             fixable, order = self.graph.fixable(vertices - district)
 

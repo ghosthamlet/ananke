@@ -109,7 +109,7 @@ class ADMG(SG):
 
                 # Check if any nodes are reachable via -> AND <->
                 # by looking at intersection of district and descendants
-                if len(G._descendants(v).intersection(G._district(v))) == 1:
+                if len(G.descendants(v).intersection(G.district(v))) == 1:
                     G.fix(v)
                     remaining_vertices.remove(v)
                     fixing_order.append(v)
@@ -225,7 +225,7 @@ def get_intrinsic_sets(graph):
             intrinsic_set = frozenset([var])
             intrinsic.add(intrinsic_set)
             order_dict[intrinsic_set] = order
-    for district in graph.districts():
+    for district in graph.districts:
         # There is possibly a more efficient way of doing this
         for pset in powerset(district, 2):
             fixable, order = graph.fixable(vertices - set(pset) - fixed_vertices)
