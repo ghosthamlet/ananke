@@ -1,5 +1,5 @@
 """
-Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs)
+Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs).
 """
 import copy
 import logging
@@ -14,11 +14,11 @@ class ADMG(SG):
 
     def __init__(self, vertices, di_edges=set(), bi_edges=set(), **kwargs):
         """
-        Constructor
+        Constructor.
 
-        :param vertices: iterable of names of vertices
-        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y
-        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
+        :param vertices: iterable of names of vertices.
+        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y.
+        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y.
         """
 
         # initialize vertices in ADMG
@@ -27,10 +27,10 @@ class ADMG(SG):
 
     def fix(self, vertices):
         """
-        Perform the graphical operation of fixing on a set of vertices
+        Perform the graphical operation of fixing on a set of vertices.
 
-        :param vertices: Name(s) of vertices to be fixed
-        :return: None
+        :param vertices: name(s) of vertices to be fixed.
+        :return: None.
         """
 
         if isinstance(vertices, str):
@@ -53,12 +53,12 @@ class ADMG(SG):
         # recompute the districts as they may have changed
         self._calculate_districts()
 
-    def get_reachable_closure(self, vertices):
+    def reachable_closure(self, vertices):
         """
         Obtain reachable closure for a set of vertices.
 
-        :param vertices:
-        :return:
+        :param vertices: set of vertices to get reachable closure for.
+        :return: set corresponding to the reachable closure.
         """
         remaining_vertices = set(self.vertices) - set(vertices)
         fixing_order = []
@@ -80,14 +80,13 @@ class ADMG(SG):
 
         return reachable_closure
 
-
     def fixable(self, vertices):
         """
         Check if there exists a valid fixing order and return such
-        an order in the form of a list, else returns an empty list
+        an order in the form of a list, else returns an empty list.
 
-        :param vertices:
-        :return: A boolean indicating whether the set was fixable and a valid fixing order as a stack
+        :param vertices: set of vertices to check fixability for.
+        :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.
         """
 
         # if it's just a single vertex we're checking it's easy
@@ -124,12 +123,12 @@ class ADMG(SG):
 
     def m_connecting_paths(self, x, y, Z=set()):
         """
-        Get all m-connecting paths between x and y after conditioning on Z using BFS
+        Get all m-connecting paths between x and y after conditioning on Z using BFS.
 
-        :param x: name of vertex x
-        :param y: name of vertex y
-        :param Z: name of set of vertices Z being conditioned on
-        :return: list of m-connecting paths
+        :param x: name of vertex x.
+        :param y: name of vertex y.
+        :param Z: name of set of vertices Z being conditioned on.
+        :return: list of m-connecting paths.
         """
 
         queue = [(self.vertices[x], [self.vertices[x]], [])]
@@ -174,10 +173,10 @@ class ADMG(SG):
     def subgraph(self, vertices):
         """
         Return a subgraph on the given vertices (i.e. a graph containing only
-        the specified vertices and edges between them)
+        the specified vertices and edges between them).
 
-        :param vertices: set containing names of vertices in the subgraph
-        :return: a new Graph object corresponding to the subgraph
+        :param vertices: set containing names of vertices in the subgraph.
+        :return: a new Graph object corresponding to the subgraph.
         """
 
         # keep only edges between vertices of the subgraph
@@ -192,11 +191,9 @@ class ADMG(SG):
 
         return subgraph
 
-
-
     def get_intrinsic_sets(self):
         """
-        Computes intrinsic sets (and returns the fixing order for each intrinsic set)
+        Computes intrinsic sets (and returns the fixing order for each intrinsic set).
 
 
         :return:

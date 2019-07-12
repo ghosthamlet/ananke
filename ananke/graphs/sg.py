@@ -1,5 +1,5 @@
 """
-Class for segregated graphs (SGs)
+Class for segregated graphs (SGs).
 """
 import copy
 import logging
@@ -15,10 +15,10 @@ class SG(Graph):
         """
         Constructor
 
-        :param vertices: iterable of names of vertices
-        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y
-        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
-        :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y
+        :param vertices: iterable of names of vertices.
+        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y.
+        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y.
+        :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y.
         """
 
         # initialize vertices in SG
@@ -44,9 +44,9 @@ class SG(Graph):
     #### VALID GRAPH CHECKS ####
     def _acyclic(self):
         """
-        Checks if the graph is directed and partially directed cycle free
+        Checks if the graph is directed and partially directed cycle free.
 
-        :return: boolean indicator whether graph is acyclic
+        :return: boolean indicator whether graph is acyclic.
         """
 
         # TODO: check correctness
@@ -58,10 +58,10 @@ class SG(Graph):
 
     def _dfs_cycle(self, vertex):
         """
-        Check if there exists a cyclic path starting at a given vertex
+        Check if there exists a cyclic path starting at a given vertex.
 
-        :param vertex: vertex object to start DFS at
-        :return: boolean indicating whether there is a cycle
+        :param vertex: vertex object to start DFS at.
+        :return: boolean indicating whether there is a cycle.
         """
 
         visit_stack = [vertex]
@@ -88,9 +88,9 @@ class SG(Graph):
 
     def _segregated(self):
         """
-        Checks if graph is segregated i.e. lacks Z <-> X - Y
+        Checks if graph is segregated i.e. lacks Z <-> X - Y.
 
-        :return: boolean indicator whether graph is segregated
+        :return: boolean indicator whether graph is segregated.
         """
 
         # TODO: is this enough to check segregated property?
@@ -102,9 +102,9 @@ class SG(Graph):
     #### DISTRICT CODE ####
     def _calculate_districts(self):
         """
-        Update districts in the graph
+        Update districts in the graph.
 
-        :return: None
+        :return: None.
         """
 
         self._district_map = {}
@@ -123,9 +123,9 @@ class SG(Graph):
 
     def _dfs_district(self, vertex, district_id):
         """
-        DFS from vertex to discover its district
+        DFS from vertex to discover its district.
 
-        :param vertex: vertex object to start the DFS at
+        :param vertex: vertex object to start the DFS at..
         :param district_id: int corresponding to district ID
 
         :return: None
@@ -139,29 +139,29 @@ class SG(Graph):
 
     def _district(self, vertex):
         """
-        Returns the district of a vertex
+        Returns the district of a vertex.
 
-        :param vertex: vertex object
-        :return: set corresponding to district
+        :param vertex: vertex object.
+        :return: set corresponding to district.
         """
 
         return self._districts[self._district_map[vertex]]
 
     def district(self, vertex):
         """
-        Returns the district of a vertex
+        Returns the district of a vertex.
 
-        :param vertex: name of the vertex
-        :return: set corresponding to district
+        :param vertex: name of the vertex.
+        :return: set corresponding to district.
         """
         district = self._districts[self._district_map[self.vertices[vertex]]]
         return {v.name for v in district}
 
     def districts(self):
         """
-        Returns list of all districts in the graph
+        Returns list of all districts in the graph.
 
-        :return: list of lists corresponding to districts in the graph
+        :return: list of lists corresponding to districts in the graph.
         """
 
         districts = []
@@ -172,9 +172,9 @@ class SG(Graph):
     #### BLOCK CODE ####
     def _calculate_blocks(self):
         """
-        Update blocks in the graph
+        Update blocks in the graph.
 
-        :return: None
+        :return: None.
         """
 
         self._block_map = {}
@@ -193,10 +193,10 @@ class SG(Graph):
 
     def _dfs_block(self, vertex, block_id):
         """
-        DFS from vertex to discover its block
+        DFS from vertex to discover its block.
 
-        :param vertex: vertex object to start the DFS at
-        :param block_id: int corresponding to block ID
+        :param vertex: vertex object to start the DFS at.
+        :param block_id: int corresponding to block ID.
 
         :return: None
         """
@@ -209,20 +209,20 @@ class SG(Graph):
 
     def _block(self, vertex):
         """
-        Returns the block of a vertex
+        Returns the block of a vertex.
 
-        :param vertex: vertex object
-        :return: set corresponding to block
+        :param vertex: vertex object.
+        :return: set corresponding to block.
         """
 
         return self._blocks[self._block_map[vertex]]
 
     def block(self, vertex):
         """
-        Returns the block of a vertex
+        Returns the block of a vertex.
 
-        :param vertex: name of the vertex
-        :return: set corresponding to block
+        :param vertex: name of the vertex.
+        :return: set corresponding to block.
         """
 
         block = self._block[self._block_map[self.vertices[vertex]]]
@@ -230,9 +230,9 @@ class SG(Graph):
 
     def blocks(self):
         """
-        Returns list of all blocks in the graph
+        Returns list of all blocks in the graph.
 
-        :return: list of lists corresponding to blocks in the graph
+        :return: list of lists corresponding to blocks in the graph.
         """
 
         blocks = []
@@ -242,12 +242,12 @@ class SG(Graph):
 
     def add_biedge(self, sib1, sib2, recompute=True):
         """
-        Add a bidirected edge to the graph. Overridden to recompute districts
+        Add a bidirected edge to the graph. Overridden to recompute districts.
 
-        :param sib1: head1 of edge
-        :param sib2: head2 of edge
-        :param recompute: boolean indicating whether districts should be recomputed
-        :return: None
+        :param sib1: endpoint 1 of edge.
+        :param sib2: endpoint 2 of edge.
+        :param recompute: boolean indicating whether districts should be recomputed.
+        :return: None.
         """
 
         super().add_biedge(sib1, sib2)
@@ -255,12 +255,12 @@ class SG(Graph):
 
     def delete_biedge(self, sib1, sib2, recompute=True):
         """
-        Delete given bidirected edge from the graph. Overridden to recompute districts
+        Delete given bidirected edge from the graph. Overridden to recompute districts.
 
-        :param sib1: head1 of edge
-        :param sib2: head2 of edge
-        :param recompute: boolean indicating whether districts should be recomputed
-        :return: None
+        :param sib1: endpoint 1 of edge.
+        :param sib2: endpoint 2 of edge.
+        :param recompute: boolean indicating whether districts should be recomputed.
+        :return: None.
         """
 
         super().delete_biedge(sib1, sib2)
@@ -270,10 +270,10 @@ class SG(Graph):
         """
         Add an undirected edge to the graph. Overridden to recompute blocks
 
-        :param neb1: tail1 of edge
-        :param neb2: tail2 of edge
-        :param recompute: boolean indicating whether blocks should be recomputed
-        :return: None
+        :param neb1: endpoint 1 of edge.
+        :param neb2: endpoint 2 of edge.
+        :param recompute: boolean indicating whether blocks should be recomputed.
+        :return: None.
         """
 
         super().add_udedge(neb1, neb2)
@@ -281,12 +281,12 @@ class SG(Graph):
 
     def delete_udedge(self, neb1, neb2, recompute=True):
         """
-        Delete given undirected edge from the graph. Overridden to recompute blocks
+        Delete given undirected edge from the graph. Overridden to recompute blocks.
 
-        :param neb1: tail1 of edge
-        :param neb2: tail2 of edge
-        :param recompute: boolean indicating whether blocks should be recomputed
-        :return: None
+        :param neb1: endpoint 1 of edge.
+        :param neb2: endpoint 2 of edge.
+        :param recompute: boolean indicating whether blocks should be recomputed.
+        :return: None.
         """
 
         super().delete_udedge(neb1, neb2)
@@ -294,10 +294,10 @@ class SG(Graph):
 
     def fix(self, vertices):
         """
-        Perform the graphical operation of fixing on a set of vertices
+        Perform the graphical operation of fixing on a set of vertices.
 
-        :param vertices: Name(s) of vertices to be fixed
-        :return: None
+        :param vertices: name(s) of vertices to be fixed.
+        :return: None.
         """
 
         if isinstance(vertices, str):
@@ -330,10 +330,10 @@ class SG(Graph):
     def fixable(self, vertices):
         """
         Check if there exists a valid fixing order and return such
-        an order in the form of a list, else returns an empty list
+        an order in the form of a list, else returns an empty list.
 
-        :param vertices:
-        :return: A boolean indicating whether the set was fixable and a valid fixing order as a stack
+        :param vertices: set of vertices to check fixability for.
+        :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.
         """
 
         # if it's just a single vertex we're checking it's easy

@@ -1,5 +1,5 @@
 """
-Class for one line ID
+Class for one line ID.
 """
 
 import copy
@@ -9,7 +9,7 @@ import os
 
 class NotIdentifiedError(Exception):
     """
-    Custom error for when desired functional is not identified
+    Custom error for when desired functional is not identified.
     """
     pass
 
@@ -18,11 +18,11 @@ class OneLineID:
 
     def __init__(self, graph, interventions, outcomes):
         """
-        Constructor
+        Constructor.
 
-        :param graph: Graph on which the query will run
-        :param interventions: iterable of names of variables being intervened on
-        :param outcomes: iterable of names of variables whose outcomes we are interested in
+        :param graph: Graph on which the query will run.
+        :param interventions: iterable of names of variables being intervened on.
+        :param outcomes: iterable of names of variables whose outcomes we are interested in.
         """
 
         self.graph = graph
@@ -37,9 +37,9 @@ class OneLineID:
 
     def draw_swig(self, direction=None):
         """
-        Draw the proper SWIG corresponding to the causal query
+        Draw the proper SWIG corresponding to the causal query.
 
-        :return: dot language representation of the SWIG
+        :return: dot language representation of the SWIG.
         """
 
         swig = copy.deepcopy(self.graph)
@@ -66,9 +66,9 @@ class OneLineID:
 
     def id(self):
         """
-        Run one line ID for the query
+        Run one line ID for the query.
 
-        :return: Returns True if p(Y(a)) is ID, else False
+        :return: Returns True if p(Y(a)) is ID, else False.
         """
 
         self.fixing_orders = {}
@@ -90,7 +90,7 @@ class OneLineID:
     # TODO try to reduce functional
     def functional(self):
         """
-        Print the functional for identification
+        Print the functional for identification.
 
         :return:
         """
@@ -113,10 +113,10 @@ class OneLineID:
     # TODO export intermediate CADMGs for visualization
     def export_intermediates(self, folder="intermediates"):
         """
-        Export intermediate CADMGs obtained during fixing
+        Export intermediate CADMGs obtained during fixing.
 
-        :param folder: string specifying path to folder where the files will be written
-        :return: None
+        :param folder: string specifying path to folder where the files will be written.
+        :return: None.
         """
 
         # make the folder if it doesn't exist

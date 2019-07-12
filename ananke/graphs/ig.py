@@ -1,7 +1,10 @@
+"""
+Class for a mixed graph used to compute intrinsic sets of an ADMG
+in polynomial time.
+"""
+
 import logging
-
 import networkx
-
 from .admg import ADMG
 
 logger = logging.getLogger(__name__)
@@ -18,15 +21,15 @@ class IG(ADMG):
         self.digraph = networkx.DiGraph()
         rc_vertices = []
         for v in vertices:
-            print(frozenset(admg.get_reachable_closure(v)))
-            reachable_closure = frozenset(admg.get_reachable_closure(v))
+            print(frozenset(admg.reachable_closure(v)))
+            reachable_closure = frozenset(admg.reachable_closure(v))
 
 
             self.digraph.add_node(reachable_closure)
             rc_vertices.append(reachable_closure)
         for u, v in admg.bi_edges:
-            u_rc = frozenset(admg.get_reachable_closure(u))
-            v_rc = frozenset(admg.get_reachable_closure(v))
+            u_rc = frozenset(admg.reachable_closure(u))
+            v_rc = frozenset(admg.reachable_closure(v))
             print("u", u_rc)
             print("v", v_rc)
             retained_bi_edges.append((u_rc, v_rc))
@@ -76,7 +79,7 @@ class IG(ADMG):
 
         s3c = set(vertex1)
         s3c.update(set(vertex2))
-        s3 = frozenset(self.admg.get_reachable_closure(s3c))
+        s3 = frozenset(self.admg.reachable_closure(s3c))
 
         self.delete_biedge(vertex1, vertex2)
 

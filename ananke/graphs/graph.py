@@ -1,5 +1,5 @@
 """
-Base class for all graphs
+Base class for all graphs.
 
 TODO: Add error checking
 """
@@ -12,12 +12,12 @@ class Graph:
 
     def __init__(self, vertices, di_edges=set(), bi_edges=set(), ud_edges=set(), **kwargs):
         """
-        Constructor
+        Constructor.
 
-        :param vertices: iterable of names of vertices
-        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y
-        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
-        :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y
+        :param vertices: iterable of names of vertices.
+        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -> Y.
+        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y.
+        :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y.
         """
         assert not kwargs, "Unrecognised kwargs: {}".format(kwargs)
 
@@ -43,21 +43,21 @@ class Graph:
 
     def add_vertex(self, name):
         """
-        Add a vertex to the graph
+        Add a vertex to the graph.
 
-        :param name: name of vertex
-        :return: None
+        :param name: name of vertex.
+        :return: None.
         """
 
         self.vertices[name] = Vertex(name)
 
     def add_diedge(self, parent, child):
         """
-        Add a directed edge to the graph
+        Add a directed edge to the graph.
 
-        :param parent: tail of edge
-        :param child: head of edge
-        :return: None
+        :param parent: tail of edge.
+        :param child: head of edge.
+        :return: None.
         """
 
         self.di_edges.add((parent, child))
@@ -66,11 +66,11 @@ class Graph:
 
     def delete_diedge(self, parent, child):
         """
-        Deleted given directed edge from the graph
+        Deleted given directed edge from the graph.
 
-        :param parent: tail of edge
-        :param child: head of edge
-        :return: None
+        :param parent: tail of edge.
+        :param child: head of edge.
+        :return: None.
         """
 
         self.di_edges.remove((parent, child))
@@ -79,11 +79,11 @@ class Graph:
 
     def add_biedge(self, sib1, sib2):
         """
-        Add a bidirected edge to the graph
+        Add a bidirected edge to the graph.
 
-        :param sib1: head1 of edge
-        :param sib2: head2 of edge
-        :return: None
+        :param sib1: endpoint 1 of edge.
+        :param sib2: endpoint 2 of edge.
+        :return: None.
         """
 
         self.bi_edges.add((sib1, sib2))
@@ -92,11 +92,11 @@ class Graph:
 
     def delete_biedge(self, sib1, sib2):
         """
-        Delete given bidirected edge from the graph
+        Delete given bidirected edge from the graph.
 
-        :param sib1: head1 of edge
-        :param sib2: head2 of edge
-        :return: None
+        :param sib1: endpoint 1 of edge.
+        :param sib2: endpoint 2 of edge.
+        :return: None.
         """
 
         try:
@@ -109,11 +109,11 @@ class Graph:
 
     def add_udedge(self, neb1, neb2):
         """
-        Add an undirected edge to the graph
+        Add an undirected edge to the graph.
 
-        :param neb1: tail1 of edge
-        :param neb2: tail2 of edge
-        :return: None
+        :param neb1: endpoint 1 of edge.
+        :param neb2: endpoint 2 of edge.
+        :return: None.
         """
 
         self.ud_edges.add((neb1, neb2))
@@ -122,11 +122,11 @@ class Graph:
 
     def delete_udedge(self, neb1, neb2):
         """
-        Delete given undirected edge from the graph
+        Delete given undirected edge from the graph.
 
-        :param neb1: tail1 of edge
-        :param neb2: tail2 of edge
-        :return: None
+        :param neb1: endpoint 1 of edge.
+        :param neb2: endpoint 2 of edge.
+        :return: None.
         """
 
         try:
@@ -140,10 +140,10 @@ class Graph:
     #### GENEALOGICAL HELPERS ####
     def parents(self, vertices):
         """
-        Get parents of a vertex or set of vertices
+        Get parents of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of parents
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of parents.
         """
 
         if isinstance(vertices, str):
@@ -157,10 +157,10 @@ class Graph:
 
     def children(self, vertices):
         """
-        Get children of a vertex or set of vertices
+        Get children of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of children
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of children.
         """
 
         if isinstance(vertices, str):
@@ -174,10 +174,10 @@ class Graph:
 
     def neighbors(self, vertices):
         """
-        Get neighbors of a vertex or set of vertices
+        Get neighbors of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of neighbors
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of neighbors.
         """
 
         if isinstance(vertices, str):
@@ -191,10 +191,10 @@ class Graph:
 
     def siblings(self, vertices):
         """
-        Get siblings of a vertex or set of vertices
+        Get siblings of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of neighbors
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of neighbors.
         """
 
         if isinstance(vertices, str):
@@ -208,10 +208,10 @@ class Graph:
 
     def _ancestors(self, vertices):
         """
-        Get the ancestors of a vertex or set of vertices
+        Get the ancestors of a vertex or set of vertices.
 
-        :param vertices: single vertex objects or iterable of vertex objects to find ancestors for
-        :return: set of ancestors
+        :param vertices: single vertex objects or iterable of vertex objects to find ancestors for.
+        :return: set of ancestors.
         """
 
         ancestors = set()
@@ -229,10 +229,10 @@ class Graph:
 
     def ancestors(self, vertices):
         """
-        Get ancestors of a vertex or set of vertices
+        Get ancestors of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of ancestors
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of ancestors.
         """
 
         if isinstance(vertices, str):
@@ -242,10 +242,10 @@ class Graph:
 
     def _descendants(self, vertices):
         """
-        Get the descendants of a vertex or set of vertices
+        Get the descendants of a vertex or set of vertices.
 
-        :param vertices: single vertex objects or iterable of vertex objects to find descendants for
-        :return: set of descendants
+        :param vertices: single vertex objects or iterable of vertex objects to find descendants for.
+        :return: set of descendants.
         """
 
         descendants = set()
@@ -263,10 +263,10 @@ class Graph:
 
     def descendants(self, vertices):
         """
-        Get descendants of a vertex or set of vertices
+        Get descendants of a vertex or set of vertices.
 
-        :param vertices: vertex name or iterable of vertex names
-        :return: set of descendants
+        :param vertices: vertex name or iterable of vertex names.
+        :return: set of descendants.
         """
 
         if isinstance(vertices, str):
@@ -277,10 +277,10 @@ class Graph:
     def subgraph(self, vertices):
         """
         Return a subgraph on the given vertices (i.e. a graph containing only
-        the specified vertices and edges between them)
+        the specified vertices and edges between them).
 
-        :param vertices: set containing names of vertices in the subgraph
-        :return: a new Graph object corresponding to the subgraph
+        :param vertices: set containing names of vertices in the subgraph.
+        :return: a new Graph object corresponding to the subgraph.
         """
 
         # keep only edges between vertices of the subgraph
@@ -298,9 +298,9 @@ class Graph:
 
     def draw(self, direction=None):
         """
-        Visualize the graph
+        Visualize the graph.
 
-        :return : dot language representation of the graph
+        :return : dot language representation of the graph.
         """
         from graphviz import Digraph
 

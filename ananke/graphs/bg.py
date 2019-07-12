@@ -1,5 +1,5 @@
 """
-Class for Bidirected Graphs (BGs)
+Class for Bidirected Graphs (BGs).
 """
 
 
@@ -10,11 +10,10 @@ class BG(ADMG):
 
     def __init__(self, vertices, bi_edges=set(), **kwargs):
         """
-        Constructor
+        Constructor.
 
-        :param vertices: iterable of names of vertices
-        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y
+        :param vertices: iterable of names of vertices.
+        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X <-> Y.
         """
 
-        # initialize vertices
         super().__init__(vertices=vertices, bi_edges=bi_edges, **kwargs)
