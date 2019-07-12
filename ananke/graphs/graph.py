@@ -206,73 +206,49 @@ class Graph:
                     siblings.add(s.name)
             return siblings
 
-    def _ancestors(self, vertices):
+    def ancestors(self, vertices):
         """
         Get the ancestors of a vertex or set of vertices.
 
-        :param vertices: single vertex objects or iterable of vertex objects to find ancestors for.
+        :param vertices: single vertex name or iterable of vertex names to find ancestors for.
         :return: set of ancestors.
         """
 
         ancestors = set()
 
-        if isinstance(vertices, Vertex):
-            visit_stack = [vertices]
+        if isinstance(vertices, str):
+            visit_stack = [self.vertices[vertices]]
         else:
-            visit_stack = list(vertices)
+            visit_stack = list([self.vertices[v] for v in vertices])
+
         while visit_stack:
             v = visit_stack.pop()
-            ancestors.add(v)
+            ancestors.add(v.name)
             visit_stack.extend(p for p in v.parents if p not in ancestors)
 
         return ancestors
 
-    def ancestors(self, vertices):
-        """
-        Get ancestors of a vertex or set of vertices.
-
-        :param vertices: vertex name or iterable of vertex names.
-        :return: set of ancestors.
-        """
-
-        if isinstance(vertices, str):
-            return {a.name for a in self._ancestors(self.vertices[vertices])}
-        else:
-            return {a.name for a in self._ancestors([self.vertices[v] for v in vertices])}
-
-    def _descendants(self, vertices):
+    def descendants(self, vertices):
         """
         Get the descendants of a vertex or set of vertices.
 
-        :param vertices: single vertex objects or iterable of vertex objects to find descendants for.
+        :param vertices: single vertex name or iterable of vertex names to find descendants for.
         :return: set of descendants.
         """
 
         descendants = set()
 
-        if isinstance(vertices, Vertex):
-            visit_stack = [vertices]
+        if isinstance(vertices, str):
+            visit_stack = [self.vertices[vertices]]
         else:
-            visit_stack = list(vertices)
+            visit_stack = list([self.vertices[v] for v in vertices])
+
         while visit_stack:
             v = visit_stack.pop()
-            descendants.add(v)
+            descendants.add(v.name)
             visit_stack.extend(c for c in v.children if c not in descendants)
 
         return descendants
-
-    def descendants(self, vertices):
-        """
-        Get descendants of a vertex or set of vertices.
-
-        :param vertices: vertex name or iterable of vertex names.
-        :return: set of descendants.
-        """
-
-        if isinstance(vertices, str):
-            return {d.name for d in self._descendants(self.vertices[vertices])}
-        else:
-            return {d.name for d in self._descendants([self.vertices[v] for v in vertices])}
 
     def subgraph(self, vertices):
         """
