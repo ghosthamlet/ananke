@@ -1,7 +1,7 @@
 # Ananke
 
 [Ananke](https://en.wikipedia.org/wiki/Ananke) named for the Greek
-primordial goddess necessity and causality, is a python package for
+primordial goddess of necessity and causality, is a python package for
 causal inference using the language of graphical models
 
 ## Installation and Development
@@ -32,4 +32,4 @@ python3 -m pytest tests/graphs/test_admg.py::TestADMG # a particular TestCase in
 python3 -m pytest tests/graphs/test_admg.py::TestADMG::test_obtaining_districts # a particular TestCase method in admg.py
 ```
 
-Continuous integration has been set up to run tests on pushes to the `master` branch. 
+Continuous integration has been set up to run tests on pushes to the `master` branch.
