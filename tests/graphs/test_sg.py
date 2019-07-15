@@ -7,7 +7,7 @@ class TestSG(unittest.TestCase):
         vertices = ['A', 'B', 'C']
         bi_edges = [('A', 'B')]
         ud_edges = [('B', 'C')]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
 
     def test_directed_cycle_graph_raises_error(self):
@@ -15,7 +15,7 @@ class TestSG(unittest.TestCase):
         vertices = ['A', 'B', 'C']
         bi_edges = [('A', 'B')]
         di_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges)
 
     def test_partially_directed_graph_raises_error(self):
@@ -24,7 +24,7 @@ class TestSG(unittest.TestCase):
         bi_edges = []
         ud_edges = [('A', 'B'), ('B', 'C')]
         di_edges = [('C', 'A')]
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             G = SG(vertices, bi_edges=bi_edges, di_edges=di_edges, ud_edges=ud_edges)
 
     def test_sg_does_not_raise_error(self):
@@ -39,7 +39,7 @@ class TestSG(unittest.TestCase):
             bi_edges = []
             ud_edges = [('A', 'B'), ('B', 'C'), ('C', 'A')]
             G = SG(vertices, bi_edges=bi_edges, ud_edges=ud_edges)
-        except AssertionError:
+        except TypeError:
             self.fail("Correctly formed SG raised AssertionError")
 
     def test_that_districts_correct(self):

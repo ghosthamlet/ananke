@@ -23,9 +23,10 @@ class SG(Graph):
         # initialize vertices in SG
         super().__init__(vertices, di_edges=di_edges, bi_edges=bi_edges, ud_edges=ud_edges, **kwargs)
         logger.debug("SG")
-
-        assert self._segregated(), "TypeError: Graph is not segregated"
-        assert self._acyclic(), "TypeError: Graph is not acyclic"
+        if not self._segregated():
+            raise TypeError("Graph is not segregated")
+        if not self._acyclic():
+            raise TypeError("TypeError: Graph is not acyclic")
 
         # a mapping of vertices to their district ids
         # and a list of districts
@@ -151,6 +152,9 @@ class SG(Graph):
 
         if not self._districts:
             self.districts
+        print(vertex)
+        print(list(self._districts))
+        print(list(self._district_map))
         return self._districts[self._district_map[vertex]]
         #return self.districts[self._district_map[vertex]]
 

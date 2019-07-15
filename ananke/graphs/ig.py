@@ -22,28 +22,31 @@ class IG(Graph):
 
         self.admg = admg
         self.iset_cadmg_map = {} # dictionary mapping intrinsic sets to the reachable CADMG
+        self.iset_fixing_order_map = {}
         super().__init__()
 
         # the IG is initialized with vertices corresponding to
         # reachable closures of singletons (these are guaranteed to be intrinsic)
+
         for v in admg.vertices:
+            if not admg.vertices[v].fixed:
+                print("v", v)
+                rc, fixing_order, G = self.admg.reachable_closure([v])
+                rc = frozenset(rc)
+                self.add_vertex(rc)
+                self.iset_cadmg_map[rc] = G
+                self.iset_fixing_order_map[rc] = fixing_order
 
-            # TODO: Jaron, the fixing order can be obtained here from the _
-            rc, _, G = self.admg.reachable_closure(v)
-            rc = frozenset(rc)
-            self.add_vertex(rc)
-            self.iset_cadmg_map[rc] = G
+                # add di/bi edges that fulfill subset relation
+                for i in self.vertices:
 
-            # add di/bi edges that fulfill subset relation
-            for i in self.vertices:
+                    if i < rc:
+                        self.add_diedge(i, rc)
+                    elif rc < i:
+                        self.add_diedge(rc, i)
 
-                if i < rc:
-                    self.add_diedge(i, rc)
-                elif rc < i:
-                    self.add_diedge(rc, i)
-
-                if not(i in self.ancestors([rc]) or rc in self.ancestors([i])) and self.bidirected_connected(i, rc):
-                    self.add_biedge(i, rc)
+                    if not(i in self.ancestors([rc]) or rc in self.ancestors([i])) and self.bidirected_connected(i, rc):
+                        self.add_biedge(i, rc)
 
     def bidirected_connected(self, s1, s2):
         """
@@ -101,8 +104,7 @@ class IG(Graph):
 
         s3c = set(s1)
         s3c.update(set(s2))
-        # TODO: Jaron, the fixing order can be obtained here from the _
-        s3, _, G = self.admg.reachable_closure(s3c)
+        s3, fixing_order, G = self.admg.reachable_closure(s3c)
         s3 = frozenset(s3)
         self.delete_biedge(s1, s2)
 
@@ -113,6 +115,7 @@ class IG(Graph):
         # add the vertex and add di edges
         self.add_vertex(s3)
         self.iset_cadmg_map[s3] = G
+        self.iset_fixing_order_map[s3] = fixing_order
         self.maintain_subset_relation(s3)
 
         # add new bi edges to the added vertex
@@ -122,7 +125,6 @@ class IG(Graph):
         """
         Get all intrinsic sets for given ADMG.
 
-        TODO: How to also obtain fixing orders for each intrinsic set?
 
         :return:
         """

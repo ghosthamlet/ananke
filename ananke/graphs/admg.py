@@ -6,6 +6,7 @@ import logging
 
 from ananke.utils import powerset
 from .sg import SG
+from .ig import IG
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class ADMG(SG):
         logger.debug("ADMG")
 
     def fix(self, vertices):
+        # TODO: there should only be one fixing operation implemented in SG
         """
         Perform the graphical operation of fixing on a set of vertices.
 
@@ -61,7 +63,12 @@ class ADMG(SG):
         :return: set corresponding to the reachable closure, the fixing order for vertices
                  outside of the closure, and the CADMG corresponding to the closure.
         """
-        remaining_vertices = set(self.vertices) - set(vertices)
+        remaining_vertices = set(self.vertices) - set(vertices) - set(v for v in self.vertices if self.vertices[v].fixed)
+        print("vertex", vertices)
+        print("remain", remaining_vertices)
+        #print("remain", remaining_vertices)
+        #print(self.vertices["B"].fixed)
+        #print({v for v in self.vertices if self.vertices[v].fixed})
         fixing_order = []
         fixed = True
         G = copy.deepcopy(self)
@@ -70,14 +77,17 @@ class ADMG(SG):
             fixed = False
 
             for v in remaining_vertices:
-                if len(G.descendants(v).intersection(G.district(v))) == 1:
+                if len(G.descendants([v]).intersection(G.district(v))) == 1:
                     G.fix([v])
                     remaining_vertices.remove(v)
                     fixing_order.append(v)
                     fixed = True
                     break
 
-        reachable_closure = (set(G.vertices) - set(fixing_order))
+        #reachable_closure = set(G.vertices) - set(fixing_order)- set(v for v in self.vertices if self.vertices[v].fixed)
+        print("kappa", [self.vertices[v].fixed for v in self.vertices])
+        print(set(v for v in self.vertices if self.vertices[v].fixed))
+        reachable_closure = set(G.vertices) - set(v for v in G.vertices if G.vertices[v].fixed)
 
         return reachable_closure, fixing_order, G
 
@@ -92,7 +102,7 @@ class ADMG(SG):
 
         # if it's just a single vertex we're checking it's easy
         if isinstance(vertices, str):
-            if len(self.descendants(vertices).intersection(self.district(vertices))) == 1:
+            if len(self.descendants([vertices]).intersection(self.district(vertices))) == 1:
                 return True, [vertices]
             return False, []
 
@@ -199,7 +209,9 @@ class ADMG(SG):
 
         :return:
         """
-        intrinsic_sets, fixing_orders = get_intrinsic_sets(self)
+        ig = IG(copy.deepcopy(self))
+        intrinsic_sets = ig.get_intrinsic_sets()
+        fixing_orders = ig.iset_fixing_order_map
 
         return intrinsic_sets, fixing_orders
 
