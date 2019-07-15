@@ -2,6 +2,6 @@ tests:
   script:
     - apt-get update -qy
     - apt-get install -y python3 python3-pip
-    - apt-get install graphviz
+    - apt-get install -y graphviz
     - pip3 install -r requirements.txt
     - python3 -m pytest tests/
