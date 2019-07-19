@@ -237,10 +237,10 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># imports for the demo
-from ananke.graphs import ADMG
-from ananke.identification import OneLineID
-from ananke.identification import NotIdentifiedError
+<span></span><span class="c1"># imports for the demo</span>
+<span class="kn">from</span> <span class="nn">ananke.graphs</span> <span class="kn">import</span> <span class="n">ADMG</span>
+<span class="kn">from</span> <span class="nn">ananke.identification</span> <span class="kn">import</span> <span class="n">OneLineID</span>
+<span class="kn">from</span> <span class="nn">ananke.identification</span> <span class="kn">import</span> <span class="n">NotIdentifiedError</span>
 </pre></div>
 </div>
 </div>
@@ -252,10 +252,10 @@ from ananke.identification import NotIdentifiedError
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;A&#39;, &#39;C&#39;, &#39;Y&#39;]
-di_edges = [(&#39;C&#39;, &#39;A&#39;), (&#39;C&#39;, &#39;Y&#39;), (&#39;A&#39;, &#39;Y&#39;)]
-backdoor_G = ADMG(vertices, di_edges=di_edges)
-backdoor_G.draw(direction=&#39;LR&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">backdoor_G</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">)</span>
+<span class="n">backdoor_G</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -271,11 +271,11 @@ backdoor_G.draw(direction=&#39;LR&#39;)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>outcomes = [&#39;Y&#39;]
-interventions = [&#39;A&#39;]
-id_pya = OneLineID(graph=backdoor_G, interventions=interventions, outcomes=outcomes)
-print(&#39;Identified =&#39;, id_pya.id(), &#39;; Functional =&#39;, id_pya.functional())
-id_pya.draw_swig(direction=&#39;LR&#39;)
+<span></span><span class="n">outcomes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">interventions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+<span class="n">id_pya</span> <span class="o">=</span> <span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">backdoor_G</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="n">interventions</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="n">outcomes</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identified =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
+<span class="n">id_pya</span><span class="o">.</span><span class="n">draw_swig</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -304,12 +304,12 @@ Identified = True ; Functional = ΣC ΦYA(p(V);G) ΦCA(p(V);G)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;A&#39;, &#39;M&#39;, &#39;Y&#39;]
-di_edges = [(&#39;A&#39;, &#39;M&#39;), (&#39;M&#39;, &#39;Y&#39;)]
-bi_edges = [(&#39;A&#39;, &#39;Y&#39;)]
-frontdoor_G = ADMG(vertices, di_edges=di_edges, bi_edges=bi_edges)
-frontdoor_G.draw(direction=&#39;LR&#39;)
-id_pya.export_intermediates(&#39;frontdoor&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">bi_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">frontdoor_G</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">)</span>
+<span class="n">frontdoor_G</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
+<span class="n">id_pya</span><span class="o">.</span><span class="n">export_intermediates</span><span class="p">(</span><span class="s1">&#39;frontdoor&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -318,11 +318,11 @@ id_pya.export_intermediates(&#39;frontdoor&#39;)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>outcomes = [&#39;Y&#39;]
-interventions = [&#39;A&#39;]
-id_pya = OneLineID(graph=frontdoor_G, interventions=interventions, outcomes=outcomes)
-print(&#39;Identified =&#39;, id_pya.id(), &#39;; Functional =&#39;, id_pya.functional())
-id_pya.draw_swig(direction=&#39;LR&#39;)
+<span></span><span class="n">outcomes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">interventions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+<span class="n">id_pya</span> <span class="o">=</span> <span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">frontdoor_G</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="n">interventions</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="n">outcomes</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identified =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
+<span class="n">id_pya</span><span class="o">.</span><span class="n">draw_swig</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -351,14 +351,14 @@ Identified = True ; Functional = ΣM ΦAY(p(V);G) ΦAM(p(V);G)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;Y&#39;]
-di_edges = [(&#39;A&#39;, &#39;B&#39;), (&#39;A&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;C&#39;), (&#39;C&#39;, &#39;Y&#39;), (&#39;B&#39;, &#39;D&#39;), (&#39;D&#39;, &#39;Y&#39;)]
-bi_edges = [(&#39;A&#39;, &#39;C&#39;), (&#39;B&#39;, &#39;Y&#39;), (&#39;B&#39;, &#39;D&#39;)]
-G = ADMG(vertices, di_edges, bi_edges)
-id_pya = OneLineID(graph=G, interventions=[&#39;A&#39;], outcomes=[&#39;Y&#39;])
-print(&#39;Identified =&#39;, id_pya.id(), &#39;; Functional =&#39;, id_pya.functional())
-id_pya.export_intermediates()
-G.draw(direction=&#39;LR&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">bi_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="p">)</span>
+<span class="n">id_pya</span> <span class="o">=</span> <span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">G</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">],</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identified =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
+<span class="n">id_pya</span><span class="o">.</span><span class="n">export_intermediates</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -383,11 +383,11 @@ Identified = True ; Functional = ΣBCD ΦAC(p(V);G) ΦABDY(p(V);G)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>id_pyab = OneLineID(graph=G, interventions=[&#39;A&#39;, &#39;B&#39;], outcomes=[&#39;Y&#39;])
-try:
-    print(&#39;Identified =&#39;, id_pyab.id(), &#39;; Functional =&#39;, id_pyab.functional())
-except NotIdentifiedError:
-    print(&#39;Not Identified&#39;)
+<span></span><span class="n">id_pyab</span> <span class="o">=</span> <span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">G</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identified =&#39;</span><span class="p">,</span> <span class="n">id_pyab</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pyab</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
+<span class="k">except</span> <span class="n">NotIdentifiedError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Not Identified&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

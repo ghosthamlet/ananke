@@ -246,17 +246,17 @@ we currently support acyclic graphical models i.e., we do not allow for cyclic c
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># imports for this notebook
+<span></span><span class="c1"># imports for this notebook</span>
 
-from ananke import graphs
-from ananke import identification
+<span class="kn">from</span> <span class="nn">ananke</span> <span class="kn">import</span> <span class="n">graphs</span>
+<span class="kn">from</span> <span class="nn">ananke</span> <span class="kn">import</span> <span class="n">identification</span>
 
-vertices = [&#39;A&#39;, &#39;M&#39;, &#39;Y&#39;, &#39;C&#39;]
-edges = [(&#39;A&#39;, &#39;M&#39;), (&#39;M&#39;, &#39;Y&#39;), (&#39;C&#39;, &#39;A&#39;), (&#39;C&#39;, &#39;Y&#39;)]
-dag = graphs.DAG(vertices, edges)
-# the direction LR is just to lay the vertices of the graph out from left to right
-# instead of top to bottom which is the default
-dag.draw(direction=&#39;LR&#39;)
+<span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">dag</span> <span class="o">=</span> <span class="n">graphs</span><span class="o">.</span><span class="n">DAG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+<span class="c1"># the direction LR is just to lay the vertices of the graph out from left to right</span>
+<span class="c1"># instead of top to bottom which is the default</span>
+<span class="n">dag</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -277,11 +277,11 @@ dag.draw(direction=&#39;LR&#39;)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;A&#39;, &#39;M&#39;, &#39;Y&#39;]
-di_edges = [(&#39;A&#39;, &#39;M&#39;), (&#39;M&#39;, &#39;Y&#39;)]
-bi_edges = [(&#39;A&#39;, &#39;Y&#39;)]
-admg = graphs.ADMG(vertices, di_edges=di_edges, bi_edges=bi_edges)
-admg.draw(direction=&#39;LR&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">bi_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)]</span>
+<span class="n">admg</span> <span class="o">=</span> <span class="n">graphs</span><span class="o">.</span><span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">)</span>
+<span class="n">admg</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -299,10 +299,10 @@ admg.draw(direction=&#39;LR&#39;)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>outcomes = [&#39;Y&#39;]
-interventions = [&#39;A&#39;]
-id_pya = identification.OneLineID(graph=admg, interventions=interventions, outcomes=outcomes)
-print(&#39;Identifed =&#39;, id_pya.id(), &#39;; Functional =&#39;, id_pya.functional())
+<span></span><span class="n">outcomes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span>
+<span class="n">interventions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+<span class="n">id_pya</span> <span class="o">=</span> <span class="n">identification</span><span class="o">.</span><span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">admg</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="n">interventions</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="n">outcomes</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identifed =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -321,13 +321,13 @@ depicted as shown below.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;C1&#39;, &#39;A1&#39;, &#39;M1&#39;, &#39;Y1&#39;, &#39;C2&#39;, &#39;A2&#39;, &#39;M2&#39;, &#39;Y2&#39;]
-di_edges = [(&#39;A1&#39;, &#39;M1&#39;), (&#39;M1&#39;, &#39;Y1&#39;), (&#39;C1&#39;, &#39;A1&#39;), (&#39;C1&#39;, &#39;Y1&#39;),
-            (&#39;A2&#39;, &#39;M2&#39;), (&#39;M2&#39;, &#39;Y2&#39;), (&#39;C2&#39;, &#39;A2&#39;), (&#39;C2&#39;, &#39;Y2&#39;),
-            (&#39;M1&#39;, &#39;Y2&#39;), (&#39;M2&#39;, &#39;Y1&#39;)]
-ud_edges = [(&#39;M1&#39;, &#39;M2&#39;)]
-cg = graphs.CG(vertices, di_edges=di_edges, ud_edges=ud_edges)
-cg.draw(direction=&#39;LR&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">,</span> <span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="s1">&#39;A1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="s1">&#39;A2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">)]</span>
+<span class="n">ud_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">)]</span>
+<span class="n">cg</span> <span class="o">=</span> <span class="n">graphs</span><span class="o">.</span><span class="n">CG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">ud_edges</span><span class="o">=</span><span class="n">ud_edges</span><span class="p">)</span>
+<span class="n">cg</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -345,14 +345,14 @@ identification in SGs was provided by <a class="reference external" href="https:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>vertices = [&#39;A1&#39;, &#39;M1&#39;, &#39;Y1&#39;, &#39;A2&#39;, &#39;M2&#39;, &#39;Y2&#39;]
-di_edges = [(&#39;A1&#39;, &#39;M1&#39;), (&#39;M1&#39;, &#39;Y1&#39;),
-            (&#39;A2&#39;, &#39;M2&#39;), (&#39;M2&#39;, &#39;Y2&#39;),
-            (&#39;M1&#39;, &#39;Y2&#39;), (&#39;M2&#39;, &#39;Y1&#39;)]
-ud_edges = [(&#39;M1&#39;, &#39;M2&#39;)]
-bi_edges = [(&#39;A1&#39;, &#39;Y1&#39;), (&#39;A2&#39;, &#39;Y2&#39;)]
-sg = graphs.SG(vertices, di_edges=di_edges, ud_edges=ud_edges, bi_edges=bi_edges)
-sg.draw(direction=&#39;LR&#39;)
+<span></span><span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">,</span> <span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">]</span>
+<span class="n">di_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">)]</span>
+<span class="n">ud_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">)]</span>
+<span class="n">bi_edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;Y1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;A2&#39;</span><span class="p">,</span> <span class="s1">&#39;Y2&#39;</span><span class="p">)]</span>
+<span class="n">sg</span> <span class="o">=</span> <span class="n">graphs</span><span class="o">.</span><span class="n">SG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">ud_edges</span><span class="o">=</span><span class="n">ud_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">)</span>
+<span class="n">sg</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;LR&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -370,10 +370,10 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># a graph of the hierarchy of graphs
-vertices = [&#39;SG&#39;, &#39;ADMG&#39;, &#39;CG&#39;, &#39;DAG&#39;, &#39;BG&#39;, &#39;UG&#39;]
-edges = [(&#39;SG&#39;, &#39;ADMG&#39;), (&#39;SG&#39;, &#39;CG&#39;), (&#39;ADMG&#39;, &#39;DAG&#39;), (&#39;CG&#39;, &#39;DAG&#39;), (&#39;ADMG&#39;, &#39;BG&#39;), (&#39;CG&#39;, &#39;UG&#39;)]
-graphs.UG(vertices, edges).draw()
+<span></span><span class="c1"># a graph of the hierarchy of graphs</span>
+<span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SG&#39;</span><span class="p">,</span> <span class="s1">&#39;ADMG&#39;</span><span class="p">,</span> <span class="s1">&#39;CG&#39;</span><span class="p">,</span> <span class="s1">&#39;DAG&#39;</span><span class="p">,</span> <span class="s1">&#39;BG&#39;</span><span class="p">,</span> <span class="s1">&#39;UG&#39;</span><span class="p">]</span>
+<span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;SG&#39;</span><span class="p">,</span> <span class="s1">&#39;ADMG&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;SG&#39;</span><span class="p">,</span> <span class="s1">&#39;CG&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ADMG&#39;</span><span class="p">,</span> <span class="s1">&#39;DAG&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CG&#39;</span><span class="p">,</span> <span class="s1">&#39;DAG&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ADMG&#39;</span><span class="p">,</span> <span class="s1">&#39;BG&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;CG&#39;</span><span class="p">,</span> <span class="s1">&#39;UG&#39;</span><span class="p">)]</span>
+<span class="n">graphs</span><span class="o">.</span><span class="n">UG</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
