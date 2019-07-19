@@ -152,9 +152,6 @@ class SG(Graph):
 
         if not self._districts:
             self.districts
-        print(vertex)
-        print(list(self._districts))
-        print(list(self._district_map))
         return self._districts[self._district_map[vertex]]
         #return self.districts[self._district_map[vertex]]
 

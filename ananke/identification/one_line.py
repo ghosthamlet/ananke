@@ -166,7 +166,6 @@ class OneLineGZID:
         allowed_intrinsic_dict = dict()
         fixing_orders = dict()
         for experiment in experiments:
-            print("exp", experiment)
             swig = copy.deepcopy(self.graph)
             swig.fix(experiment)
             intrinsic_sets, order_dict = swig.get_intrinsic_sets()

@@ -1,0 +1,460 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ananke.graphs.sg &#8212; ananke  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ananke.graphs.sg</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Class for segregated graphs (SGs).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SG"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG">[docs]</a><span class="k">class</span> <span class="nc">SG</span><span class="p">(</span><span class="n">Graph</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="o">=</span><span class="p">[],</span> <span class="n">di_edges</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> <span class="n">bi_edges</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> <span class="n">ud_edges</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor</span>
+
+<span class="sd">        :param vertices: iterable of names of vertices.</span>
+<span class="sd">        :param di_edges: iterable of tuples of directed edges i.e. (X, Y) = X -&gt; Y.</span>
+<span class="sd">        :param bi_edges: iterable of tuples of bidirected edges i.e. (X, Y) = X &lt;-&gt; Y.</span>
+<span class="sd">        :param ud_edges: iterable of tuples of undirected edges i.e. (X, Y) = X - Y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># initialize vertices in SG</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">,</span> <span class="n">ud_edges</span><span class="o">=</span><span class="n">ud_edges</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segregated</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Graph is not segregated&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acyclic</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;TypeError: Graph is not acyclic&quot;</span><span class="p">)</span>
+
+        <span class="c1"># a mapping of vertices to their district ids</span>
+        <span class="c1"># and a list of districts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># a mapping of vertices to their block ids</span>
+        <span class="c1"># and a list of blocks</span>
+        <span class="c1"># NOTE: in an SG, only blocks of size &gt;= 2 are considered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span>
+
+    <span class="c1">#### VALID GRAPH CHECKS ####</span>
+    <span class="k">def</span> <span class="nf">_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the graph is directed and partially directed cycle free.</span>
+
+<span class="sd">        :return: boolean indicator whether graph is acyclic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: check correctness</span>
+
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dfs_cycle</span><span class="p">(</span><span class="n">vertex</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_dfs_cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if there exists a cyclic path starting at a given vertex.</span>
+
+<span class="sd">        :param vertex: vertex object to start DFS at.</span>
+<span class="sd">        :return: boolean indicating whether there is a cycle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">visit_stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertex</span><span class="p">]</span>
+        <span class="n">prev_vertex</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">partially_directed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c1"># DFS through children and neighbors for partially directed cycle</span>
+        <span class="k">while</span> <span class="n">visit_stack</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">visited</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">visit_stack</span><span class="p">):</span>
+
+            <span class="n">visited</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">visit_stack</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">visit_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">partially_directed</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">visit_stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="n">prev_vertex</span><span class="p">})</span>
+            <span class="n">prev_vertex</span> <span class="o">=</span> <span class="n">v</span>
+
+            <span class="c1"># if we arrive at the same vertex, then we have a cycle</span>
+            <span class="k">if</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">visit_stack</span> <span class="ow">and</span> <span class="n">partially_directed</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_segregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if graph is segregated i.e. lacks Z &lt;-&gt; X - Y.</span>
+
+<span class="sd">        :return: boolean indicator whether graph is segregated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: is this enough to check segregated property?</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">siblings</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="c1">#### DISTRICT CODE ####</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">districts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_districts</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_calculate_districts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update districts in the graph.</span>
+
+<span class="sd">        :return: List of districts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">district_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Add all vertices to the district_map</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dfs_district</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">],</span> <span class="n">district_counter</span><span class="p">)</span>
+                <span class="n">district_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Now process the district_map into a list of lists</span>
+        <span class="n">districts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">district_counter</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">district_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">districts</span><span class="p">[</span><span class="n">district_id</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span> <span class="o">=</span> <span class="n">districts</span>
+        <span class="k">return</span> <span class="n">districts</span>
+
+    <span class="k">def</span> <span class="nf">_dfs_district</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">district_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        DFS from vertex to discover its district.</span>
+
+<span class="sd">        :param vertex: vertex object to start the DFS at..</span>
+<span class="sd">        :param district_id: int corresponding to district ID</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">visit_stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertex</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">visit_stack</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">visit_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">district_id</span>
+            <span class="n">visit_stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">siblings</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SG.district"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.district">[docs]</a>    <span class="k">def</span> <span class="nf">district</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the district of a vertex.</span>
+
+<span class="sd">        :param vertex: name of the vertex.</span>
+<span class="sd">        :return: set corresponding to district.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">districts</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]</span></div>
+        <span class="c1">#return self.districts[self._district_map[vertex]]</span>
+
+    <span class="c1">#### BLOCK CODE ####</span>
+    <span class="k">def</span> <span class="nf">_calculate_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update blocks in the graph.</span>
+
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">block_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Add all vertices to the district_map</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">vertex</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dfs_block</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">block_counter</span><span class="p">)</span>
+                <span class="n">block_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Now process the district_map into a list of lists</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">block_counter</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">block_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">[</span><span class="n">block_id</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dfs_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">block_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        DFS from vertex to discover its block.</span>
+
+<span class="sd">        :param vertex: vertex object to start the DFS at.</span>
+<span class="sd">        :param block_id: int corresponding to block ID.</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">visit_stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertex</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">visit_stack</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">visit_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_id</span>
+            <span class="n">visit_stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">neighbors</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the block of a vertex.</span>
+
+<span class="sd">        :param vertex: vertex object.</span>
+<span class="sd">        :return: set corresponding to block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="SG.block"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.block">[docs]</a>    <span class="k">def</span> <span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the block of a vertex.</span>
+
+<span class="sd">        :param vertex: name of the vertex.</span>
+<span class="sd">        :return: set corresponding to block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="SG.blocks"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.blocks">[docs]</a>    <span class="k">def</span> <span class="nf">blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns list of all blocks in the graph.</span>
+
+<span class="sd">        :return: list of lists corresponding to blocks in the graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">:</span>
+            <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">blocks</span></div>
+
+<div class="viewcode-block" id="SG.add_biedge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.add_biedge">[docs]</a>    <span class="k">def</span> <span class="nf">add_biedge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sib1</span><span class="p">,</span> <span class="n">sib2</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a bidirected edge to the graph. Overridden to recompute districts.</span>
+
+<span class="sd">        :param sib1: endpoint 1 of edge.</span>
+<span class="sd">        :param sib2: endpoint 2 of edge.</span>
+<span class="sd">        :param recompute: boolean indicating whether districts should be recomputed.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_biedge</span><span class="p">(</span><span class="n">sib1</span><span class="p">,</span> <span class="n">sib2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recompute</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_districts</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SG.delete_biedge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.delete_biedge">[docs]</a>    <span class="k">def</span> <span class="nf">delete_biedge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sib1</span><span class="p">,</span> <span class="n">sib2</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete given bidirected edge from the graph. Overridden to recompute districts.</span>
+
+<span class="sd">        :param sib1: endpoint 1 of edge.</span>
+<span class="sd">        :param sib2: endpoint 2 of edge.</span>
+<span class="sd">        :param recompute: boolean indicating whether districts should be recomputed.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">delete_biedge</span><span class="p">(</span><span class="n">sib1</span><span class="p">,</span> <span class="n">sib2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recompute</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_districts</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SG.add_udedge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.add_udedge">[docs]</a>    <span class="k">def</span> <span class="nf">add_udedge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neb1</span><span class="p">,</span> <span class="n">neb2</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an undirected edge to the graph. Overridden to recompute blocks</span>
+
+<span class="sd">        :param neb1: endpoint 1 of edge.</span>
+<span class="sd">        :param neb2: endpoint 2 of edge.</span>
+<span class="sd">        :param recompute: boolean indicating whether blocks should be recomputed.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_udedge</span><span class="p">(</span><span class="n">neb1</span><span class="p">,</span> <span class="n">neb2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recompute</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SG.delete_udedge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.delete_udedge">[docs]</a>    <span class="k">def</span> <span class="nf">delete_udedge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neb1</span><span class="p">,</span> <span class="n">neb2</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete given undirected edge from the graph. Overridden to recompute blocks.</span>
+
+<span class="sd">        :param neb1: endpoint 1 of edge.</span>
+<span class="sd">        :param neb2: endpoint 2 of edge.</span>
+<span class="sd">        :param recompute: boolean indicating whether blocks should be recomputed.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">delete_udedge</span><span class="p">(</span><span class="n">neb1</span><span class="p">,</span> <span class="n">neb2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recompute</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SG.fix"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.fix">[docs]</a>    <span class="k">def</span> <span class="nf">fix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform the graphical operation of fixing on a set of vertices.</span>
+
+<span class="sd">        :param vertices: iterable of vertices to be fixed.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># delete incoming directed edges</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">parents</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_diedge</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+            <span class="c1"># delete bidirected edges</span>
+            <span class="n">siblings</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">siblings</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">siblings</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_biedge</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># delete undirected edges</span>
+            <span class="n">neighbors</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">neighbors</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">delete_udedge</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># recompute the districts and blocks as they may have changed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_districts</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SG.fixable"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.fixable">[docs]</a>    <span class="k">def</span> <span class="nf">fixable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if there exists a valid fixing order and return such</span>
+<span class="sd">        an order in the form of a list, else returns an empty list.</span>
+
+<span class="sd">        :param vertices: set of vertices to check fixability for.</span>
+<span class="sd">        :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># if it&#39;s just a single vertex we&#39;re checking it&#39;s easy</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">vertices</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[]</span>
+
+        <span class="n">remaining_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
+        <span class="n">fixing_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag to check if we fixed a variable on each pass</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># while we have more vertices to fix, and were able to perform a fix</span>
+        <span class="k">while</span> <span class="n">remaining_vertices</span> <span class="ow">and</span> <span class="n">fixed</span><span class="p">:</span>
+
+            <span class="n">fixed</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">remaining_vertices</span><span class="p">:</span>
+
+                <span class="c1"># Check if any nodes are reachable via -&gt; AND &lt;-&gt;</span>
+                <span class="c1"># by looking at intersection of district and descendants</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">descendants</span><span class="p">([</span><span class="n">v</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">remaining_vertices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">fixing_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fixing_order</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fixing_order</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">ananke</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.graphs.html">ananke.graphs package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.identification.html">ananke.identification package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Shpitser Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

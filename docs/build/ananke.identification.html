@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ananke.identification package &#8212; ananke  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ananke.graphs package" href="ananke.graphs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="ananke-identification-package">
+<h1>ananke.identification package<a class="headerlink" href="#ananke-identification-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ananke.identification.missing_id">
+<span id="ananke-identification-missing-id-module"></span><h2>ananke.identification.missing_id module<a class="headerlink" href="#module-ananke.identification.missing_id" title="Permalink to this headline">¶</a></h2>
+<p>Class for missing ID</p>
+<dl class="class">
+<dt id="ananke.identification.missing_id.MissingID">
+<em class="property">class </em><code class="sig-prename descclassname">ananke.identification.missing_id.</code><code class="sig-name descname">MissingID</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/missing_id.html#MissingID"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.missing_id.MissingID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ananke.identification.one_line">
+<span id="ananke-identification-one-line-module"></span><h2>ananke.identification.one_line module<a class="headerlink" href="#module-ananke.identification.one_line" title="Permalink to this headline">¶</a></h2>
+<p>Class for one line ID.</p>
+<dl class="exception">
+<dt id="ananke.identification.one_line.NotIdentifiedError">
+<em class="property">exception </em><code class="sig-prename descclassname">ananke.identification.one_line.</code><code class="sig-name descname">NotIdentifiedError</code><a class="reference internal" href="_modules/ananke/identification/one_line.html#NotIdentifiedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.NotIdentifiedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Custom error for when desired functional is not identified.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="ananke.identification.one_line.OneLineGZID">
+<em class="property">class </em><code class="sig-prename descclassname">ananke.identification.one_line.</code><code class="sig-name descname">OneLineGZID</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">interventions</em>, <em class="sig-param">outcomes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineGZID"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineGZID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineGZID.functional">
+<code class="sig-name descname">functional</code><span class="sig-paren">(</span><em class="sig-param">experiments=[set()]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineGZID.functional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineGZID.functional" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineGZID.id">
+<code class="sig-name descname">id</code><span class="sig-paren">(</span><em class="sig-param">experiments=[set()]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineGZID.id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineGZID.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ananke.identification.one_line.OneLineID">
+<em class="property">class </em><code class="sig-prename descclassname">ananke.identification.one_line.</code><code class="sig-name descname">OneLineID</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">interventions</em>, <em class="sig-param">outcomes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineID"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineID.draw_swig">
+<code class="sig-name descname">draw_swig</code><span class="sig-paren">(</span><em class="sig-param">direction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineID.draw_swig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineID.draw_swig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the proper SWIG corresponding to the causal query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dot language representation of the SWIG.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineID.export_intermediates">
+<code class="sig-name descname">export_intermediates</code><span class="sig-paren">(</span><em class="sig-param">folder='intermediates'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineID.export_intermediates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineID.export_intermediates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export intermediate CADMGs obtained during fixing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>folder</strong> – string specifying path to folder where the files will be written.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineID.functional">
+<code class="sig-name descname">functional</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineID.functional"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineID.functional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the functional for identification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ananke.identification.one_line.OneLineID.id">
+<code class="sig-name descname">id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/identification/one_line.html#OneLineID.id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.identification.one_line.OneLineID.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run one line ID for the query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Returns True if p(Y(a)) is ID, else False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ananke.identification">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ananke.identification" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ananke</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ananke.graphs.html">ananke.graphs package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ananke.identification package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ananke.identification.missing_id">ananke.identification.missing_id module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ananke.identification.one_line">ananke.identification.one_line module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ananke.identification">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ananke.graphs.html" title="previous chapter">ananke.graphs package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Shpitser Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/ananke.identification.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

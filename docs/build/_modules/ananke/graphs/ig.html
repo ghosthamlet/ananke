@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ananke.graphs.ig &#8212; ananke  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ananke.graphs.ig</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Class for Intrinsic Graphs (IGs) -- a mixed graph used to compute intrinsic sets</span>
+<span class="sd">of an ADMG in polynomial time.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">.graph</span> <span class="k">import</span> <span class="n">Graph</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IG"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG">[docs]</a><span class="k">class</span> <span class="nc">IG</span><span class="p">(</span><span class="n">Graph</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">admg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor.</span>
+
+<span class="sd">        :param admg: ADMG object to calculate intrinsic sets for.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">admg</span> <span class="o">=</span> <span class="n">admg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iset_cadmg_map</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># dictionary mapping intrinsic sets to the reachable CADMG</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iset_fixing_order_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1"># the IG is initialized with vertices corresponding to</span>
+        <span class="c1"># reachable closures of singletons (these are guaranteed to be intrinsic)</span>
+
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">admg</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">admg</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
+                <span class="n">rc</span><span class="p">,</span> <span class="n">fixing_order</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admg</span><span class="o">.</span><span class="n">reachable_closure</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+                <span class="n">rc</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iset_cadmg_map</span><span class="p">[</span><span class="n">rc</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iset_fixing_order_map</span><span class="p">[</span><span class="n">rc</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixing_order</span>
+
+                <span class="c1"># add di/bi edges that fulfill subset relation</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">rc</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">add_diedge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">rc</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">add_diedge</span><span class="p">(</span><span class="n">rc</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">([</span><span class="n">rc</span><span class="p">])</span> <span class="ow">or</span> <span class="n">rc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">([</span><span class="n">i</span><span class="p">]))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bidirected_connected</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">add_biedge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IG.bidirected_connected"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.bidirected_connected">[docs]</a>    <span class="k">def</span> <span class="nf">bidirected_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if two sets are bidirected connected in the original ADMG</span>
+
+<span class="sd">        :param s1: First set corresponding to a vertex in the IG.</span>
+<span class="sd">        :param s2: Second set corresponding to a vertex in the IG.</span>
+<span class="sd">        :return: boolean corresponding to connectedness.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">possible_endpoints</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">combination</span> <span class="ow">in</span> <span class="n">possible_endpoints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">admg</span><span class="o">.</span><span class="n">has_biedge</span><span class="p">(</span><span class="o">*</span><span class="n">combination</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="IG.maintain_subset_relation"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.maintain_subset_relation">[docs]</a>    <span class="k">def</span> <span class="nf">maintain_subset_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add di edges to a newly inserted vertex s so as to maintain</span>
+<span class="sd">        the subset relation.</span>
+<span class="sd">        :param s: Frozenset corresponding to the new vertex.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">s</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_diedge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="n">i</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_diedge</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IG.add_new_biedges"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.add_new_biedges">[docs]</a>    <span class="k">def</span> <span class="nf">add_new_biedges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Naive O(|I(G)| choose 2) implementation. Must ensure that biedges not added to ancestors.</span>
+
+<span class="sd">        :param s: Frozen set corresponding to the new vertex.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ancestors_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">([</span><span class="n">s</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ancestors_s</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bidirected_connected</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_biedge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IG.merge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Merge operation on two sets s1 and s2 to give a (possibly)</span>
+<span class="sd">        new intrinsic set s3.</span>
+
+<span class="sd">        :param s1: First set corresponding to a vertex in the IG.</span>
+<span class="sd">        :param s2: Second set corresponding to a vertex in the IG.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">s3c</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+        <span class="n">s3c</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
+        <span class="n">s3</span><span class="p">,</span> <span class="n">fixing_order</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admg</span><span class="o">.</span><span class="n">reachable_closure</span><span class="p">(</span><span class="n">s3c</span><span class="p">)</span>
+        <span class="n">s3</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete_biedge</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+
+        <span class="c1"># if the intrinsic set already exists, ignore it</span>
+        <span class="k">if</span> <span class="n">s3</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># add the vertex and add di edges</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iset_cadmg_map</span><span class="p">[</span><span class="n">s3</span><span class="p">]</span> <span class="o">=</span> <span class="n">G</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iset_fixing_order_map</span><span class="p">[</span><span class="n">s3</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixing_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maintain_subset_relation</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+
+        <span class="c1"># add new bi edges to the added vertex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_new_biedges</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IG.get_intrinsic_sets"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.get_intrinsic_sets">[docs]</a>    <span class="k">def</span> <span class="nf">get_intrinsic_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all intrinsic sets for given ADMG.</span>
+
+
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># keep merging vertices that are connected</span>
+        <span class="c1"># by bidirected edges to obtain new intrinsic</span>
+        <span class="c1"># sets until there are none left</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bi_edges</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bi_edges</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IG.get_heads_tails"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.ig.IG.get_heads_tails">[docs]</a>    <span class="k">def</span> <span class="nf">get_heads_tails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iterate through all intrinsic sets and get the heads and tails.</span>
+
+<span class="sd">        :return: List of tuples corresponding to (head, tail).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># make sure that the graph is fully initialized</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bi_edges</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are still bidirected edges indicating more intrinsic sets can be merged&quot;</span><span class="p">)</span>
+
+        <span class="n">heads_and_tails</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># go through each intrinsic set</span>
+        <span class="k">for</span> <span class="n">iset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+
+            <span class="c1"># look at the reachable CADMG to determine head/tail</span>
+            <span class="n">reachable_cadmg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iset_cadmg_map</span><span class="p">[</span><span class="n">iset</span><span class="p">]</span>
+            <span class="n">head</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+            <span class="c1"># heads are vertices that are childless in the corresponding reachable CADMG</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iset</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reachable_cadmg</span><span class="o">.</span><span class="n">children</span><span class="p">([</span><span class="n">v</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">head</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+            <span class="c1"># tail is the remaining intrinsic set + parents of the intrinsic set</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">iset</span> <span class="o">-</span> <span class="n">head</span><span class="p">)</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="n">tail</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">reachable_cadmg</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">iset</span><span class="p">))</span>
+            <span class="n">heads_and_tails</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">head</span><span class="p">,</span> <span class="n">tail</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">heads_and_tails</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">ananke</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.graphs.html">ananke.graphs package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ananke.identification.html">ananke.identification package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Shpitser Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

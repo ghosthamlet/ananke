@@ -64,11 +64,6 @@ class ADMG(SG):
                  outside of the closure, and the CADMG corresponding to the closure.
         """
         remaining_vertices = set(self.vertices) - set(vertices) - set(v for v in self.vertices if self.vertices[v].fixed)
-        print("vertex", vertices)
-        print("remain", remaining_vertices)
-        #print("remain", remaining_vertices)
-        #print(self.vertices["B"].fixed)
-        #print({v for v in self.vertices if self.vertices[v].fixed})
         fixing_order = []
         fixed = True
         G = copy.deepcopy(self)
@@ -85,8 +80,6 @@ class ADMG(SG):
                     break
 
         #reachable_closure = set(G.vertices) - set(fixing_order)- set(v for v in self.vertices if self.vertices[v].fixed)
-        print("kappa", [self.vertices[v].fixed for v in self.vertices])
-        print(set(v for v in self.vertices if self.vertices[v].fixed))
         reachable_closure = set(G.vertices) - set(v for v in G.vertices if G.vertices[v].fixed)
 
         return reachable_closure, fixing_order, G

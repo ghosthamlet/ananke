@@ -30,7 +30,6 @@ class IG(Graph):
 
         for v in admg.vertices:
             if not admg.vertices[v].fixed:
-                print("v", v)
                 rc, fixing_order, G = self.admg.reachable_closure([v])
                 rc = frozenset(rc)
                 self.add_vertex(rc)

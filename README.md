@@ -4,7 +4,7 @@
 primordial goddess of necessity and causality, is a python package for
 causal inference using the language of graphical models
 
-## Installation and Development
+## Installation for Development
 
 Create a virtual environment and install `ananke` in this environment for running.
 ```{bash}
@@ -17,6 +17,18 @@ python3 -m venv env
 source env/bin/activate # this activates your environment
 
 pip3 install -e .
+```
+
+It is also necessary to install separate dev python packages:
+```{bash}
+pip3 install -r dev_requirements.txt
+```
+
+as well as separate system packages:
+
+```{bash}
+
+pandoc
 ```
 Now you are ready to develop!
 
