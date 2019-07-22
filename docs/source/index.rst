@@ -9,14 +9,12 @@ Ananke: A module for causal inference
 How to install
 ==============
 1. Install python3
-2. Install ananke  ::
-   sudo pip3 -e install ananke/
-   
+2. Install ananke::
+
+   >>> sudo pip3 -e install ananke/
 3. Test installation by running::
-   $ python
-   >> import ananke
 
-
+   >>> import ananke
 
 
 Documentation
