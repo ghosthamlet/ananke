@@ -1,4 +1,6 @@
 import unittest
+from unittest.mock import patch
+
 from ananke.graphs import SG
 
 
@@ -76,9 +78,47 @@ class TestSG(unittest.TestCase):
             print(g, [s.name for s in G.vertices[g].siblings])
         G_dis = {frozenset(s) for s in G.districts}
 
-
         self.assertEqual({frozenset({"X_2", "Y"}), frozenset({"W"})}, G_dis)
         self.assertEqual(sorted([("X_1", "W"), ("W", "Y"), ("X_2", "Y")]), sorted(list(G.di_edges)))
+
+    @patch("ananke.graphs.sg.SG._calculate_districts")
+    def test_districts_is_a_property(self, mock1):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G = SG(vertices, di_edges=di_edges, bi_edges=bi_edges)
+        self.assertEqual(0, mock1.call_count)
+        G.districts
+        self.assertEqual(1, mock1.call_count)
+
+    @patch("ananke.graphs.sg.SG._calculate_blocks")
+    def test_blocks_is_a_property(self, mock1):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        ud_edges = [("X_1", "W")]
+        G = SG(vertices, di_edges=di_edges, ud_edges=ud_edges)
+
+        self.assertEqual(0, mock1.call_count)
+        G.blocks
+        self.assertEqual(1, mock1.call_count)
+
+    def test_blocks(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "Y"), ("X_2", "W")]
+        ud_edges = [("X_1", "X_2")]
+        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        self.assertEqual({"X_1", "W"}, G.block(["X_1"])[0])
+
+    @unittest.skip
+    def test_partially_directed_cycle_does_not_hang(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        ud_edges = []
+        print("hi")
+        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        self.assertEqual({"X_1", "W", "X_2", "Y"}, G.block(["X_1"])[0])
+
+
 
 if __name__ == '__main__':
     unittest.main()
