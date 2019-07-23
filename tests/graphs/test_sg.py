@@ -74,8 +74,6 @@ class TestSG(unittest.TestCase):
         G = SG(vertices, di_edges, bi_edges)
         G.fix(["X_1"])
         self.assertTrue(G.vertices["X_1"].fixed)
-        for g in G.vertices:
-            print(g, [s.name for s in G.vertices[g].siblings])
         G_dis = {frozenset(s) for s in G.districts}
 
         self.assertEqual({frozenset({"X_2", "Y"}), frozenset({"W"})}, G_dis)
@@ -102,21 +100,20 @@ class TestSG(unittest.TestCase):
         G.blocks
         self.assertEqual(1, mock1.call_count)
 
+    def test_block(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "Y"), ("X_2", "W")]
+        ud_edges = [("X_1", "X_2")]
+        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        self.assertEqual({"X_1", "X_2"}, G.block("X_1"))
+
     def test_blocks(self):
         vertices = ["X_1", "X_2", "W", "Y"]
         di_edges = [("X_1", "Y"), ("X_2", "W")]
         ud_edges = [("X_1", "X_2")]
         G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
-        self.assertEqual({"X_1", "W"}, G.block(["X_1"])[0])
+        self.assertEqual({frozenset({"X_1", "X_2"}), frozenset({"W"}), frozenset({"Y"})}, {frozenset(i) for i in G.blocks})
 
-    @unittest.skip
-    def test_partially_directed_cycle_does_not_hang(self):
-        vertices = ["X_1", "X_2", "W", "Y"]
-        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
-        ud_edges = []
-        print("hi")
-        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
-        self.assertEqual({"X_1", "W", "X_2", "Y"}, G.block(["X_1"])[0])
 
 
 
