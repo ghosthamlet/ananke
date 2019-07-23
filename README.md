@@ -45,3 +45,9 @@ python3 -m pytest tests/graphs/test_admg.py::TestADMG::test_obtaining_districts 
 ```
 
 Continuous integration has been set up to run tests on pushes to the `master` branch.
+
+## Test Coverage
+
+```{bash}
+pytest --cov=ananke tests/
+```
