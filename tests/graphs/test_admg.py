@@ -44,7 +44,6 @@ class TestADMG(unittest.TestCase):
         cl, _, _ = G.reachable_closure(["B"])
         self.assertEqual({"A", "B"}, set(cl))
 
-
     def test_marg_dag_projection(self):
 
         vertices = ["A", "B", "C"]
@@ -64,6 +63,7 @@ class TestADMG(unittest.TestCase):
         marg = G.maximal_arid_projection()
         self.assertEqual(set([("B", "A"), ("B", "C")]), marg.di_edges)
         self.assertEqual(set([("A", "C")]), marg.bi_edges)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -223,38 +223,31 @@ class ADMG(SG):
         # keep a cached dictionary of reachable closures and ancestors
         # for efficiency purposes
         reachable_closures = {}
-        ancestors = {}
+        ancestors = {v: self.ancestors([v]) for v in vertices}
 
         # iterate through all vertex pairs
         for a, b in itertools.combinations(vertices, 2):
 
-            # compute ancestors if required
-            if a not in ancestors:
-                ancestors[a] = self.ancestors([a])
-            if b not in ancestors:
-                ancestors[b] = self.ancestors([b])
-
             # decide which reachable closure needs to be computed
+            # and compute it if one vertex is an ancestor of another
             u, v, rc = None, None, None
             if a in ancestors[b]:
                 u, v = a, b
-                reachable_closures[b] = self.reachable_closure([b])
-                rc, _, _ = reachable_closures[b]
             elif b in ancestors[a]:
                 u, v = b, a
-                reachable_closures[a] = self.reachable_closure([a])
-                rc, _, _ = reachable_closures[a]
 
-            # if we computed the reachable closure check parent condition
-            # and add directed edge if u is a parent of the reachable closure
-            if rc and u in self.parents(rc):
-                di_edges.append((u, v))
+            # check parent condition and add directed edge if u is a parent of the reachable closure
+            if u:
+                if v not in reachable_closures:
+                    reachable_closures[v] = self.reachable_closure([v])[0]
+                rc = reachable_closures[v]
+                if u in self.parents(rc):
+                    di_edges.append((u, v))
 
-            # if neither were ancestors of each other we need to compute
+            # if neither are ancestors of each other we need to compute
             # the reachable closure of set {a, b} and check if it is
             # bidirected connected
             if not rc:
-
                 rc, _, cadmg = self.reachable_closure([a, b])
                 for district in cadmg.districts:
                     if rc.issubset(district):
