@@ -3,6 +3,7 @@ Class for acyclic directed mixed graphs (ADMGs) and conditional ADMGs (CADMGs).
 """
 import copy
 import logging
+import itertools
 
 from ananke.utils import powerset
 from .sg import SG
@@ -208,6 +209,51 @@ class ADMG(SG):
 
         return intrinsic_sets, fixing_orders
 
+    def maximal_arid_projection(self):
+        """
+        Get the maximal arid projection that encodes the same conditional independences and
+        Vermas as the original ADMG. This operation is described in Acyclic
+        Linear SEMs obey the Nested Markov property.
+
+        :return: An ADMG corresponding to the maximal arid projection.
+        """
+
+        vertices, di_edges, bi_edges = self.vertices, [], []
+
+        # keep a cached dictionary of reachable closures and ancestors
+        # for efficiency purposes
+        reachable_closures = {}
+        ancestors = {v: self.ancestors([v]) for v in vertices}
+
+        # iterate through all vertex pairs
+        for a, b in itertools.combinations(vertices, 2):
+
+            # decide which reachable closure needs to be computed
+            # and compute it if one vertex is an ancestor of another
+            u, v, rc = None, None, None
+            if a in ancestors[b]:
+                u, v = a, b
+            elif b in ancestors[a]:
+                u, v = b, a
+
+            # check parent condition and add directed edge if u is a parent of the reachable closure
+            if u:
+                if v not in reachable_closures:
+                    reachable_closures[v] = self.reachable_closure([v])[0]
+                rc = reachable_closures[v]
+                if u in self.parents(rc):
+                    di_edges.append((u, v))
+
+            # if neither are ancestors of each other we need to compute
+            # the reachable closure of set {a, b} and check if it is
+            # bidirected connected
+            if not rc:
+                rc, _, cadmg = self.reachable_closure([a, b])
+                for district in cadmg.districts:
+                    if rc.issubset(district):
+                        bi_edges.append((a, b))
+
+        return ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
 
 def get_intrinsic_sets(graph):
     """
