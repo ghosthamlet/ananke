@@ -101,6 +101,11 @@ class SG(Graph):
     #### DISTRICT CODE ####
     @property
     def districts(self):
+        """
+        Returns list of all districts in the graph.
+
+        :return: list of sets corresponding to districts in the graph.
+        """
         return self._calculate_districts()
 
     def _calculate_districts(self):
@@ -130,7 +135,7 @@ class SG(Graph):
         """
         DFS from vertex to discover its district.
 
-        :param vertex: vertex object to start the DFS at..
+        :param vertex: vertex object to start the DFS at.
         :param district_id: int corresponding to district ID
 
         :return: None
@@ -155,6 +160,15 @@ class SG(Graph):
         return self._districts[self._district_map[vertex]]
 
     #### BLOCK CODE ####
+    @property
+    def blocks(self):
+        """
+        Returns list of all blocks in the graph.
+
+        :return: list of sets corresponding to blocks in the graph.
+        """
+        return self._calculate_blocks()
+
     def _calculate_blocks(self):
         """
         Update blocks in the graph.
@@ -192,7 +206,7 @@ class SG(Graph):
         while visit_stack:
             v = visit_stack.pop()
             self._block_map[v.name] = block_id
-            visit_stack.extend(s for s in v.neighbors if s.name not in self._block_map)
+            visit_stack.extend(n for n in v.neighbors if n.name not in self._block_map)
 
     def block(self, vertex):
         """
@@ -205,15 +219,6 @@ class SG(Graph):
             self.blocks
         block = self._blocks[self._block_map[vertex]]
         return block
-
-    @property
-    def blocks(self):
-        """
-        Returns list of all blocks in the graph.
-
-        :return: list of lists corresponding to blocks in the graph.
-        """
-        return self._calculate_blocks()
 
     def add_biedge(self, sib1, sib2, recompute=True):
         """
