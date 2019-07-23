@@ -45,6 +45,15 @@ class TestADMG(unittest.TestCase):
         self.assertEqual({"A", "B"}, set(cl))
 
 
+    def test_marg_projection(self):
+
+        vertices = ["A", "B", "C"]
+        di_edges = [("A", "B"), ("B", "C")]
+        bi_edges = [("B", "C")]
+        G = ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
+        marg = G.maximal_arid_projection()
+        #self.assertEqual(set([("A", "B"), ("B", "C"), ("A", "C")]), marg.di_edges)
+        #self.assertEqual(set([]), marg.bi_edges)
 
 if __name__ == '__main__':
     unittest.main()

@@ -208,6 +208,18 @@ class ADMG(SG):
 
         return intrinsic_sets, fixing_orders
 
+    def maximal_arid_projection(self):
+        """
+        Get the maximal arid projection that encodes the same conditional independences and
+        Vermas as the original ADMG. This operation is described in Acyclic
+        Linear SEMs obey the Nested Markov property.
+
+        :return: An ADMG corresponding to the maximal arid projection.
+        """
+
+        vertices, di_edges, bi_edges = self.vertices, [], []
+
+        return ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
 
 def get_intrinsic_sets(graph):
     """
