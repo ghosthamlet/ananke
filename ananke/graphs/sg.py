@@ -3,6 +3,7 @@ Class for segregated graphs (SGs).
 """
 import copy
 import logging
+
 from .graph import Graph
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,6 @@ class SG(Graph):
         # NOTE: in an SG, only blocks of size >= 2 are considered
         self._block_map = {}
         self._blocks = []
-        self._calculate_blocks()
 
     #### VALID GRAPH CHECKS ####
     def _acyclic(self):
@@ -153,7 +153,6 @@ class SG(Graph):
         if not self._districts:
             self.districts
         return self._districts[self._district_map[vertex]]
-        #return self.districts[self._district_map[vertex]]
 
     #### BLOCK CODE ####
     def _calculate_blocks(self):
@@ -167,15 +166,17 @@ class SG(Graph):
         block_counter = 0
 
         # Add all vertices to the district_map
-        for vertex in self.vertices.values():
-            if vertex not in self._block_map and not vertex.fixed:
-                self._dfs_block(vertex, block_counter)
+        for vertex in self.vertices:
+            if vertex not in self._block_map and not self.vertices[vertex].fixed:
+                self._dfs_block(self.vertices[vertex], block_counter)
                 block_counter += 1
 
         # Now process the district_map into a list of lists
         self._blocks = [set() for _ in range(block_counter)]
         for vertex, block_id in self._block_map.items():
             self._blocks[block_id].add(vertex)
+
+        return self._blocks
 
     def _dfs_block(self, vertex, block_id):
         """
@@ -190,18 +191,8 @@ class SG(Graph):
         visit_stack = [vertex]
         while visit_stack:
             v = visit_stack.pop()
-            self._block_map[v] = block_id
-            visit_stack.extend(s for s in v.neighbors if s not in self._block_map)
-
-    def _block(self, vertex):
-        """
-        Returns the block of a vertex.
-
-        :param vertex: vertex object.
-        :return: set corresponding to block.
-        """
-
-        return self._blocks[self._block_map[vertex]]
+            self._block_map[v.name] = block_id
+            visit_stack.extend(s for s in v.neighbors if s.name not in self._block_map)
 
     def block(self, vertex):
         """
@@ -210,21 +201,19 @@ class SG(Graph):
         :param vertex: name of the vertex.
         :return: set corresponding to block.
         """
+        if not self._blocks:
+            self.blocks
+        block = self._blocks[self._block_map[vertex]]
+        return block
 
-        block = self._block[self._block_map[self.vertices[vertex]]]
-        return {v.name for v in block}
-
+    @property
     def blocks(self):
         """
         Returns list of all blocks in the graph.
 
         :return: list of lists corresponding to blocks in the graph.
         """
-
-        blocks = []
-        for block in self._blocks:
-            blocks.append({v.name for v in block})
-        return blocks
+        return self._calculate_blocks()
 
     def add_biedge(self, sib1, sib2, recompute=True):
         """
