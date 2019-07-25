@@ -14,28 +14,38 @@ class TestLinearGaussianSEM(unittest.TestCase):
         bi_edges = [("B", "D")]
         G = ADMG(vertices, di_edges=di_edges, bi_edges=bi_edges)
         model = LinearGaussianSEM(G)
-        self.assertEqual(4, model.n_params)
+        self.assertEqual(8, model.n_params)
 
         # generate data from an ADMG A->B->C->D B<->D and try to fit
         N = 2000
         dim = 4
 
         omega = np.array([[1, 0, 0, 0],
-                          [0, 1, 0, 0],
+                          [0, 1, 0, 0.8],
                           [0, 0, 1, 0],
-                          [0, 0, 0, 1]])
+                          [0, 0.8, 0, 1]])
 
         beta = np.array([[0, 0, 0, 0],
                          [3, 0, 0, 0],
                          [0, -1, 0, 0],
-                         [0, 3, 2.5, 0]])
+                         [0, 0, 2.5, 0]])
 
+        # test the adjacency matrices
+        beta_nonzero = np.array(beta != 0, int)
+        self.assertTrue(np.array_equal(beta_nonzero, model.B_adj))
+        omega_nonzero = np.array(omega != 0, int)
+        self.assertTrue(np.array_equal(omega_nonzero, model.omega_adj))
+
+        # generate data
         true_sigma = np.linalg.inv(np.eye(dim) - beta) @ omega @ np.linalg.inv((np.eye(dim) - beta).T)
         data = np.random.multivariate_normal([0] * dim, true_sigma, size=N)
 
-        # first test that without fitting you can't compute likelihood
+        # test that without fitting you can't compute likelihood
         with self.assertRaises(AssertionError):
             model.likelihood(data)
+
+        #model.fit(data)
+
 
 if __name__ == '__main__':
     unittest.main()
