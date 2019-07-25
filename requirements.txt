@@ -1,2 +1,5 @@
 networkx
 graphviz
+autograd
+scipy
+
