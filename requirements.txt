@@ -2,4 +2,5 @@ networkx
 graphviz
 autograd
 scipy
+numpy
 
