@@ -296,7 +296,6 @@ class Graph:
                 else:
                     queue.append((c, edge_path + [(current_vertex.name, c.name)]))
 
-
     def directed_paths(self, source, sink):
         """
         Get all directed paths between sets of source vertices and sink vertices.

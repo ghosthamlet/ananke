@@ -63,7 +63,6 @@ class TestLinearGaussianSEM(unittest.TestCase):
                          [0, -1, 0, 0],
                          [0, 0, 2.5, 0]])
 
-
         # generate data
         true_sigma = np.linalg.inv(np.eye(dim) - beta) @ omega @ np.linalg.inv((np.eye(dim) - beta).T)
         X = np.random.multivariate_normal([0] * dim, true_sigma, size=N)

@@ -25,7 +25,7 @@ class LinearGaussianSEM:
         self.method = method
         # for a linear Gaussian SEM each edge is a parameter + noise for each vertex
         self.n_params = len(graph.di_edges) + len(graph.bi_edges) + len(graph.vertices)
-        self.vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
+        self._vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
         self.B_adj, self.omega_adj = self._construct_adjacency_matrices()
 
         self.X_ = None  # data matrix
@@ -47,15 +47,15 @@ class LinearGaussianSEM:
         # set the B adjacency matrix
         for u, v in self.graph.di_edges:
 
-            B_adj[self.vertex_index_map[v], self.vertex_index_map[u]] = 1
+            B_adj[self._vertex_index_map[v], self._vertex_index_map[u]] = 1
 
         for i in range(d):
 
             omega_adj[i, i] = 1
 
         for u, v in self.graph.bi_edges:
-            omega_adj[self.vertex_index_map[u], self.vertex_index_map[v]] = 1
-            omega_adj[self.vertex_index_map[v], self.vertex_index_map[u]] = 1
+            omega_adj[self._vertex_index_map[u], self._vertex_index_map[v]] = 1
+            omega_adj[self._vertex_index_map[v], self._vertex_index_map[u]] = 1
 
         return B_adj, omega_adj
 
@@ -136,8 +136,8 @@ class LinearGaussianSEM:
         # convert the data frame to a raw numpy array
         n, d = X.shape
         X_ = np.zeros((n, d))
-        for v in self.vertex_index_map:
-            X_[:, self.vertex_index_map[v]] = X[v]
+        for v in self._vertex_index_map:
+            X_[:, self._vertex_index_map[v]] = X[v]
         X_ = X_ - np.mean(X_, axis=0)  # centre the data
         S_ = np.cov(X_.T)
 
@@ -156,8 +156,8 @@ class LinearGaussianSEM:
         # convert the data frame to a raw numpy array
         n, d = X.shape
         self.X_ = np.zeros((n, d))
-        for v in self.vertex_index_map:
-            self.X_[:, self.vertex_index_map[v]] = X[v]
+        for v in self._vertex_index_map:
+            self.X_[:, self._vertex_index_map[v]] = X[v]
         self.X_ = self.X_ - np.mean(self.X_, axis=0)  # centre the data
         self.S_ = np.cov(X.T)
 
@@ -203,7 +203,7 @@ class LinearGaussianSEM:
             path_effect = 1
             for u, v in path:
 
-                path_effect *= self.B_[self.vertex_index_map[v], self.vertex_index_map[u]]
+                path_effect *= self.B_[self._vertex_index_map[v], self._vertex_index_map[u]]
 
             total_effect += path_effect
 
@@ -229,10 +229,10 @@ class LinearGaussianSEM:
             dot.node(v.name, shape='plaintext', height='.5', width='.5')
 
         for parent, child in self.graph.di_edges:
-            i, j = self.vertex_index_map[child], self.vertex_index_map[parent]
+            i, j = self._vertex_index_map[child], self._vertex_index_map[parent]
             dot.edge(parent, child, color='blue', label=str(round(self.B_[i, j], 2)), fontsize="12")
         for sib1, sib2 in self.graph.bi_edges:
-            i, j = self.vertex_index_map[sib1], self.vertex_index_map[sib2]
+            i, j = self._vertex_index_map[sib1], self._vertex_index_map[sib2]
             dot.edge(sib1, sib2, dir='both', color='red', label=str(round(self.omega_[i, j], 2)), fontsize="12")
 
         return dot
