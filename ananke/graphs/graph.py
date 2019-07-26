@@ -275,6 +275,43 @@ class Graph:
 
         return subgraph
 
+    def _bfs_directed_paths(self, source, sink):
+        """
+        Use BFS to find directed paths from a source vertex to sink vertices.
+
+        :param source: name of a single source.
+        :param sink: iterable of possibly multiple sinks.
+        :return: list of directed paths.
+        """
+
+        sink_vertices = [self.vertices[v] for v in sink]
+        queue = [(self.vertices[source], [])]
+
+        while queue:
+
+            (current_vertex, edge_path) = queue.pop(0)
+            for c in current_vertex.children:
+                if c in sink_vertices:
+                    yield edge_path + [(current_vertex.name, c.name)]
+                else:
+                    queue.append((c, edge_path + [(current_vertex.name, c.name)]))
+
+
+    def directed_paths(self, source, sink):
+        """
+        Get all directed paths between sets of source vertices and sink vertices.
+
+        :param source: a set of vertices that serve as the source.
+        :param sink: a set of vertices that serve as the sink.
+        :return: list of directed paths.
+        """
+
+        # we use BFS for finding all paths
+        directed_paths = []
+        for u in source:
+            directed_paths += self._bfs_directed_paths(u, sink)
+        return directed_paths
+
     def draw(self, direction=None):
         """
         Visualize the graph.

@@ -1,6 +1,3 @@
-"""
-Hello world
-"""
 from .admg import ADMG
 from .bg import BG
 from .cg import CG
