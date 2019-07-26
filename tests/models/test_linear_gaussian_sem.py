@@ -44,6 +44,12 @@ class TestLinearGaussianSEM(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.likelihood(data)
 
+        # try with BFGS
+        model.fit(data, method="BFGS")
+        self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
+        self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
+
+        # try with trust-exact (the default)
         model.fit(data)
         self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
         self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
