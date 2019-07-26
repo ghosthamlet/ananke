@@ -17,7 +17,7 @@ class TestLinearGaussianSEM(unittest.TestCase):
         self.assertEqual(8, model.n_params)
 
         # generate data from an ADMG A->B->C->D B<->D and try to fit
-        N = 2000
+        N = 5000
         dim = 4
 
         omega = np.array([[1, 0, 0, 0],
@@ -47,6 +47,8 @@ class TestLinearGaussianSEM(unittest.TestCase):
         model.fit(data)
         self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
         self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
+
+        model.likelihood(data)
 
 
 if __name__ == '__main__':

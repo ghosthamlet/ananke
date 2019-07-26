@@ -26,13 +26,10 @@ class LinearGaussianSEM:
         self.vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
         self.B_adj, self.omega_adj = self._construct_adjacency_matrices()
 
-        # TODO: check the size of these matrices to be d by d + lower triangular B + positive semi-definite omega
-        # TODO: throw an exception if not
         self.X = None  # data matrix
         self.S = None  # sample covariance
         self.B = None  # direct edge coefficients
         self.omega = None  # correlation of errors
-        self.edge_param_map = {}
 
     def _construct_adjacency_matrices(self):
         """
@@ -68,7 +65,7 @@ class LinearGaussianSEM:
         based on directed and bidirected edges in the graph.
 
         :param params: parameters corresponding entries in the B and Omega matrix
-        :return: a D x D matrix Omega.
+        :return: two D x D matrices B and Omega.
         """
 
         d = self.X.shape[1]
@@ -109,8 +106,10 @@ class LinearGaussianSEM:
 
     def _likelihood(self, params):
         """
-        Internal
-        :return:
+        Internal likelihood function used to fit parameters.
+
+        :param params: a list of parameters in the model.
+        :return: a float corresponding to the negative log likelihood.
         """
 
         n, d = self.X.shape
@@ -122,21 +121,21 @@ class LinearGaussianSEM:
 
     def likelihood(self, X):
         """
-        Calculate likelihood of the data given the model.
+        Calculate log-likelihood of the data given the model.
 
         :param X: a N x M dimensional data matrix.
-        :return: a float corresponding to the likelihood.
+        :return: a float corresponding to the log-likelihood.
         """
 
         # first check if the model has been fit otherwise throw an error
-        if not self.B:
+        if self.B is None:
             raise AssertionError("Model must be fit before likelihood can be calculated.")
 
         n, d = X.shape
         S = np.cov(X.T)
         eye_inv_beta = np.linalg.inv(np.eye(d) - self.B)
         sigma = np.dot(eye_inv_beta, np.dot(self.omega, eye_inv_beta.T))
-        return -(n/2) * (np.log(np.linalg.det(sigma)) - np.trace(np.dot(np.linalg.inv(sigma), S)))
+        return -(n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S)))
 
     def fit(self, X, method="trust-exact"):
         """
