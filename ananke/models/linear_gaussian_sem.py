@@ -144,7 +144,7 @@ class LinearGaussianSEM:
         :return: None.
         """
 
-        self.X = np.copy(X)
+        self.X = X - np.mean(X, axis=0) # centre the data
         self.S = np.cov(X.T)
 
         likelihood = functools.partial(self._likelihood)
@@ -175,6 +175,21 @@ class LinearGaussianSEM:
         :return: a float corresponding to the total causal effect.
         """
 
-        pass
-        #directed_paths = self.graph.
+        directed_paths = self.graph.directed_paths(A, Y)
 
+        # if there are no directed paths, the effect is 0
+        if len(directed_paths) == 0:
+            return 0
+
+        # otherwise do path analysis
+        total_effect = 0
+        for path in directed_paths:
+
+            path_effect = 1
+            for u, v in path:
+
+                path_effect *= self.B[self.vertex_index_map[v], self.vertex_index_map[u]]
+
+            total_effect += path_effect
+
+        return total_effect
