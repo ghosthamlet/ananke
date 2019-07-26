@@ -275,6 +275,17 @@ class Graph:
 
         return subgraph
 
+    def directed_paths(self, u, v):
+        """
+        Get all directed paths between sets of vertices U and V.
+
+        :param u: a set of vertices that serve as the source.
+        :param v: a set of vertices that serve as the sink.
+        :return: list of directed paths.
+        """
+
+        pass
+
     def draw(self, direction=None):
         """
         Visualize the graph.

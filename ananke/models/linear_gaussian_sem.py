@@ -165,5 +165,15 @@ class LinearGaussianSEM:
 
         self.B, self.omega = self._construct_b_omega(optim.x)
 
+    def total_effect(self, A, Y):
+        """
+        Calculate the total causal effect of a set of treatments A on
+        a set of outcomes Y.
 
+        :param A: iterable corresponding to variable names that act as treatments.
+        :param Y: iterable corresponding to variable names that act as outcomes.
+        :return: a float corresponding to the total causal effect.
+        """
+
+        return -1
 
