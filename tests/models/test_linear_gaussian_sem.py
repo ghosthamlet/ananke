@@ -44,7 +44,9 @@ class TestLinearGaussianSEM(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.likelihood(data)
 
-        #model.fit(data)
+        model.fit(data)
+        self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
+        self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
 
 
 if __name__ == '__main__':

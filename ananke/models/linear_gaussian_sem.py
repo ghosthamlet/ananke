@@ -60,64 +60,61 @@ class LinearGaussianSEM:
 
         return B_adj, omega_adj
 
-    def _construct_omega(self, params):
+    def _construct_b_omega(self, params):
         """
         To perform unconstrained optimization of a covariance matrix
         we use the log-Cholesky factorization which is unique if diagonal entries are positive.
-        This function constructs the Omega matrix with the appropriate structure
-        based on bidirected edges in the graph.
+        This function constructs the B and Omega matrices with the appropriate structure
+        based on directed and bidirected edges in the graph.
 
-        :param params: parameters corresponding entries in the Omega matrix
+        :param params: parameters corresponding entries in the B and Omega matrix
         :return: a D x D matrix Omega.
         """
 
         d = self.X.shape[1]
-        L_list = []
-        counter = 0
+        L_list, B_list = [],  []
+        omega_counter = 0
+        b_counter = len(self.graph.vertices) + len(self.graph.bi_edges)
 
         for i in range(d):
             for j in range(d):
 
-                if i == j:
-                    L_list.append(anp.exp(params[counter]))
-                    counter += 1
-
-
+                # check coefficient matrix for non zero values
+                if self.B_adj[i, j] == 0:
+                    B_list.append(0)
                 else:
+                    B_list.append(params[b_counter])
+                    b_counter += 1
+
+                # check omega matrix for non zero values
+                if self.omega_adj[i, j] == 0:
+                    L_list.append(0)
+                else:
+                    # if it's diagonal ensure positivity
                     if i == j:
-                        L_list.append(anp.exp(x[omega_struct[i, j] - 1]))
+                        L_list.append(anp.exp(params[omega_counter]))
+                        omega_counter += 1
+                    # only enter lower triangular entries
                     elif i < j:
-                        L_list.append(x[omega_struct[i, j] - 1])
+                        L_list.append(params[omega_counter])
+                        omega_counter += 1
                     else:
-                        L_list.append(x[omega_struct[j, i] - 1])
-        L = anp.reshape(anp.array(L_list), omega_struct.shape)
-        omega = anp.dot(L.T, L)
+                        L_list.append(0)
 
-        return omega
+        # reshape and return matrices
+        L = anp.reshape(anp.array(L_list), self.omega_adj.shape)
+        B = anp.reshape(anp.array(B_list), self.B_adj.shape)
 
-    def _likelihood(self, params, X):
+        return B, anp.dot(L.T, L)
+
+    def _likelihood(self, params):
         """
         Internal
         :return:
         """
 
         n, d = self.X.shape
-        L = anp.zeros((d, d))
-        #L[0, 0] = 0
-        #L[1, 1] = 0
-        #L[2, 2] = 0
-        #L[3, 3] = 0
-        #L[3][1] = params[4]
-        # L = anp.array([[anp.exp(params[0]), 0, 0, 0],
-        #                [0, anp.exp(params[1]), 0, 0],
-        #                [0, 0, anp.exp(params[2]), 0],
-        #                [0, params[4], 0, anp.exp(params[3])]])
-        omega = anp.dot(L.T, L)
-
-        B = anp.array([[0, 0, 0, 0],
-                       [params[5], 0, 0, 0],
-                       [0, params[6], 0, 0],
-                       [0, 0, params[7], 0]])
+        B, omega = self._construct_b_omega(params)
         eye_inv_beta = anp.linalg.inv(anp.eye(d) - B)
         sigma = anp.dot(eye_inv_beta, anp.dot(omega, eye_inv_beta.T))
         likelihood = -(n / 2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S)))
@@ -141,7 +138,7 @@ class LinearGaussianSEM:
         sigma = np.dot(eye_inv_beta, np.dot(self.omega, eye_inv_beta.T))
         return -(n/2) * (np.log(np.linalg.det(sigma)) - np.trace(np.dot(np.linalg.inv(sigma), S)))
 
-    def fit(self, X, method="BFGS"):
+    def fit(self, X, method="trust-exact"):
         """
 
         :param X: Fit the model to X -- a N x M dimensional data matrix.
@@ -151,14 +148,23 @@ class LinearGaussianSEM:
         self.X = np.copy(X)
         self.S = np.cov(X.T)
 
-        likelihood = functools.partial(self._likelihood, X=self.X)
+        likelihood = functools.partial(self._likelihood)
         grad_likelihood = grad(likelihood)
+        hess_likelihood = hessian(likelihood)
 
         if method == "BFGS":
             optim = minimize(likelihood,
                              x0=anp.full((self.n_params,), 0),
                              method=method,
                              jac=grad_likelihood)
-        print(optim.x)
+        elif method == 'trust-exact':
+            optim = minimize(likelihood,
+                             x0=anp.full((self.n_params,), 0),
+                             method="trust-exact",
+                             jac=grad_likelihood,
+                             hess=hess_likelihood)
+
+        self.B, self.omega = self._construct_b_omega(optim.x)
+
 
 
