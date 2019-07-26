@@ -3,4 +3,5 @@ graphviz
 autograd
 scipy
 numpy
+pandas
 

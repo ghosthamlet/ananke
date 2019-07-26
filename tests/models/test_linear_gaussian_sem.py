@@ -2,6 +2,7 @@ import unittest
 
 from ananke.graphs import ADMG
 from ananke.models import LinearGaussianSEM
+import pandas as pd
 import numpy as np
 
 
@@ -38,21 +39,24 @@ class TestLinearGaussianSEM(unittest.TestCase):
 
         # generate data
         true_sigma = np.linalg.inv(np.eye(dim) - beta) @ omega @ np.linalg.inv((np.eye(dim) - beta).T)
-        data = np.random.multivariate_normal([0] * dim, true_sigma, size=N)
+        X = np.random.multivariate_normal([0] * dim, true_sigma, size=N)
+        data = pd.DataFrame({"A": X[:, 0], "B": X[:, 1], "C": X[:, 2], "D": X[:, 3]})
 
         # test that without fitting you can't compute likelihood
         with self.assertRaises(AssertionError):
             model.likelihood(data)
 
         # try with BFGS
-        model.fit(data, method="BFGS")
-        self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
-        self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
+        model = LinearGaussianSEM(G, method="BFGS")
+        model.fit(data)
+        self.assertTrue(np.allclose(beta, model.B_, rtol=0.05))
+        self.assertTrue(np.allclose(omega, model.omega_, rtol=0.05))
 
         # try with trust-exact (the default)
+        model = LinearGaussianSEM(G, method="trust-exact")
         model.fit(data)
-        self.assertTrue(np.allclose(beta, model.B, rtol=0.05))
-        self.assertTrue(np.allclose(omega, model.omega, rtol=0.05))
+        self.assertTrue(np.allclose(beta, model.B_, rtol=0.05))
+        self.assertTrue(np.allclose(omega, model.omega_, rtol=0.05))
 
         model.likelihood(data)
 

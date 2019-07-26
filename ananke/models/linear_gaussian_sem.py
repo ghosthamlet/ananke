@@ -13,23 +13,25 @@ import numpy as np
 
 class LinearGaussianSEM:
 
-    def __init__(self, graph):
+    def __init__(self, graph, method="trust-exact"):
         """
         Constructor
 
         :param graph: graph (ADMG) corresponding to the linear Gaussian SEM.
+        :param method: string indiciating optimization method to be used -- "trust-exact" or "BFGS".
         """
 
         self.graph = graph
+        self.method = method
         # for a linear Gaussian SEM each edge is a parameter + noise for each vertex
         self.n_params = len(graph.di_edges) + len(graph.bi_edges) + len(graph.vertices)
         self.vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
         self.B_adj, self.omega_adj = self._construct_adjacency_matrices()
 
-        self.X = None  # data matrix
-        self.S = None  # sample covariance
-        self.B = None  # direct edge coefficients
-        self.omega = None  # correlation of errors
+        self.X_ = None  # data matrix
+        self.S_ = None  # sample covariance matrix
+        self.B_ = None  # direct edge coefficients
+        self.omega_ = None  # correlation of errors
 
     def _construct_adjacency_matrices(self):
         """
@@ -68,7 +70,7 @@ class LinearGaussianSEM:
         :return: two D x D matrices B and Omega.
         """
 
-        d = self.X.shape[1]
+        d = self.X_.shape[1]
         L_list, B_list = [],  []
         omega_counter = 0
         b_counter = len(self.graph.vertices) + len(self.graph.bi_edges)
@@ -112,11 +114,11 @@ class LinearGaussianSEM:
         :return: a float corresponding to the negative log likelihood.
         """
 
-        n, d = self.X.shape
+        n, d = self.X_.shape
         B, omega = self._construct_b_omega(params)
         eye_inv_beta = anp.linalg.inv(anp.eye(d) - B)
         sigma = anp.dot(eye_inv_beta, anp.dot(omega, eye_inv_beta.T))
-        likelihood = -(n / 2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S)))
+        likelihood = -(n / 2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
         return -likelihood
 
     def likelihood(self, X):
@@ -128,42 +130,48 @@ class LinearGaussianSEM:
         """
 
         # first check if the model has been fit otherwise throw an error
-        if self.B is None:
+        if self.B_ is None:
             raise AssertionError("Model must be fit before likelihood can be calculated.")
 
         n, d = X.shape
         S = np.cov(X.T)
-        eye_inv_beta = np.linalg.inv(np.eye(d) - self.B)
-        sigma = np.dot(eye_inv_beta, np.dot(self.omega, eye_inv_beta.T))
+        eye_inv_beta = np.linalg.inv(np.eye(d) - self.B_)
+        sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
         return -(n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S)))
 
-    def fit(self, X, method="trust-exact"):
+    def fit(self, X):
         """
 
-        :param X: Fit the model to X -- a N x M dimensional data matrix.
-        :return: None.
+        :param X: Fit the model to X -- a N x M dimensional pandas data frame.
+        :return: self.
         """
 
-        self.X = X - np.mean(X, axis=0) # centre the data
-        self.S = np.cov(X.T)
+        # convert the data frame to a raw numpy array
+        n, d = X.shape
+        self.X_ = np.zeros((n, d))
+        for v in self.vertex_index_map:
+            self.X_[:, self.vertex_index_map[v]] = X[v]
+        self.X_ = X - np.mean(X, axis=0)  # centre the data
+        self.S_ = np.cov(X.T)
 
         likelihood = functools.partial(self._likelihood)
         grad_likelihood = grad(likelihood)
         hess_likelihood = hessian(likelihood)
 
-        if method == "BFGS":
+        if self.method == "BFGS":
             optim = minimize(likelihood,
                              x0=anp.full((self.n_params,), 0),
-                             method=method,
+                             method=self.method,
                              jac=grad_likelihood)
-        elif method == 'trust-exact':
+        elif self.method == "trust-exact":
             optim = minimize(likelihood,
                              x0=anp.full((self.n_params,), 0),
-                             method="trust-exact",
+                             method=self.method,
                              jac=grad_likelihood,
                              hess=hess_likelihood)
 
-        self.B, self.omega = self._construct_b_omega(optim.x)
+        self.B_, self.omega_ = self._construct_b_omega(optim.x)
+        return self
 
     def total_effect(self, A, Y):
         """
@@ -188,7 +196,7 @@ class LinearGaussianSEM:
             path_effect = 1
             for u, v in path:
 
-                path_effect *= self.B[self.vertex_index_map[v], self.vertex_index_map[u]]
+                path_effect *= self.B_[self.vertex_index_map[v], self.vertex_index_map[u]]
 
             total_effect += path_effect
 
