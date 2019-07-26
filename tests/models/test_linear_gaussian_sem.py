@@ -57,8 +57,7 @@ class TestLinearGaussianSEM(unittest.TestCase):
         model.likelihood(data)
 
         self.assertEqual(0, model.total_effect(["D"], ["A"]))
-        print(model.total_effect(["A"], ["D"]))
-        print(model.B)
+        self.assertAlmostEqual(-7.5, model.total_effect(["A"], ["D"]), delta=0.1)
 
 
 if __name__ == '__main__':
