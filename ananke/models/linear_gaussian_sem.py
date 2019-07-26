@@ -175,5 +175,6 @@ class LinearGaussianSEM:
         :return: a float corresponding to the total causal effect.
         """
 
-        return -1
+        pass
+        #directed_paths = self.graph.
 
