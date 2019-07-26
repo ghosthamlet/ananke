@@ -237,20 +237,22 @@ class ADMG(SG):
                 u, v = b, a
 
             # check parent condition and add directed edge if u is a parent of the reachable closure
+            added_edge = False
             if u:
                 if v not in reachable_closures:
                     reachable_closures[v] = self.reachable_closure([v])[0]
                 rc = reachable_closures[v]
                 if u in self.parents(rc):
                     di_edges.append((u, v))
+                    added_edge = True
 
             # if neither are ancestors of each other we need to compute
             # the reachable closure of set {a, b} and check if it is
             # bidirected connected
-            if not rc:
+            if not added_edge:
                 rc, _, cadmg = self.reachable_closure([a, b])
                 for district in cadmg.districts:
-                    if rc.issubset(district):
+                    if rc <= district:
                         bi_edges.append((a, b))
 
         return ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)

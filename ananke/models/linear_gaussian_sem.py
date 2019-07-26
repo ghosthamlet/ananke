@@ -106,7 +106,7 @@ class LinearGaussianSEM:
 
         return B, anp.dot(L.T, L)
 
-    def _likelihood(self, params):
+    def _neg_loglikelihood(self, params):
         """
         Internal likelihood function used to fit parameters.
 
@@ -118,10 +118,10 @@ class LinearGaussianSEM:
         B, omega = self._construct_b_omega(params)
         eye_inv_beta = anp.linalg.inv(anp.eye(d) - B)
         sigma = anp.dot(eye_inv_beta, anp.dot(omega, eye_inv_beta.T))
-        likelihood = -(n / 2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
+        likelihood = -(n/2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
         return -likelihood
 
-    def likelihood(self, X):
+    def neg_loglikelihood(self, X):
         """
         Calculate log-likelihood of the data given the model.
 
@@ -133,11 +133,18 @@ class LinearGaussianSEM:
         if self.B_ is None:
             raise AssertionError("Model must be fit before likelihood can be calculated.")
 
+        # convert the data frame to a raw numpy array
         n, d = X.shape
-        S = np.cov(X.T)
+        X_ = np.zeros((n, d))
+        for v in self.vertex_index_map:
+            X_[:, self.vertex_index_map[v]] = X[v]
+        X_ = X_ - np.mean(X_, axis=0)  # centre the data
+        S_ = np.cov(X_.T)
+
+        # calculate the likelihood
         eye_inv_beta = np.linalg.inv(np.eye(d) - self.B_)
         sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
-        return -(n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S)))
+        return -(n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S_)))
 
     def fit(self, X):
         """
@@ -151,10 +158,10 @@ class LinearGaussianSEM:
         self.X_ = np.zeros((n, d))
         for v in self.vertex_index_map:
             self.X_[:, self.vertex_index_map[v]] = X[v]
-        self.X_ = X - np.mean(X, axis=0)  # centre the data
+        self.X_ = self.X_ - np.mean(self.X_, axis=0)  # centre the data
         self.S_ = np.cov(X.T)
 
-        likelihood = functools.partial(self._likelihood)
+        likelihood = functools.partial(self._neg_loglikelihood)
         grad_likelihood = grad(likelihood)
         hess_likelihood = hessian(likelihood)
 
@@ -201,3 +208,31 @@ class LinearGaussianSEM:
             total_effect += path_effect
 
         return total_effect
+
+    def draw(self, direction=None):
+        """
+        Visualize the graph.
+
+        :return : dot language representation of the graph.
+        """
+
+        from graphviz import Digraph
+        if self.B_ is None:
+            raise AssertionError("Model must be fit before model can be drawn.")
+        dot = Digraph()
+
+        # set direction from left to right if that's preferred
+        if direction == 'LR':
+            dot.graph_attr['rankdir'] = direction
+
+        for v in self.graph.vertices.values():
+            dot.node(v.name, shape='plaintext', height='.5', width='.5')
+
+        for parent, child in self.graph.di_edges:
+            i, j = self.vertex_index_map[child], self.vertex_index_map[parent]
+            dot.edge(parent, child, color='blue', label=str(round(self.B_[i, j], 2)), fontsize="12")
+        for sib1, sib2 in self.graph.bi_edges:
+            i, j = self.vertex_index_map[sib1], self.vertex_index_map[sib2]
+            dot.edge(sib1, sib2, dir='both', color='red', label=str(round(self.omega_[i, j], 2)), fontsize="12")
+
+        return dot
