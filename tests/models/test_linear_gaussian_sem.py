@@ -50,7 +50,7 @@ class TestLinearGaussianSEM(unittest.TestCase):
         model = LinearGaussianSEM(G)
 
         # generate data from an ADMG A->B->C->D B<->D and try to fit
-        N = 5000
+        N = 50000
         dim = 4
 
         omega = np.array([[1, 0, 0, 0],
