@@ -126,6 +126,8 @@ class LinearGaussianSEM:
         Calculate log-likelihood of the data given the model.
 
         :param X: a N x M dimensional data matrix.
+        :param weights: optional 1d numpy array with weights for each data point
+                        (rows with higher values are given greater importance).
         :return: a float corresponding to the log-likelihood.
         """
 
@@ -157,6 +159,8 @@ class LinearGaussianSEM:
         Fit the model to data via (weighted) maximum likelihood estimation
 
         :param X: data -- a N x M dimensional pandas data frame.
+        :param weights: optional 1d numpy array with weights for each data point
+                        (rows with higher values are given greater importance).
         :return: self.
         """
 
