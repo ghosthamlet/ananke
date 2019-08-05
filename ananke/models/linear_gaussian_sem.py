@@ -121,7 +121,7 @@ class LinearGaussianSEM:
         likelihood = -(n/2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
         return -likelihood
 
-    def neg_loglikelihood(self, X):
+    def neg_loglikelihood(self, X, weights=None):
         """
         Calculate log-likelihood of the data given the model.
 
@@ -135,31 +135,44 @@ class LinearGaussianSEM:
 
         # convert the data frame to a raw numpy array
         n, d = X.shape
+
+        # if no weights were given use artificial equal weights
+        if weights is None:
+            weights = np.ones((n,))
+
         X_ = np.zeros((n, d))
         for v in self._vertex_index_map:
             X_[:, self._vertex_index_map[v]] = X[v]
-        X_ = X_ - np.mean(X_, axis=0)  # centre the data
-        S_ = np.cov(X_.T)
+
+        X_ = X_ - np.average(X_, axis=0, weights=weights)  # centre the data
+        S_ = np.cov(X_.T, aweights=weights)
 
         # calculate the likelihood
         eye_inv_beta = np.linalg.inv(np.eye(d) - self.B_)
         sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
         return (n/2) * (np.log(np.linalg.det(sigma)) - np.trace(np.dot(np.linalg.inv(sigma), S_)))
 
-    def fit(self, X):
+    def fit(self, X, weights=None):
         """
+        Fit the model to data via (weighted) maximum likelihood estimation
 
-        :param X: Fit the model to X -- a N x M dimensional pandas data frame.
+        :param X: data -- a N x M dimensional pandas data frame.
         :return: self.
         """
 
         # convert the data frame to a raw numpy array
         n, d = X.shape
+
+        # if no weights were given use artificial equal weights
+        if weights is None:
+            weights = np.ones((n,))
+
         self.X_ = np.zeros((n, d))
         for v in self._vertex_index_map:
             self.X_[:, self._vertex_index_map[v]] = X[v]
-        self.X_ = self.X_ - np.mean(self.X_, axis=0)  # centre the data
-        self.S_ = np.cov(X.T)
+        # self.X_ = self.X_ - np.mean(self.X_, axis=0)  # centre the data
+        self.X_ = self.X_ - np.average(self.X_, axis=0, weights=weights)  # centre the data
+        self.S_ = np.cov(X.T, aweights=weights)
 
         likelihood = functools.partial(self._neg_loglikelihood)
         grad_likelihood = grad(likelihood)
