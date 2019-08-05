@@ -127,7 +127,7 @@ class LinearGaussianSEM:
 
         :param X: a N x M dimensional data matrix.
         :param weights: optional 1d numpy array with weights for each data point
-                        (rows with higher values are given greater importance).
+                        (rows with higher weights are given greater importance).
         :return: a float corresponding to the log-likelihood.
         """
 
@@ -160,7 +160,7 @@ class LinearGaussianSEM:
 
         :param X: data -- a N x M dimensional pandas data frame.
         :param weights: optional 1d numpy array with weights for each data point
-                        (rows with higher values are given greater importance).
+                        (rows with higher weights are given greater importance).
         :return: self.
         """
 
