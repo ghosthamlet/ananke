@@ -19,5 +19,6 @@ class TestGraph(unittest.TestCase):
         true_paths = [[('A', 'D'), ('D', 'Y')], [('A', 'B'), ('B', 'D'), ('D', 'Y')], [('A', 'B'), ('B', 'C'), ('C', 'Y')]]
         print(A_to_Y_paths)
 
+
 if __name__ == '__main__':
     unittest.main()

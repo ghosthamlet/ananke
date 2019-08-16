@@ -25,7 +25,7 @@ class LinearGaussianSEM:
         self.method = method
         # for a linear Gaussian SEM each edge is a parameter + noise for each vertex
         self.n_params = len(graph.di_edges) + len(graph.bi_edges) + len(graph.vertices)
-        self.vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
+        self._vertex_index_map = {v: i for i, v in enumerate(self.graph.vertices)}
         self.B_adj, self.omega_adj = self._construct_adjacency_matrices()
 
         self.X_ = None  # data matrix
@@ -47,15 +47,15 @@ class LinearGaussianSEM:
         # set the B adjacency matrix
         for u, v in self.graph.di_edges:
 
-            B_adj[self.vertex_index_map[v], self.vertex_index_map[u]] = 1
+            B_adj[self._vertex_index_map[v], self._vertex_index_map[u]] = 1
 
         for i in range(d):
 
             omega_adj[i, i] = 1
 
         for u, v in self.graph.bi_edges:
-            omega_adj[self.vertex_index_map[u], self.vertex_index_map[v]] = 1
-            omega_adj[self.vertex_index_map[v], self.vertex_index_map[u]] = 1
+            omega_adj[self._vertex_index_map[u], self._vertex_index_map[v]] = 1
+            omega_adj[self._vertex_index_map[v], self._vertex_index_map[u]] = 1
 
         return B_adj, omega_adj
 
@@ -106,7 +106,7 @@ class LinearGaussianSEM:
 
         return B, anp.dot(L.T, L)
 
-    def _likelihood(self, params):
+    def _neg_loglikelihood(self, params):
         """
         Internal likelihood function used to fit parameters.
 
@@ -118,14 +118,16 @@ class LinearGaussianSEM:
         B, omega = self._construct_b_omega(params)
         eye_inv_beta = anp.linalg.inv(anp.eye(d) - B)
         sigma = anp.dot(eye_inv_beta, anp.dot(omega, eye_inv_beta.T))
-        likelihood = -(n / 2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
+        likelihood = -(n/2) * (anp.log(anp.linalg.det(sigma)) + anp.trace(anp.dot(anp.linalg.inv(sigma), self.S_)))
         return -likelihood
 
-    def likelihood(self, X):
+    def neg_loglikelihood(self, X, weights=None):
         """
         Calculate log-likelihood of the data given the model.
 
         :param X: a N x M dimensional data matrix.
+        :param weights: optional 1d numpy array with weights for each data point
+                        (rows with higher weights are given greater importance).
         :return: a float corresponding to the log-likelihood.
         """
 
@@ -133,28 +135,50 @@ class LinearGaussianSEM:
         if self.B_ is None:
             raise AssertionError("Model must be fit before likelihood can be calculated.")
 
+        # convert the data frame to a raw numpy array
         n, d = X.shape
-        S = np.cov(X.T)
+
+        # if no weights were given use artificial equal weights
+        if weights is None:
+            weights = np.ones((n,))
+
+        X_ = np.zeros((n, d))
+        for v in self._vertex_index_map:
+            X_[:, self._vertex_index_map[v]] = X[v]
+
+        X_ = X_ - np.average(X_, axis=0, weights=weights)  # centre the data
+        S_ = np.cov(X_.T, aweights=weights)
+
+        # calculate the likelihood
         eye_inv_beta = np.linalg.inv(np.eye(d) - self.B_)
         sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
-        return -(n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S)))
+        return (n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S_)))
 
-    def fit(self, X):
+    def fit(self, X, weights=None):
         """
+        Fit the model to data via (weighted) maximum likelihood estimation
 
-        :param X: Fit the model to X -- a N x M dimensional pandas data frame.
+        :param X: data -- a N x M dimensional pandas data frame.
+        :param weights: optional 1d numpy array with weights for each data point
+                        (rows with higher weights are given greater importance).
         :return: self.
         """
 
         # convert the data frame to a raw numpy array
         n, d = X.shape
-        self.X_ = np.zeros((n, d))
-        for v in self.vertex_index_map:
-            self.X_[:, self.vertex_index_map[v]] = X[v]
-        self.X_ = X - np.mean(X, axis=0)  # centre the data
-        self.S_ = np.cov(X.T)
 
-        likelihood = functools.partial(self._likelihood)
+        # if no weights were given use artificial equal weights
+        if weights is None:
+            weights = np.ones((n,))
+
+        self.X_ = np.zeros((n, d))
+        for v in self._vertex_index_map:
+            self.X_[:, self._vertex_index_map[v]] = X[v]
+        # self.X_ = self.X_ - np.mean(self.X_, axis=0)  # centre the data
+        self.X_ = self.X_ - np.average(self.X_, axis=0, weights=weights)  # centre the data
+        self.S_ = np.cov(X.T, aweights=weights)
+
+        likelihood = functools.partial(self._neg_loglikelihood)
         grad_likelihood = grad(likelihood)
         hess_likelihood = hessian(likelihood)
 
@@ -196,8 +220,36 @@ class LinearGaussianSEM:
             path_effect = 1
             for u, v in path:
 
-                path_effect *= self.B_[self.vertex_index_map[v], self.vertex_index_map[u]]
+                path_effect *= self.B_[self._vertex_index_map[v], self._vertex_index_map[u]]
 
             total_effect += path_effect
 
         return total_effect
+
+    def draw(self, direction=None):
+        """
+        Visualize the graph.
+
+        :return : dot language representation of the graph.
+        """
+
+        from graphviz import Digraph
+        if self.B_ is None:
+            raise AssertionError("Model must be fit before model can be drawn.")
+        dot = Digraph()
+
+        # set direction from left to right if that's preferred
+        if direction == 'LR':
+            dot.graph_attr['rankdir'] = direction
+
+        for v in self.graph.vertices.values():
+            dot.node(v.name, shape='plaintext', height='.5', width='.5')
+
+        for parent, child in self.graph.di_edges:
+            i, j = self._vertex_index_map[child], self._vertex_index_map[parent]
+            dot.edge(parent, child, color='blue', label=str(round(self.B_[i, j], 2)), fontsize="12")
+        for sib1, sib2 in self.graph.bi_edges:
+            i, j = self._vertex_index_map[sib1], self._vertex_index_map[sib2]
+            dot.edge(sib1, sib2, dir='both', color='red', label=str(round(self.omega_[i, j], 2)), fontsize="12")
+
+        return dot
