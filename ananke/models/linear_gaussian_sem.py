@@ -152,7 +152,7 @@ class LinearGaussianSEM:
         # calculate the likelihood
         eye_inv_beta = np.linalg.inv(np.eye(d) - self.B_)
         sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
-        return (n/2) * (np.log(np.linalg.det(sigma)) - np.trace(np.dot(np.linalg.inv(sigma), S_)))
+        return (n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S_)))
 
     def fit(self, X, weights=None):
         """
