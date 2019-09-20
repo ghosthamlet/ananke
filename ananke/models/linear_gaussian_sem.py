@@ -105,7 +105,10 @@ class LinearGaussianSEM:
         L = anp.reshape(anp.array(L_list), self.omega_adj.shape)
         B = anp.reshape(anp.array(B_list), self.B_adj.shape)
 
-        return B, anp.dot(L.T, L)
+        # This is required to enforce zero elements in omega
+        omega = anp.multiply(anp.dot(L.T, L), self.omega_adj)
+
+        return B, omega
 
     def _neg_loglikelihood(self, params):
         """
@@ -183,7 +186,8 @@ class LinearGaussianSEM:
         grad_likelihood = grad(likelihood)
         hess_likelihood = hessian(likelihood)
 
-        initial_guess = anp.full((self.n_params,), np.random.uniform(0, .1))
+        #initial_guess = anp.full((self.n_params,), np.random.uniform(0, .1))
+        initial_guess = anp.full((self.n_params,), 0)
 
         if self.method == "BFGS":
             optim = minimize(likelihood,

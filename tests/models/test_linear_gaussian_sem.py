@@ -4,6 +4,7 @@ from ananke.graphs import ADMG
 from ananke.models import LinearGaussianSEM
 import pandas as pd
 import numpy as np
+from numpy.testing import assert_allclose
 
 
 class TestLinearGaussianSEM(unittest.TestCase):
@@ -95,6 +96,45 @@ class TestLinearGaussianSEM(unittest.TestCase):
         self.assertAlmostEqual(-7.5, model.total_effect(["A"], ["D"]), delta=0.5)
 
         model.draw(direction='LR')
+
+
+    def test_that_omega_decomposition_correct(self):
+        """
+        In order for the model to be faithful to the graph it is necessary to enforce
+        the constraint that the omega matrix contains the correct zeros.
+
+        It is not known why the function fails to converge
+        :return:
+        """
+        N = 20000
+        dim = 4
+
+
+        beta = np.array([[0, 0, 0, 0],
+                         [0, 0, 0, 0],
+                         [0, -1.9, 0, 0],
+                         [0, 0, 1, 0]])
+        omega = np.array([[1.39078604, 0.15565348, 0.1193632, 0.],
+               [0.15565348, 1.09943693, 0., 0.01106629],
+               [0.1193632, 0., 1.39414306, 0.],
+               [0., 0.01106629, 0., 0.93586337]])
+
+        true_sigma = np.linalg.inv(np.eye(dim) - beta) @ omega @ np.linalg.inv((np.eye(dim) - beta).T)
+        X = np.random.multivariate_normal([0] * dim, true_sigma, size=N)
+        data = pd.DataFrame({"A": X[:, 0], "B": X[:, 1], "C": X[:, 2], "D": X[:, 3]})
+
+        vertices = ['A', 'B', 'C', 'D']
+        di_edges = [("B", "C"), ("C", "D")]
+        bi_edges = [('A', 'C'), ('A', 'B'), ('B', 'D')]
+        G3 = ADMG(vertices, di_edges=di_edges, bi_edges=bi_edges)
+        model3 = LinearGaussianSEM(G3, method="trust-exact")
+        model3.fit(data, tol=1e-10, disp=1000)
+
+        truth_mask = omega == 0
+        result_mask = model3.omega_ == 0
+
+        assert_allclose(truth_mask, result_mask)
+
 
 
 if __name__ == '__main__':
