@@ -38,6 +38,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="kn">from</span> <span class="nn">.graph</span> <span class="k">import</span> <span class="n">Graph</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -73,7 +74,6 @@
         <span class="c1"># NOTE: in an SG, only blocks of size &gt;= 2 are considered</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span>
 
     <span class="c1">#### VALID GRAPH CHECKS ####</span>
     <span class="k">def</span> <span class="nf">_acyclic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -136,6 +136,11 @@
     <span class="c1">#### DISTRICT CODE ####</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">districts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns list of all districts in the graph.</span>
+
+<span class="sd">        :return: list of sets corresponding to districts in the graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_districts</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_calculate_districts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -165,7 +170,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        DFS from vertex to discover its district.</span>
 
-<span class="sd">        :param vertex: vertex object to start the DFS at..</span>
+<span class="sd">        :param vertex: vertex object to start the DFS at.</span>
 <span class="sd">        :param district_id: int corresponding to district ID</span>
 
 <span class="sd">        :return: None</span>
@@ -188,9 +193,17 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">districts</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_districts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_district_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]</span></div>
-        <span class="c1">#return self.districts[self._district_map[vertex]]</span>
 
     <span class="c1">#### BLOCK CODE ####</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns list of all blocks in the graph.</span>
+
+<span class="sd">        :return: list of sets corresponding to blocks in the graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_blocks</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">_calculate_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update blocks in the graph.</span>
@@ -202,15 +215,17 @@
         <span class="n">block_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Add all vertices to the district_map</span>
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">vertex</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dfs_block</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">block_counter</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dfs_block</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">],</span> <span class="n">block_counter</span><span class="p">)</span>
                 <span class="n">block_counter</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># Now process the district_map into a list of lists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">block_counter</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">block_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">[</span><span class="n">block_id</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span>
 
     <span class="k">def</span> <span class="nf">_dfs_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">block_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -225,18 +240,8 @@
         <span class="n">visit_stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertex</span><span class="p">]</span>
         <span class="k">while</span> <span class="n">visit_stack</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">visit_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_id</span>
-            <span class="n">visit_stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">neighbors</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the block of a vertex.</span>
-
-<span class="sd">        :param vertex: vertex object.</span>
-<span class="sd">        :return: set corresponding to block.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_id</span>
+            <span class="n">visit_stack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">neighbors</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SG.block"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.block">[docs]</a>    <span class="k">def</span> <span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -245,21 +250,10 @@
 <span class="sd">        :param vertex: name of the vertex.</span>
 <span class="sd">        :return: set corresponding to block.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_block</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block</span><span class="p">}</span></div>
-
-<div class="viewcode-block" id="SG.blocks"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.blocks">[docs]</a>    <span class="k">def</span> <span class="nf">blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns list of all blocks in the graph.</span>
-
-<span class="sd">        :return: list of lists corresponding to blocks in the graph.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">:</span>
-            <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block</span><span class="p">})</span>
-        <span class="k">return</span> <span class="n">blocks</span></div>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blocks</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_block_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">block</span></div>
 
 <div class="viewcode-block" id="SG.add_biedge"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.sg.SG.add_biedge">[docs]</a>    <span class="k">def</span> <span class="nf">add_biedge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sib1</span><span class="p">,</span> <span class="n">sib2</span><span class="p">,</span> <span class="n">recompute</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -409,8 +403,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.graphs.html">ananke.graphs package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.identification.html">ananke.identification package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html">Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
 </ul>
 
 <div class="relations">

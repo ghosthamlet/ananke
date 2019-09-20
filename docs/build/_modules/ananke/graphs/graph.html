@@ -310,6 +310,42 @@
 
         <span class="k">return</span> <span class="n">subgraph</span></div>
 
+    <span class="k">def</span> <span class="nf">_bfs_directed_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">sink</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use BFS to find directed paths from a source vertex to sink vertices.</span>
+
+<span class="sd">        :param source: name of a single source.</span>
+<span class="sd">        :param sink: iterable of possibly multiple sinks.</span>
+<span class="sd">        :return: list of directed paths.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sink_vertices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sink</span><span class="p">]</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">source</span><span class="p">],</span> <span class="p">[])]</span>
+
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+
+            <span class="p">(</span><span class="n">current_vertex</span><span class="p">,</span> <span class="n">edge_path</span><span class="p">)</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">current_vertex</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sink_vertices</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">current_vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c</span><span class="p">,</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">current_vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)]))</span>
+
+<div class="viewcode-block" id="Graph.directed_paths"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.graph.Graph.directed_paths">[docs]</a>    <span class="k">def</span> <span class="nf">directed_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">sink</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all directed paths between sets of source vertices and sink vertices.</span>
+
+<span class="sd">        :param source: a set of vertices that serve as the source.</span>
+<span class="sd">        :param sink: a set of vertices that serve as the sink.</span>
+<span class="sd">        :return: list of directed paths.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># we use BFS for finding all paths</span>
+        <span class="n">directed_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">source</span><span class="p">:</span>
+            <span class="n">directed_paths</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfs_directed_paths</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">sink</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">directed_paths</span></div>
+
 <div class="viewcode-block" id="Graph.draw"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.graph.Graph.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the graph.</span>
@@ -360,8 +396,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.graphs.html">ananke.graphs package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.identification.html">ananke.identification package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html">Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
 </ul>
 
 <div class="relations">

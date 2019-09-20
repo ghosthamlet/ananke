@@ -24,14 +24,15 @@ Documentation
    :caption: Contents:
    
    notebooks/causal_graphs.ipynb
-   ananke.graphs.rst
-   ananke.identification.rst
+   notebooks/linear_gaussian_sems.ipynb
 
 Ananke Graphs
 =============
+:ref:`ananke.graphs`
 
 Ananke Identification
 =====================
+:ref:`ananke.identification`
 
 
 Indices and tables

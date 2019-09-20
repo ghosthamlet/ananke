@@ -77,6 +77,36 @@ class TestOneLineGZID(unittest.TestCase):
         functional = ol.functional([{"X_1"}, {"X_2"}])
         self.assertEqual("ΣW ΦX_2,Y p(V \ X_1 | do(X_1))ΦX_1,W p(V \ X_2 | do(X_2))", functional)
 
+    def test_is_id_chain(self):
+        vertices = ["A", "X", "W", "Y"]
+        di_edges = [("A", "X"), ("X", "W"), ("W", "Y")]
+        bi_edges = [("X", "W"), ("W", 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        interventions = ["A"]
+        outcomes = ["Y"]
+        ol = identification.OneLineGZID(G, interventions, outcomes)
+        status = ol.id([{"A", "X"}, {"A", "Y"}])
+        print(status)
+
+        vertices = ["A", "X", "Y"]
+        di_edges = [("A", "X"), ("X", "Y")]
+        bi_edges = [("X", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        interventions = ["A"]
+        outcomes = ["Y"]
+        ol = identification.OneLineGZID(G, interventions, outcomes)
+        status = ol.id([{"A", "X"}, {"A", "Y"}])
+        print(status)
+
+        vertices = ["A", "W", "Y"]
+        di_edges = [("A", "W"), ("W", "Y")]
+        bi_edges = [("A", "W"), ("W", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        interventions = ["A"]
+        outcomes = ["Y"]
+        ol = identification.OneLineGZID(G, interventions, outcomes)
+        status = ol.id([{"A"}, {"A", "Y"}])
+        print(status)
 
 if __name__ == '__main__':
     unittest.main()

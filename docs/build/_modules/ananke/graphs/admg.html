@@ -38,6 +38,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 
 <span class="kn">from</span> <span class="nn">ananke.utils</span> <span class="k">import</span> <span class="n">powerset</span>
 <span class="kn">from</span> <span class="nn">.sg</span> <span class="k">import</span> <span class="n">SG</span>
@@ -241,8 +242,55 @@
         <span class="n">intrinsic_sets</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">get_intrinsic_sets</span><span class="p">()</span>
         <span class="n">fixing_orders</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">iset_fixing_order_map</span>
 
-        <span class="k">return</span> <span class="n">intrinsic_sets</span><span class="p">,</span> <span class="n">fixing_orders</span></div></div>
+        <span class="k">return</span> <span class="n">intrinsic_sets</span><span class="p">,</span> <span class="n">fixing_orders</span></div>
 
+<div class="viewcode-block" id="ADMG.maximal_arid_projection"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.ADMG.maximal_arid_projection">[docs]</a>    <span class="k">def</span> <span class="nf">maximal_arid_projection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the maximal arid projection that encodes the same conditional independences and</span>
+<span class="sd">        Vermas as the original ADMG. This operation is described in Acyclic</span>
+<span class="sd">        Linear SEMs obey the Nested Markov property.</span>
+
+<span class="sd">        :return: An ADMG corresponding to the maximal arid projection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="c1"># keep a cached dictionary of reachable closures and ancestors</span>
+        <span class="c1"># for efficiency purposes</span>
+        <span class="n">reachable_closures</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ancestors</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">([</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">}</span>
+
+        <span class="c1"># iterate through all vertex pairs</span>
+        <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+
+            <span class="c1"># decide which reachable closure needs to be computed</span>
+            <span class="c1"># and compute it if one vertex is an ancestor of another</span>
+            <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">rc</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">[</span><span class="n">b</span><span class="p">]:</span>
+                <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
+            <span class="k">elif</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ancestors</span><span class="p">[</span><span class="n">a</span><span class="p">]:</span>
+                <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span>
+
+            <span class="c1"># check parent condition and add directed edge if u is a parent of the reachable closure</span>
+            <span class="n">added_edge</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">u</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reachable_closures</span><span class="p">:</span>
+                    <span class="n">reachable_closures</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable_closure</span><span class="p">([</span><span class="n">v</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">rc</span> <span class="o">=</span> <span class="n">reachable_closures</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">rc</span><span class="p">):</span>
+                    <span class="n">di_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                    <span class="n">added_edge</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># if neither are ancestors of each other we need to compute</span>
+            <span class="c1"># the reachable closure of set {a, b} and check if it is</span>
+            <span class="c1"># bidirected connected</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">added_edge</span><span class="p">:</span>
+                <span class="n">rc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">cadmg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reachable_closure</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">district</span> <span class="ow">in</span> <span class="n">cadmg</span><span class="o">.</span><span class="n">districts</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">rc</span> <span class="o">&lt;=</span> <span class="n">district</span><span class="p">:</span>
+                        <span class="n">bi_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="get_intrinsic_sets"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.get_intrinsic_sets">[docs]</a><span class="k">def</span> <span class="nf">get_intrinsic_sets</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -298,8 +346,10 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.graphs.html">ananke.graphs package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../ananke.identification.html">ananke.identification package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html">Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
 </ul>
 
 <div class="relations">

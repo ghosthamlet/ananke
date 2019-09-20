@@ -32,6 +32,7 @@ class LinearGaussianSEM:
         self.S_ = None  # sample covariance matrix
         self.B_ = None  # direct edge coefficients
         self.omega_ = None  # correlation of errors
+        self.optim_ = None # scipy.minimize return
 
     def _construct_adjacency_matrices(self):
         """
@@ -154,7 +155,7 @@ class LinearGaussianSEM:
         sigma = np.dot(eye_inv_beta, np.dot(self.omega_, eye_inv_beta.T))
         return (n/2) * (np.log(np.linalg.det(sigma)) + np.trace(np.dot(np.linalg.inv(sigma), S_)))
 
-    def fit(self, X, weights=None):
+    def fit(self, X, weights=None, tol=1e-6, disp=None):
         """
         Fit the model to data via (weighted) maximum likelihood estimation
 
@@ -182,17 +183,32 @@ class LinearGaussianSEM:
         grad_likelihood = grad(likelihood)
         hess_likelihood = hessian(likelihood)
 
+        initial_guess = anp.full((self.n_params,), np.random.uniform(0, .1))
+
         if self.method == "BFGS":
             optim = minimize(likelihood,
-                             x0=anp.full((self.n_params,), 0),
-                             method=self.method,
-                             jac=grad_likelihood)
-        elif self.method == "trust-exact":
-            optim = minimize(likelihood,
-                             x0=anp.full((self.n_params,), 0),
+                             x0=initial_guess,
                              method=self.method,
                              jac=grad_likelihood,
-                             hess=hess_likelihood)
+                             tol=tol,
+                             options={'disp': disp})
+        elif self.method == "trust-exact":
+            optim = minimize(likelihood,
+                             x0=initial_guess,
+                             method=self.method,
+                             jac=grad_likelihood,
+                             hess=hess_likelihood,
+                             tol=tol,
+                             options={'disp': disp})
+        elif self.method == "Nelder-Mead":
+            optim = minimize(likelihood,
+                             x0=initial_guess,
+                             method=self.method,
+                             tol=tol,
+                             options={'disp': disp})
+        else:
+            raise ValueError("Invalid choice of method: {}".format(self.method))
+        self.optim_ = optim
 
         self.B_, self.omega_ = self._construct_b_omega(optim.x)
         return self

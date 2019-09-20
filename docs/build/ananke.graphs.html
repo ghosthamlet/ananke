@@ -105,6 +105,19 @@ an order in the form of a list, else returns an empty list.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="ananke.graphs.admg.ADMG.maximal_arid_projection">
+<code class="sig-name descname">maximal_arid_projection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/admg.html#ADMG.maximal_arid_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.admg.ADMG.maximal_arid_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the maximal arid projection that encodes the same conditional independences and
+Vermas as the original ADMG. This operation is described in Acyclic
+Linear SEMs obey the Nested Markov property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An ADMG corresponding to the maximal arid projection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="ananke.graphs.admg.ADMG.reachable_closure">
 <code class="sig-name descname">reachable_closure</code><span class="sig-paren">(</span><em class="sig-param">vertices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/admg.html#ADMG.reachable_closure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.admg.ADMG.reachable_closure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtain reachable closure for a set of vertices.</p>
@@ -348,6 +361,23 @@ the specified vertices and edges between them).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="ananke.graphs.graph.Graph.directed_paths">
+<code class="sig-name descname">directed_paths</code><span class="sig-paren">(</span><em class="sig-param">source</em>, <em class="sig-param">sink</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/graph.html#Graph.directed_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.graph.Graph.directed_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all directed paths between sets of source vertices and sink vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – a set of vertices that serve as the source.</p></li>
+<li><p><strong>sink</strong> – a set of vertices that serve as the sink.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of directed paths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="ananke.graphs.graph.Graph.draw">
 <code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param">direction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/graph.html#Graph.draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.graph.Graph.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualize the graph.</p>
@@ -581,11 +611,11 @@ new intrinsic set s3.</p>
 
 <dl class="method">
 <dt id="ananke.graphs.sg.SG.blocks">
-<code class="sig-name descname">blocks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/sg.html#SG.blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.sg.SG.blocks" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">blocks</code><a class="headerlink" href="#ananke.graphs.sg.SG.blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns list of all blocks in the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>list of lists corresponding to blocks in the graph.</p>
+<dd class="field-odd"><p>list of sets corresponding to blocks in the graph.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -643,7 +673,13 @@ new intrinsic set s3.</p>
 <dl class="method">
 <dt id="ananke.graphs.sg.SG.districts">
 <em class="property">property </em><code class="sig-name descname">districts</code><a class="headerlink" href="#ananke.graphs.sg.SG.districts" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns list of all districts in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of sets corresponding to districts in the graph.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="ananke.graphs.sg.SG.fix">
@@ -702,7 +738,6 @@ CGs, ADMGs, CPDAGs, CADMGs etc.</p>
 </div>
 <div class="section" id="module-ananke.graphs">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ananke.graphs" title="Permalink to this headline">¶</a></h2>
-<p>Hello world</p>
 </div>
 </div>
 
