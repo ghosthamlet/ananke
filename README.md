@@ -27,8 +27,9 @@ pip3 install -r dev_requirements.txt
 as well as separate system packages:
 
 ```{bash}
-
-pandoc
+# this will depend on your environment, e.g.
+sudo apt install pandoc # ubuntu
+sudo dnf install pandoc # fedora
 ```
 Now you are ready to develop!
 
