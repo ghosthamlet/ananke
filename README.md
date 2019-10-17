@@ -50,5 +50,8 @@ Continuous integration has been set up to run tests on pushes to the `master` br
 ## Test Coverage
 
 ```{bash}
-pytest --cov=ananke tests/
+pytest --cov=ananke tests/  # to generate the base report
+
+
+
 ```
