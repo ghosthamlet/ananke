@@ -161,8 +161,6 @@ class Graph:
         :return: set of parents.
         """
 
-        #if isinstance(vertices, str):
-        #    return {p.name for p in self.vertices[vertices].parents}
         parents = set()
         for v in vertices:
             for p in self.vertices[v].parents:
@@ -221,10 +219,6 @@ class Graph:
 
         ancestors = set()
 
-        #if isinstance(vertices, str):
-        #    visit_stack = [self.vertices[vertices]]
-        #else:
-        #    visit_stack = list([self.vertices[v] for v in vertices])
         visit_stack = list([self.vertices[v] for v in vertices])
 
         while visit_stack:
