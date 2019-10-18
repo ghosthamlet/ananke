@@ -77,6 +77,10 @@ class TestLinearGaussianSEM(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.draw()
 
+        # test that invalid optimizer throws an error
+        with self.assertRaises(ValueError):
+            model = LinearGaussianSEM(G, method="FakeOptimizer")
+
         # try with BFGS
         model = LinearGaussianSEM(G, method="BFGS")
         model.fit(data)

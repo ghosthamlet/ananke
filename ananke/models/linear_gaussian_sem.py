@@ -22,6 +22,9 @@ class LinearGaussianSEM:
         """
 
         self.graph = graph
+        # raise an error if the choice of optimizer is not valid
+        if method not in ["BFGS", "trust-exact"]:
+            raise ValueError("Invalid choice of method: {}".format(method))
         self.method = method
         # for a linear Gaussian SEM each edge is a parameter + noise for each vertex
         self.n_params = len(graph.di_edges) + len(graph.bi_edges) + len(graph.vertices)
@@ -32,6 +35,7 @@ class LinearGaussianSEM:
         self.S_ = None  # sample covariance matrix
         self.B_ = None  # direct edge coefficients
         self.omega_ = None  # correlation of errors
+
         self.optim_ = None # scipy.minimize return
 
     def _construct_adjacency_matrices(self):
@@ -204,14 +208,6 @@ class LinearGaussianSEM:
                              hess=hess_likelihood,
                              tol=tol,
                              options={'disp': disp})
-        elif self.method == "Nelder-Mead":
-            optim = minimize(likelihood,
-                             x0=initial_guess,
-                             method=self.method,
-                             tol=tol,
-                             options={'disp': disp})
-        else:
-            raise ValueError("Invalid choice of method: {}".format(self.method))
         self.optim_ = optim
 
         self.B_, self.omega_ = self._construct_b_omega(optim.x)
