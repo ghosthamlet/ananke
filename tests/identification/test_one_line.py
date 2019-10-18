@@ -26,8 +26,6 @@ class TestOneLine(unittest.TestCase):
         bi_edges = []
         G = ADMG(vertices, di_edges, bi_edges)
         one_id = OneLineID(G, ['A'], ['Y', 'D'])
-        # one_id.draw_swig(direction='LR').render()
-        # G.draw(direction='LR').render()
         self.assertEqual({"C", "D", "Y"}, one_id.ystar)
         self.assertTrue(one_id.id())
 
