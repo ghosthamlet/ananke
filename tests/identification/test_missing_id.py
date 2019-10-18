@@ -84,6 +84,7 @@ class TestMissingID(unittest.TestCase):
                     ('R_3', 'R_2'), ('R_3', 'R_1')]
         bi_edges = []
         mdag = MissingADMG(vertices, di_edges, bi_edges)
+        mdag.draw()
         target_id = MissingTargetID(mdag)
         print(target_id.id())
 

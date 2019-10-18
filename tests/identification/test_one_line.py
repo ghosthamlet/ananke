@@ -19,6 +19,7 @@ class TestOneLine(unittest.TestCase):
         one_id = OneLineID(G, ['A'], ['Y'])
         self.assertTrue(one_id.id())
         self.assertEqual({'Y', 'C', 'D', 'B'}, one_id.ystar)
+        one_id.export_intermediates()
 
     def test_two_var_id_graph(self):
         vertices = ["A", "D", "C", "Y"]
