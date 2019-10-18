@@ -4,14 +4,13 @@ from ananke.graphs import ADMG
 
 
 class TestADMG(unittest.TestCase):
+
     def test_obtaining_districts(self):
         vertices = ['A', 'B', 'C', 'D', 'Y']
         di_edges = [('A', 'B'), ('A', 'D'), ('B', 'C'), ('C', 'Y'), ('B', 'D'), ('D', 'Y')]
         bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
         G = ADMG(vertices, di_edges, bi_edges)
-        #print(G.districts())
         self.assertCountEqual(([{'C', 'A'}, {'Y', 'B', 'D'}]), (G.districts))
-        #print(G.district('A'))
         self.assertEqual({'C', 'A'}, G.district('A'))
 
     def test_obtaining_districts_large(self):
@@ -20,9 +19,7 @@ class TestADMG(unittest.TestCase):
                     ('U', 'A1'), ('U', 'Y1'), ('U', 'A2'), ('U', 'Y2'), ('A2', 'Y1'), ('A1', 'Y2')]
         bi_edges = [('X1', 'U'), ('U', 'X2'), ('X1', 'X2'), ('Y1', 'Y2')]
         G = ADMG(vertices, di_edges, bi_edges)
-        #print(G.districts())
         self.assertCountEqual(([{'X1', 'X2', 'U'}, {'A1'}, {'A2'}, {'Y1', 'Y2'}]), (G.districts))
-        #print(G.district('X2'))
         self.assertEqual(G.district('X2'), {'X1', 'X2', 'U'})
 
         paths = list(G.m_connecting_paths('X1', 'Y2'))
@@ -35,6 +32,13 @@ class TestADMG(unittest.TestCase):
         sorted_true_paths = [sorted(path) for path in sorted(true_paths)]
         self.assertEqual(sorted_true_paths,
                          [sorted(path) for path in sorted(paths)])
+
+    def test_fixing(self):
+        G = ADMG(vertices=["A", "B", "C"], di_edges=[("A", "B"), ("B", "C")], bi_edges=[("B", "C")])
+        G.fix(["C"])
+        self.assertTrue(("B", "C") not in G.di_edges)
+        self.assertTrue(("B", "C") not in G.bi_edges)
+        self.assertTrue(G.vertices["C"].fixed)
 
     def test_reachable_closure(self):
         vertices = ["A", "B", "C"]

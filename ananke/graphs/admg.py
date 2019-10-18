@@ -80,7 +80,6 @@ class ADMG(SG):
                     fixed = True
                     break
 
-        #reachable_closure = set(G.vertices) - set(fixing_order)- set(v for v in self.vertices if self.vertices[v].fixed)
         reachable_closure = set(G.vertices) - set(v for v in G.vertices if G.vertices[v].fixed)
 
         return reachable_closure, fixing_order, G
