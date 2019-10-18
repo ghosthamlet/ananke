@@ -255,37 +255,3 @@ class ADMG(SG):
                         bi_edges.append((a, b))
 
         return ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
-
-def get_intrinsic_sets(graph):
-    """
-    Computes all intrinsic sets given an ADMG. Allows for fixed variables.
-
-    :param graph: ADMG
-    :return:
-    """
-    intrinsic = set()
-    vertices = set(graph.vertices)
-    order_dict = dict()
-    fixed_vertices = set()
-    for v in graph.vertices:
-        if graph.vertices[v].fixed:
-            fixed_vertices.add(v)
-
-    for var in vertices:
-        fixable, order = graph.fixable(vertices - set(var) - fixed_vertices)
-
-        if fixable:
-            intrinsic_set = frozenset([var])
-            intrinsic.add(intrinsic_set)
-            order_dict[intrinsic_set] = order
-    for district in graph.districts:
-        # There is possibly a more efficient way of doing this
-        for pset in powerset(district, 2):
-            fixable, order = graph.fixable(vertices - set(pset) - fixed_vertices)
-            if fixable:
-                intrinsic_set = frozenset(list(pset))
-                intrinsic.add(intrinsic_set)
-                order_dict[intrinsic_set] = order
-
-    return intrinsic, order_dict
-
