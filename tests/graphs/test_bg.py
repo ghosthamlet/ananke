@@ -2,6 +2,7 @@ import unittest
 
 from ananke.graphs import BG
 
+
 class TestBG(unittest.TestCase):
     def test_bg_can_be_initialised(self):
         bi_edges = [("A", "B")]

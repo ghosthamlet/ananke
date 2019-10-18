@@ -17,9 +17,19 @@ class TestOneLine(unittest.TestCase):
         bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
         G = ADMG(vertices, di_edges, bi_edges)
         one_id = OneLineID(G, ['A'], ['Y'])
+        one_id.draw_swig()
         self.assertTrue(one_id.id())
         self.assertEqual({'Y', 'C', 'D', 'B'}, one_id.ystar)
         one_id.export_intermediates()
+
+    def test_BMAY_graph(self):
+        vertices = ["B", "M", "A", "Y"]
+        di_edges = [("B", "M"), ("M", "A"), ("A", "Y")]
+        bi_edges = [("B", "A"), ("B", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        one_id = OneLineID(G, ["A"], ["Y"])
+        one_id.draw_swig()
+        self.assertTrue(one_id.id())
 
     def test_two_var_id_graph(self):
         vertices = ["A", "D", "C", "Y"]
