@@ -137,7 +137,6 @@ class ADMG(SG):
 
         queue = [(self.vertices[x], [self.vertices[x]], [])]
         y = self.vertices[y]
-        Z = [self.vertices[z] for z in Z]
         ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])
 
         while queue:
