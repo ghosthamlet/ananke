@@ -109,6 +109,15 @@ class TestADMG(unittest.TestCase):
         self.assertEqual(set([("A", "B"), ("B", "C"), ("C", "D"), ("A", "C")]), marg.di_edges)
         self.assertEqual(set([("B", "D")]), marg.bi_edges)
 
+    def test_markov_pillow(self):
+        vertices = ['A', 'B', 'C', 'D', 'Y']
+        di_edges = [('A', 'B'), ('B', 'C'), ('D', 'C'), ('C', 'Y')]
+        bi_edges = [('A', 'C'), ('B', 'Y'), ('B', 'D')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        top_order = ['D', 'A', 'B', 'C', 'Y']
+        self.assertEqual(G.markov_pillow(['A', 'D'], top_order), set())
+        self.assertEqual(G.markov_pillow(['C'], top_order), set(['A', 'B', 'D']))
+
 
 if __name__ == '__main__':
     unittest.main()

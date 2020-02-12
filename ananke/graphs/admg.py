@@ -27,6 +27,31 @@ class ADMG(SG):
         super().__init__(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges, **kwargs)
         logger.debug("ADMG")
 
+    def markov_pillow(self, vertices, top_order):
+        """
+        Get the Markov pillow of a set of vertices. That is,
+        the Markov blanket of the vertices given a valid topological order
+        on the graph.
+
+        :param vertices: iterable of vertex names.
+        :param top_order: a valid topological order.
+        :return: set corresponding to Markov pillow.
+        """
+
+        # get the subgraph corresponding to the vertices and nodes prior to them
+        pre = self.pre(vertices, top_order)
+        Gsub = self.subgraph(pre + list(vertices))
+        print(Gsub.vertices, Gsub.di_edges, Gsub.bi_edges)
+        print(Gsub.districts)
+
+        # Markov pillow is the Markov blanket (dis(v) union pa(dis(v)) setminus v)
+        # in this subgraph
+        pillow = set()
+        for v in vertices:
+            pillow = pillow.union(Gsub.district(v))
+        pillow = pillow.union(Gsub.parents(pillow))
+        return pillow - set(vertices)
+
     def fix(self, vertices):
         # TODO: there should only be one fixing operation implemented in SG
         """

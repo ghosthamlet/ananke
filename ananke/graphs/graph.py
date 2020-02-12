@@ -4,7 +4,7 @@ Base class for all graphs.
 TODO: Add error checking
 """
 
-
+import copy
 from .vertex import Vertex
 
 
@@ -304,6 +304,61 @@ class Graph:
         for u in source:
             directed_paths += self._bfs_directed_paths(u, sink)
         return directed_paths
+
+    def topological_sort(self):
+        """
+        Perform a topological sort from roots (parentless nodes)
+        to leaves, as ordered by directed edges on the graph.
+
+        :return: list corresponding to a valid topological order.
+        """
+
+        # create a copy of the graph
+        G = copy.deepcopy(self)
+
+        # initialize roots -- vertices that have no incoming edges
+        roots = [v for v in self.vertices if len(G.parents([v])) == 0]
+        top_order = []
+
+        # iterate until we have explored all nodes
+        while roots:
+
+            # pick a current root
+            r = roots.pop()
+            top_order.append(r)
+
+            # iterate over all its children
+            children = G.children([r])
+            for c in children:
+
+                # delete the edge
+                G.delete_diedge(r, c)
+
+                # if r was the only parent, this is now a root
+                if len(G.parents([c])) == 0:
+                    roots.append(c)
+
+        # return the order
+        return top_order
+
+    def pre(self, vertices, top_order):
+        """
+        Find all nodes prior to the given set of vertices under a topological order.
+
+        :param vertices: iterable of vertex names.
+        :param top_order: a valid topological order.
+        :return: list corresponding to the order up until the given vertices.
+        """
+
+        # find all elements that are previous in the topological order
+        # by iterating over the order until we encounter one of the vertices
+        pre = []
+        for v in top_order:
+            if v in vertices:
+                break
+            pre.append(v)
+
+        return pre
 
     def draw(self, direction=None):
         """
