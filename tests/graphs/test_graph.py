@@ -19,7 +19,10 @@ class TestGraph(unittest.TestCase):
         bi_edges = [("D", "Y"), ("A", "Y")]
         ud_edges = [("B", "C"), ("C", "D")]
         G = Graph(vertices, di_edges=di_edges, bi_edges=bi_edges, ud_edges=ud_edges)
+
+        # drawing tests (don't actually do anything)
         G.draw()
+        G.draw(direction="LR")
 
         # test neighbour relations
         self.assertEqual(G.neighbors(["C"]), set({"B", "D"}))
@@ -37,9 +40,11 @@ class TestGraph(unittest.TestCase):
         self.assertFalse(G.has_biedge("Y", "A"))
         self.assertTrue("A" not in G.siblings(["Y"]))
         self.assertTrue("Y" not in G.siblings(["A"]))
-        #self.assertRaises(KeyError, G.delete_biedge("A", "C"))
-        #self.assertRaises(KeyError, G.delete_biedge("B", "D"))
+
+        # test that you can delete ud edges
         self.assertEqual(G.neighbors(["C"]), set({"B", "D"}))
+        G.delete_udedge("D", "C")
+        self.assertTrue("D" not in G.neighbors(["C"]))
 
     def test_directed_paths(self):
 
@@ -55,6 +60,21 @@ class TestGraph(unittest.TestCase):
         true_paths = [[('A', 'D'), ('D', 'Y')], [('A', 'B'), ('B', 'D'), ('D', 'Y')],
                       [('A', 'B'), ('B', 'C'), ('C', 'Y')]]
         print(A_to_Y_paths)
+
+    def test_subgraph(self):
+
+        vertices = ["A", "B", "C", "D", "Y"]
+        di_edges = [("A", "B"), ("C", "D")]
+        ud_edges = [("C", "D")]
+        bi_edges = [("A", "Y"), ("A", "C"), ("A", "B")]
+        G = Graph(vertices, di_edges, bi_edges, ud_edges)
+        G.vertices["A"].fixed = True
+
+        Gsub = G.subgraph(["A", "B", "Y"])
+        self.assertEqual(set(["A", "B", "Y"]), set(Gsub.vertices))
+        self.assertEqual(set([("A", "B")]), Gsub.di_edges)
+        self.assertEqual(set([]), Gsub.ud_edges)
+        self.assertEqual(set([("A", "Y"), ("A", "B")]), Gsub.bi_edges)
 
 
 if __name__ == '__main__':

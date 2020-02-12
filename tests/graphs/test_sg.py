@@ -44,6 +44,30 @@ class TestSG(unittest.TestCase):
         except TypeError:
             self.fail("Correctly formed SG raised AssertionError")
 
+    def test_biedge(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "Y"), ("X_2", "W")]
+        ud_edges = [("X_1", "X_2")]
+        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        G.add_biedge("X_1", "X_2")
+        self.assertTrue("X_2" in G.siblings(["X_1"]))
+        self.assertTrue("X_1" in G.siblings(["X_2"]))
+        G.delete_biedge("X_1", "X_2")
+        self.assertFalse("X_2" in G.siblings(["X_1"]))
+        self.assertFalse("X_1" in G.siblings(["X_2"]))
+
+    def test_udedge(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "Y"), ("X_2", "W")]
+        ud_edges = [("X_1", "X_2")]
+        G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
+        G.add_udedge("W", "Y")
+        self.assertTrue("W" in G.neighbors(["Y"]))
+        self.assertTrue("Y" in G.neighbors(["W"]))
+        G.delete_udedge("W", "Y")
+        self.assertFalse("W" in G.neighbors(["Y"]))
+        self.assertFalse("Y" in G.neighbors(["W"]))
+
     def test_that_districts_correct(self):
 
         vertices = ['A', 'B', 'C', 'D', 'Y']
@@ -79,6 +103,11 @@ class TestSG(unittest.TestCase):
         self.assertEqual({frozenset({"X_2", "Y"}), frozenset({"W"})}, G_dis)
         self.assertEqual(sorted([("X_1", "W"), ("W", "Y"), ("X_2", "Y")]), sorted(list(G.di_edges)))
 
+        G.fix(["Y"])
+        self.assertTrue(G.vertices["Y"].fixed)
+        self.assertTrue("W" not in G.parents(["Y"]))
+        self.assertTrue("X_2" not in G.siblings(["Y"]))
+
     @patch("ananke.graphs.sg.SG._calculate_districts")
     def test_districts_is_a_property(self, mock1):
         vertices = ["X_1", "X_2", "W", "Y"]
@@ -113,8 +142,6 @@ class TestSG(unittest.TestCase):
         ud_edges = [("X_1", "X_2")]
         G = SG(vertices=vertices, di_edges=di_edges, ud_edges=ud_edges)
         self.assertEqual({frozenset({"X_1", "X_2"}), frozenset({"W"}), frozenset({"Y"})}, {frozenset(i) for i in G.blocks})
-
-
 
 
 if __name__ == '__main__':
