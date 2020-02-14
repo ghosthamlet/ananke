@@ -41,8 +41,6 @@ class ADMG(SG):
         # get the subgraph corresponding to the vertices and nodes prior to them
         pre = self.pre(vertices, top_order)
         Gsub = self.subgraph(pre + list(vertices))
-        print(Gsub.vertices, Gsub.di_edges, Gsub.bi_edges)
-        print(Gsub.districts)
 
         # Markov pillow is the Markov blanket (dis(v) union pa(dis(v)) setminus v)
         # in this subgraph
