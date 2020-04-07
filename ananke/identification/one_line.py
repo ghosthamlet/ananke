@@ -146,7 +146,7 @@ class OneLineID:
                                              "phi" + fixed_vars + "_dis" + dis_name + ".gv"))
 
 
-class OneLineGZID:
+class OneLineGID:
 
     def __init__(self, graph, interventions, outcomes):
         self.graph = graph
