@@ -66,20 +66,25 @@ class TestCounterfactualMean(unittest.TestCase):
         p_d2 = expit(1 - Y + D1)
         D2 = np.random.binomial(1, p_d2, size)
 
-        dat = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
+        data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
-        cmean_1 = cmean.estimate(dat, 1)
-        cmean_0 = cmean.estimate(dat, 0)
-        ace_ipw = cmean_1["ipw"] - cmean_0["ipw"]
-        ace_gformula = cmean_1["g-formula"] - cmean_0["g-formula"]
-        ace_gaipw = cmean_1["g-aipw"] - cmean_0["g-aipw"]
-        ace_eff = cmean_1["efficient-if"] - cmean_0["efficient-if"]
+        cmean.bootstrap_ace(data, "ipw")
+        cmean.bootstrap_ace(data, "gformula")
+        #ace = cmean.ace(dat)
+        #print(ace)
 
-        print(ace_ipw)
-        print(ace_gformula)
-        print(ace_gaipw)
-        print(np.var(ace_eff))
+        # cmean_1 = cmean.estimate(dat, 1)
+        # cmean_0 = cmean.estimate(dat, 0)
+        # ace_ipw = cmean_1["ipw"] - cmean_0["ipw"]
+        # ace_gformula = cmean_1["g-formula"] - cmean_0["g-formula"]
+        # ace_gaipw = cmean_1["g-aipw"] - cmean_0["g-aipw"]
+        # ace_eff = cmean_1["efficient-if"] - cmean_0["efficient-if"]
+        #
+        # print(ace_ipw)
+        # print(ace_gformula)
+        # print(ace_gaipw)
+        # print(np.var(ace_eff))
 
 
     def test_p_fixability_1(self):
