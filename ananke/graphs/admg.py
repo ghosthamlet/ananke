@@ -50,6 +50,20 @@ class ADMG(SG):
         pillow = pillow.union(Gsub.parents(pillow))
         return pillow - set(vertices)
 
+    def markov_blanket(self, vertices):
+        """
+        Get the Markov blanket of a set of vertices.
+
+        :param vertices: iterable of vertex names.
+        :return: set corresponding to Markov blanket.
+        """
+
+        blanket = set()
+        for v in vertices:
+            blanket = blanket.union(self.district(v))
+        blanket = blanket.union(self.parents(blanket))
+        return blanket - set(vertices)
+
     def fix(self, vertices):
         # TODO: there should only be one fixing operation implemented in SG
         """

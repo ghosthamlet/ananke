@@ -74,10 +74,12 @@ class TestCounterfactualMean(unittest.TestCase):
         ace_ipw = cmean_1["ipw"] - cmean_0["ipw"]
         ace_gformula = cmean_1["g-formula"] - cmean_0["g-formula"]
         ace_gaipw = cmean_1["g-aipw"] - cmean_0["g-aipw"]
+        ace_eff = cmean_1["efficient-if"] - cmean_0["efficient-if"]
 
         print(ace_ipw)
         print(ace_gformula)
         print(ace_gaipw)
+        print(np.var(ace_eff))
 
 
     def test_p_fixability_1(self):
