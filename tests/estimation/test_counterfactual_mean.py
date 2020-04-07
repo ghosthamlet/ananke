@@ -70,9 +70,9 @@ class TestCounterfactualMean(unittest.TestCase):
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
         cmean.bootstrap_ace(data, "ipw")
-        cmean.bootstrap_ace(data, "gformula")
-        cmean.bootstrap_ace(data, "aipw")
-        cmean.bootstrap_ace(data, "eif-aipw")
+        # cmean.bootstrap_ace(data, "gformula")
+        # cmean.bootstrap_ace(data, "aipw")
+        # cmean.bootstrap_ace(data, "eif-aipw")
 
 
     def test_p_fixability_1(self):
@@ -91,6 +91,60 @@ class TestCounterfactualMean(unittest.TestCase):
         bi_edges = [('T', 'L'), ('M', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
         cmean = CounterfactualMean(G, 'T', 'Y')
+
+
+    def test_p_fixability_3(self):
+        vertices = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
+        di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
+                    ('T', 'M'), ('M', 'L'), ('L', 'Y')]
+        bi_edges = [('Z1', 'C1'), ('Z2', 'C2'), ('T', 'L')]
+        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        size = 2000
+        U1 = np.random.binomial(1, 0.4, size)
+        U2 = np.random.uniform(0, 1.5, size)
+        U3 = np.random.binomial(1, 0.6, size)
+        U4 = np.random.uniform(-1, 0.2, size)
+        U5 = np.random.binomial(1, 0.3, size)
+        U6 = np.random.uniform(0.5, 1.5, size)
+
+        # z1 = f(u1, u2)
+        p_z1 = expit(0.4 - U1 + U2)
+        Z1 = np.random.binomial(1, p_z1, size)
+
+        # c1 = f(z1, u1, u2)
+        p_c1 = expit(-0.1 + U1 - U2)  # + 0.5*Z1)
+        C1 = np.random.binomial(1, p_c1, size)
+
+        # c2 = f(u3, u4)
+        eps_c2 = np.random.normal(0, 1, size)
+        C2 = 1 + U3 - U4 + eps_c2
+
+        # z2 = f(u3, u4)
+        eps_z2 = np.random.normal(0, 1, size)
+        Z2 = -0.5 + U3 - U4 + eps_z2
+
+        # t = f(c1, c2, u5, u6)
+        p_t = expit(0.5 + 0.5 * C1 - 0.4 * C2 - 0.4 * U5 + 0.4 * U6)
+        T = np.random.binomial(1, p_t, size)
+
+        # m = f(t)
+        p_m = expit(-0.3 + 1.5 * T - 0.3 * C2)
+        M = np.random.binomial(1, p_m, size)
+
+        # l = f(m, c1, c2, u5, u6)
+        p_l = expit(0.75 - 0.8 * M - 0.4 * C1 - 0.3 * C2 - 0.4 * U5 + 0.5 * U6)
+        L = np.random.binomial(1, p_l, size)
+
+        # y = f(l)
+        eps_y = np.random.normal(0, 1, size)
+        Y = 1 + 1 * L + C2 + eps_y
+
+        data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'L':L, 'Y':Y})
+
+        cmean = CounterfactualMean(G, 'T', 'Y', order)
+        cmean.bootstrap_ace(data, "p-ipw")
 
 
     def test_nested_fixability(self):
