@@ -88,13 +88,13 @@ class TestCounterfactualMean(unittest.TestCase):
         cmean = CounterfactualMean(G, 'T', 'Y')
 
 
-    # def test_nested_fixability(self):
-    #     vertices = ['C', 'T', 'M', 'Z', 'R1', 'R2', 'Y']
-    #     di_edges = [('C', 'T'), ('C', 'Y'), ('R2', 'Y'), ('Z', 'T'), ('T', 'R1'), ('T', 'Y'), ('R1', 'M'),
-    #                 ('M', 'Y')]
-    #     bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
-    #     G = ADMG(vertices, di_edges, bi_edges)
-    #     cmean = CounterfactualMean(G, 'T', 'Y')
+    def test_nested_fixability(self):
+        vertices = ['C', 'T', 'M', 'Z', 'R1', 'R2', 'Y']
+        di_edges = [('C', 'T'), ('C', 'Y'), ('R2', 'Y'), ('Z', 'T'), ('T', 'R1'), ('T', 'Y'), ('R1', 'M'),
+                    ('M', 'Y')]
+        bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        cmean = CounterfactualMean(G, 'T', 'Y')
 
 if __name__ == '__main__':
     unittest.main()

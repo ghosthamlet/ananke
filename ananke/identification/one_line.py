@@ -15,20 +15,20 @@ class NotIdentifiedError(Exception):
 
 class OneLineID:
 
-    def __init__(self, graph, interventions, outcomes):
+    def __init__(self, graph, treatments, outcomes):
         """
         Constructor.
 
         :param graph: Graph on which the query will run.
-        :param interventions: iterable of names of variables being intervened on.
+        :param treatments: iterable of names of variables being intervened on.
         :param outcomes: iterable of names of variables whose outcomes we are interested in.
         """
 
         self.graph = graph
-        self.interventions = [A for A in interventions]
+        self.treatments = [A for A in treatments]
         self.outcomes = [Y for Y in outcomes]
         self.swig = copy.deepcopy(graph)
-        self.swig.fix(self.interventions)
+        self.swig.fix(self.treatments)
         self.ystar = {v for v in self.swig.ancestors(self.outcomes) if not self.swig.vertices[v].fixed}
         self.Gystar = self.graph.subgraph(self.ystar)
         # dictionary mapping the fixing order for each p(D | do(V\D) )
@@ -44,7 +44,7 @@ class OneLineID:
         swig = copy.deepcopy(self.graph)
 
         # add fixed vertices for each intervention
-        for A in self.interventions:
+        for A in self.treatments:
 
             fixed_vertex_name = A.lower()
             swig.add_vertex(fixed_vertex_name)
