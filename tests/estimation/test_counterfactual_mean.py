@@ -11,6 +11,8 @@ from ananke.estimation import CounterfactualMean
 class TestCounterfactualMean(unittest.TestCase):
 
     def test_a_fixability(self):
+        np.random.seed(0)
+
         vertices = ['Z1', 'Z2', 'C1', 'C2', 'T', 'M', 'Y', 'D1', 'D2']
         di_edges = [('C1', 'Z1'), ('C1', 'T'), ('C1', 'M'), ('C2', 'Z1'), ('C2', 'T'), ('C2', 'M'), ('C2', 'D1'),
                     ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'M'), ('M', 'Y'), ('M', 'D1'), ('Y', 'D2'), ('D1', 'D2')]
@@ -18,7 +20,7 @@ class TestCounterfactualMean(unittest.TestCase):
         order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'Y', 'D1', 'D2']
         G = ADMG(vertices, di_edges, bi_edges)
 
-        size = 1000
+        size = 10000
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 1.5, size)
         U3 = np.random.binomial(1, 0.6, size)
@@ -67,7 +69,8 @@ class TestCounterfactualMean(unittest.TestCase):
         dat = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
-        cmean.estimate(dat, 1)
+        ace = cmean.estimate(dat, 1) - cmean.estimate(dat, 0)
+        print(ace)
 
 
     def test_p_fixability_1(self):
@@ -88,13 +91,13 @@ class TestCounterfactualMean(unittest.TestCase):
         cmean = CounterfactualMean(G, 'T', 'Y')
 
 
-    # def test_nested_fixability(self):
-    #     vertices = ['C', 'T', 'M', 'Z', 'R1', 'R2', 'Y']
-    #     di_edges = [('C', 'T'), ('C', 'Y'), ('R2', 'Y'), ('Z', 'T'), ('T', 'R1'), ('T', 'Y'), ('R1', 'M'),
-    #                 ('M', 'Y')]
-    #     bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
-    #     G = ADMG(vertices, di_edges, bi_edges)
-    #     cmean = CounterfactualMean(G, 'T', 'Y')
+    def test_nested_fixability(self):
+        vertices = ['C', 'T', 'M', 'Z', 'R1', 'R2', 'Y']
+        di_edges = [('C', 'T'), ('C', 'Y'), ('R2', 'Y'), ('Z', 'T'), ('T', 'R1'), ('T', 'Y'), ('R1', 'M'),
+                    ('M', 'Y')]
+        bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        cmean = CounterfactualMean(G, 'T', 'Y')
 
 if __name__ == '__main__':
     unittest.main()

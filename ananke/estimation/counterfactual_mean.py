@@ -2,6 +2,7 @@
 Estimate the counterfactual mean E[Y(t)]
 """
 
+import numpy as np
 import statsmodels.api as sm
 from statsmodels.gam.generalized_additive_model import GLMGam
 
@@ -45,16 +46,20 @@ class CounterfactualMean:
         else:
             print("not ID")
 
-    def estimate(self, data, value_T):
+    def estimate(self, data, assignment):
 
         if self.strategy == "a-fixable":
+            ones = np.ones(len(data))
+            data['ones'] = ones
+            T = data[self.treatment]
+            Y = data[self.outcome]
             mp_T = self.graph.markov_pillow([self.treatment], self.order)
-            formula = self.treatment + " ~ " + '+'.join(mp_T)
-            print(sm.families)
+            formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
             model = sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
-            proba_T = model.predict(data)
-            print(proba_T)
-            indices = data[self.treatment] == value_T
-            print(indices)
+            prob_T = model.predict(data)
 
-            print(mp_T)
+            indices_T0 = data.index[data[self.treatment] == 0]
+            prob_T[indices_T0] = 1 - prob_T[indices_T0]
+
+            indices = data[self.treatment] == assignment
+            return np.mean( (indices/prob_T)*Y )
