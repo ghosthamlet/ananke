@@ -207,12 +207,39 @@ class CounterfactualMean:
         Yhat_vec = model.predict(data_assign)
         return np.mean(Yhat_vec)
 
-    def _aipw(self, data):
+    def _aipw(self, data, assignment, model_binary=None, model_continuous=None):
 
         if self.strategy != "a-fixable":
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
 
-        return 0
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
+
+        Y = data[self.outcome]
+        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+
+        # Fit T | mp(T)
+        formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
+        model = model_binary(data, formula)
+        prob_T = model.predict(data)
+        indices_T0 = data.index[data[self.treatment] == 0]
+        prob_T[indices_T0] = 1 - prob_T[indices_T0]
+        indices = data[self.treatment] == assignment
+
+        # Fit Y | T=t, mp(T)
+        formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
+        data_assign = data.copy()
+        data_assign[self.treatment] = assignment
+        if set([0, 1]).issuperset(data[self.outcome].unique()):
+            model = model_binary(data, formula)
+        else:
+            model = model_continuous(data, formula)
+        Yhat_vec = model.predict(data_assign)
+
+        return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
     def _eif_augmented_ipw(self, data):
 
@@ -220,6 +247,7 @@ class CounterfactualMean:
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
         if not self.is_mb_shielded:
             return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
+
         return 0
 
     def _primal_ipw(self, data):
