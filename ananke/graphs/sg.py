@@ -280,9 +280,6 @@ class SG(Graph):
         :return: None.
         """
 
-        if isinstance(vertices, str):
-            vertices = [vertices]
-
         for v in vertices:
 
             self.vertices[v].fixed = True
@@ -316,16 +313,12 @@ class SG(Graph):
         :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.
         """
 
-        # if it's just a single vertex we're checking it's easy
-        if isinstance(vertices, str):
-            if len(self.descendants(vertices).intersection(self.district(vertices))) == 1:
-                return True, [vertices]
-            return False, []
-
+        # keep track of vertices still left to fix
+        # and initialize a fixing order
+        G = copy.deepcopy(self)
         remaining_vertices = set(vertices)
         fixing_order = []
         fixed = True  # flag to check if we fixed a variable on each pass
-        G = copy.deepcopy(self)
 
         # while we have more vertices to fix, and were able to perform a fix
         while remaining_vertices and fixed:
@@ -334,7 +327,7 @@ class SG(Graph):
 
             for v in remaining_vertices:
 
-                # Check if any nodes are reachable via -> AND <->
+                # check if any nodes are reachable via -> AND <->
                 # by looking at intersection of district and descendants
                 if len(G.descendants([v]).intersection(G.district(v))) == 1:
                     G.fix(v)
@@ -343,7 +336,11 @@ class SG(Graph):
                     fixed = True
                     break
 
+            # if unsuccessful, return failure and
+            # fixing order up until point of failure
             if not fixed:
                 return False, fixing_order
 
+        # if fixing vertices was successful, return success
+        # and the fixing order
         return True, fixing_order

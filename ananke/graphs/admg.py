@@ -27,6 +27,29 @@ class ADMG(SG):
         super().__init__(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges, **kwargs)
         logger.debug("ADMG")
 
+    def markov_pillow(self, vertices, top_order):
+        """
+        Get the Markov pillow of a set of vertices. That is,
+        the Markov blanket of the vertices given a valid topological order
+        on the graph.
+
+        :param vertices: iterable of vertex names.
+        :param top_order: a valid topological order.
+        :return: set corresponding to Markov pillow.
+        """
+
+        # get the subgraph corresponding to the vertices and nodes prior to them
+        pre = self.pre(vertices, top_order)
+        Gsub = self.subgraph(pre + list(vertices))
+
+        # Markov pillow is the Markov blanket (dis(v) union pa(dis(v)) setminus v)
+        # in this subgraph
+        pillow = set()
+        for v in vertices:
+            pillow = pillow.union(Gsub.district(v))
+        pillow = pillow.union(Gsub.parents(pillow))
+        return pillow - set(vertices)
+
     def fix(self, vertices):
         # TODO: there should only be one fixing operation implemented in SG
         """
@@ -36,8 +59,8 @@ class ADMG(SG):
         :return: None.
         """
 
-        if isinstance(vertices, str):
-            vertices = [vertices]
+        #if isinstance(vertices, str):
+        #    vertices = [vertices]
 
         for v in vertices:
 
@@ -93,16 +116,12 @@ class ADMG(SG):
         :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.
         """
 
-        # if it's just a single vertex we're checking it's easy
-        if isinstance(vertices, str):
-            if len(self.descendants([vertices]).intersection(self.district(vertices))) == 1:
-                return True, [vertices]
-            return False, []
-
+        # keep track of vertices still left to fix
+        # and initialize a fixing order
+        G = copy.deepcopy(self)
         remaining_vertices = set(vertices)
         fixing_order = []
         fixed = True  # flag to check if we fixed a variable on each pass
-        G = copy.deepcopy(self)
 
         # while we have more vertices to fix, and were able to perform a fix
         while remaining_vertices and fixed:
@@ -120,58 +139,77 @@ class ADMG(SG):
                     fixed = True
                     break
 
+            # if unsuccessful, return failure and
+            # fixing order up until point of failure
             if not fixed:
                 return False, fixing_order
 
+        # if fixing vertices was successful, return success
+        # and the fixing order
         return True, fixing_order
 
-    def m_connecting_paths(self, x, y, Z=set()):
-        """
-        Get all m-connecting paths between x and y after conditioning on Z using BFS.
-
-        :param x: name of vertex x.
-        :param y: name of vertex y.
-        :param Z: name of set of vertices Z being conditioned on.
-        :return: list of m-connecting paths.
-        """
-
-        queue = [(self.vertices[x], [self.vertices[x]], [])]
-        y = self.vertices[y]
-        ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])
-
-        while queue:
-
-            (vertex, vertex_path, edge_path) = queue.pop(0)
-
-            for v in vertex.children - set(vertex_path):
-
-                if vertex in Z:
-                    continue
-
-                if v == y:
-                    yield edge_path + [(vertex.name, v.name, '->')]
-                else:
-                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '->')]))
-
-            # check colliders before doing parents/siblings
-            # if it is a collider v must be in ancestors_z
-            if edge_path and (edge_path[-1][-1] == '->' or edge_path[-1][-1] == '<->'):
-                if vertex not in ancestors_z:
-                    continue
-
-            for v in vertex.parents - set(vertex_path):
-
-                if v == y:
-                    yield edge_path + [(vertex.name, v.name, '<-')]
-                else:
-                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<-')]))
-
-            for v in vertex.siblings - set(vertex_path):
-
-                if v == y:
-                    yield edge_path + [(vertex.name, v.name, '<->')]
-                else:
-                    queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<->')]))
+    # def _m_connecting_paths(self, x, y, Z=set()):
+    #     """
+    #     Get all m-connecting paths between x and y after conditioning on Z using BFS.
+    #
+    #     :param x: name of vertex x.
+    #     :param y: name of vertex y.
+    #     :param Z: name of set of vertices Z being conditioned on.
+    #     :return: list of m-connecting paths.
+    #     """
+    #
+    #     queue = [(self.vertices[x], [self.vertices[x]], [])]
+    #     y = self.vertices[y]
+    #     ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])
+    #
+    #     while queue:
+    #
+    #         (vertex, vertex_path, edge_path) = queue.pop(0)
+    #
+    #         for v in vertex.children - set(vertex_path):
+    #
+    #             if vertex in Z:
+    #                 continue
+    #
+    #             if v == y:
+    #                 yield edge_path + [(vertex.name, v.name, '->')]
+    #             else:
+    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '->')]))
+    #
+    #         # check colliders before doing parents/siblings
+    #         # if it is a collider v must be in ancestors_z
+    #         if edge_path and (edge_path[-1][-1] == '->' or edge_path[-1][-1] == '<->'):
+    #             if vertex not in ancestors_z:
+    #                 continue
+    #
+    #         for v in vertex.parents - set(vertex_path):
+    #
+    #             if v == y:
+    #                 yield edge_path + [(vertex.name, v.name, '<-')]
+    #             else:
+    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<-')]))
+    #
+    #         for v in vertex.siblings - set(vertex_path):
+    #
+    #             if v == y:
+    #                 yield edge_path + [(vertex.name, v.name, '<->')]
+    #             else:
+    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<->')]))
+    #
+    # def _m_separation(self, x, y, Z=set()):
+    #     """
+    #     Test if x and y are m-separated after conditioning on Z.
+    #
+    #     :param x: name of vertex x.
+    #     :param y: name of vertex y.
+    #     :param Z: name of set of vertices Z being conditioned on.
+    #     :return: boolean True or False.
+    #     """
+    #
+    #     # if there are no m-connecting paths return True
+    #     if len(list(self._m_connecting_paths(x, y, Z))) == 0:
+    #         return True
+    #     return False
 
     def subgraph(self, vertices):
         """
@@ -199,7 +237,7 @@ class ADMG(SG):
         Computes intrinsic sets (and returns the fixing order for each intrinsic set).
 
 
-        :return:
+        :return: list of intrinsic sets and fixing orders used to reach each one
         """
         ig = IG(copy.deepcopy(self))
         intrinsic_sets = ig.get_intrinsic_sets()
