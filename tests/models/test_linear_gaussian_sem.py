@@ -110,7 +110,7 @@ class TestLinearGaussianSEM(unittest.TestCase):
         It is not known why the function fails to converge
         :return:
         """
-        N = 20000
+        N = 2000
         dim = 4
 
 
@@ -134,6 +134,8 @@ class TestLinearGaussianSEM(unittest.TestCase):
         model3 = LinearGaussianSEM(G3, method="trust-exact")
         model3.fit(data, tol=1e-10, disp=1000)
 
+
+        # We are only interested in the zeros of the omega matrix (corresponding to lack of bidirected edges in graph)
         truth_mask = omega == 0
         result_mask = model3.omega_ == 0
 

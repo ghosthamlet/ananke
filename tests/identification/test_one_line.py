@@ -8,8 +8,6 @@ class TestOneLine(unittest.TestCase):
     def test_id_graph(self):
         """
         Test that ADMG Y(a) is identified
-
-        :return:
         """
 
         vertices = ['A', 'B', 'C', 'D', 'Y']
@@ -43,8 +41,6 @@ class TestOneLine(unittest.TestCase):
     def test_non_id_graph(self):
         """
         Test that Y(a,b) is not identified
-
-        :return:
         """
 
         # non ID test
@@ -54,8 +50,6 @@ class TestOneLine(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
         one_id = OneLineID(G, ['A', 'B'], ['Y'])
         self.assertFalse(one_id.id())
-
-
 
 
 class TestOneLineGZID(unittest.TestCase):
