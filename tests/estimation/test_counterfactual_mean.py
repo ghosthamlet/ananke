@@ -69,8 +69,15 @@ class TestCounterfactualMean(unittest.TestCase):
         dat = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
-        ace = cmean.estimate(dat, 1) - cmean.estimate(dat, 0)
-        print(ace)
+        cmean_1 = cmean.estimate(dat, 1)
+        cmean_0 = cmean.estimate(dat, 0)
+        ace_ipw = cmean_1["ipw"] - cmean_0["ipw"]
+        ace_gformula = cmean_1["g-formula"] - cmean_0["g-formula"]
+        ace_gaipw = cmean_1["g-aipw"] - cmean_0["g-aipw"]
+
+        print(ace_ipw)
+        print(ace_gformula)
+        print(ace_gaipw)
 
 
     def test_p_fixability_1(self):

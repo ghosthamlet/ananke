@@ -49,17 +49,45 @@ class CounterfactualMean:
     def estimate(self, data, assignment):
 
         if self.strategy == "a-fixable":
-            ones = np.ones(len(data))
-            data['ones'] = ones
+            data['ones'] = np.ones(len(data))
             T = data[self.treatment]
             Y = data[self.outcome]
+
             mp_T = self.graph.markov_pillow([self.treatment], self.order)
+
+            # Fit T | mp(T)
             formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
             model = sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
             prob_T = model.predict(data)
-
             indices_T0 = data.index[data[self.treatment] == 0]
             prob_T[indices_T0] = 1 - prob_T[indices_T0]
 
+            # Fit Y | T=t, mp(T)
+            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
+
+            if set([0, 1]).issuperset(data[self.outcome].unique()):
+                family = sm.families.Binomial()
+            else:
+                family = sm.families.Gaussian()
+            model = sm.GLM.from_formula(formula, data=data, family=family).fit()
+
+            data_assign = data.copy()
+            data_assign[self.treatment] = assignment
+            Yhat = model.predict(data_assign)
+
+            # IPW
             indices = data[self.treatment] == assignment
-            return np.mean( (indices/prob_T)*Y )
+            ipw_mean = np.mean( (indices/prob_T)*Y )
+
+            # g-formula
+            gformula_mean = np.mean(Yhat)
+
+            # gAIPW
+            gaipw_mean = np.mean( (indices/prob_T)*(Y-Yhat) + Yhat )
+
+            # efficient IF
+
+
+
+            estimates = {"ipw":ipw_mean, "g-formula":gformula_mean, "g-aipw":gaipw_mean}
+            return estimates
