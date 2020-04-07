@@ -20,7 +20,7 @@ class TestCounterfactualMean(unittest.TestCase):
         order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'Y', 'D1', 'D2']
         G = ADMG(vertices, di_edges, bi_edges)
 
-        size = 10000
+        size = 2000
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 1.5, size)
         U3 = np.random.binomial(1, 0.6, size)
@@ -72,6 +72,7 @@ class TestCounterfactualMean(unittest.TestCase):
         cmean.bootstrap_ace(data, "ipw")
         cmean.bootstrap_ace(data, "gformula")
         cmean.bootstrap_ace(data, "aipw")
+        cmean.bootstrap_ace(data, "eif-aipw")
 
 
     def test_p_fixability_1(self):

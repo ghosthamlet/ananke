@@ -101,60 +101,6 @@ class CounterfactualMean:
                     return False
         return True
 
-    def _estimate_a_fixability(self, data, assignment):
-
-        # Fit Y | T=t, mp(T)
-        formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
-
-        if set([0, 1]).issuperset(data[self.outcome].unique()):
-            family = sm.families.Binomial()
-        else:
-            family = sm.families.Gaussian()
-        model = sm.GLM.from_formula(formula, data=data, family=family).fit()
-
-        data_assign = data.copy()
-        data_assign[self.treatment] = assignment
-        Yhat = model.predict(data_assign)
-
-        # IPW
-        indices = data[self.treatment] == assignment
-        ipw_vec = (indices/prob_T)*Y
-
-        # g-formula
-        gformula_vec = Yhat
-
-        # gAIPW
-        gaipw_vec = (indices/prob_T)*(Y-Yhat) + Yhat
-
-        # efficient IF
-        if self.mb_shielded():
-            primal = (indices/prob_T)*Y
-            data["primal"] = primal
-            eif_vec = 0
-
-            eif_vars = [v for v in self.graph.vertices]
-            eif_vars.remove(self.treatment)
-            # eif_vars = ['Y', 'M', 'C2', 'C1']
-
-            family = sm.families.Gaussian()
-            for v in eif_vars:
-                mpV = self.graph.markov_pillow([v], self.order)
-                formula = "primal ~ " + '+'.join(mpV)
-                if len(mpV) == 0:
-                    primal_mpV = np.mean(primal)
-                else:
-                    model_mpV = sm.GLM.from_formula(formula, data=data, family=family).fit()
-                    primal_mpV = model_mpV.predict(data)
-                formula = formula + "+" + v
-                model_VmpV = sm.GLM.from_formula(formula, data=data, family=family).fit()
-                primal_VmpV = model_VmpV.predict(data)
-                eif_vec += primal_VmpV - primal_mpV
-
-            eif_vec = eif_vec + np.mean(primal)
-
-        results_vec = {"ipw":ipw_vec, "g-formula":gformula_vec, "g-aipw":gaipw_vec, "efficient-if":eif_vec}
-        return results_vec
-
     def _fit_binary_glm(self, data, formula):
         model = sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
         return model
@@ -241,14 +187,55 @@ class CounterfactualMean:
 
         return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
-    def _eif_augmented_ipw(self, data):
+    def _eif_augmented_ipw(self, data, assignment, model_binary=None, model_continuous=None):
 
         if self.strategy != "a-fixable":
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
         if not self.is_mb_shielded:
             return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
 
-        return 0
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
+
+        Y = data[self.outcome]
+        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+
+        # Fit T | mp(T)
+        formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
+        model = model_binary(data, formula)
+        prob_T = model.predict(data)
+        indices_T0 = data.index[data[self.treatment] == 0]
+        prob_T[indices_T0] = 1 - prob_T[indices_T0]
+        indices = data[self.treatment] == assignment
+
+        # Compute projections
+        primal = (indices / prob_T) * Y
+        data["primal"] = primal
+        eif_vec = 0
+
+        eif_vars = [v for v in self.graph.vertices]
+        eif_vars.remove(self.treatment)
+        # eif_vars = ['Y', 'M', 'C2', 'C1']
+
+        for v in eif_vars:
+            mpV = self.graph.markov_pillow([v], self.order)
+            formula = "primal ~ " + '+'.join(mpV)
+            if len(mpV) == 0:
+                primal_mpV = np.mean(primal)
+            else:
+                model_mpV = model_continuous(data, formula)
+                primal_mpV = model_mpV.predict(data)
+            formula = formula + "+" + v
+            model_VmpV = model_continuous(data, formula)
+            primal_VmpV = model_VmpV.predict(data)
+            eif_vec += primal_VmpV - primal_mpV
+
+        eif_vec = eif_vec + np.mean(primal)
+
+        return np.mean(eif_vec)
 
     def _primal_ipw(self, data):
 
@@ -288,7 +275,7 @@ class CounterfactualMean:
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
-    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=10):
+    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=20):
         data['ones'] = np.ones(len(data))
 
         method = self.estimators[estimator]
@@ -307,3 +294,4 @@ class CounterfactualMean:
         quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
         print("ACE = ", ace)
         print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
+        print(ace_vec)
