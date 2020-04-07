@@ -334,7 +334,7 @@ class Graph:
                 # delete the edge
                 G.delete_diedge(r, c)
 
-                # if r was the only parent, this is now a root
+                # if r was the only remaining parent, this is now a root
                 if len(G.parents([c])) == 0:
                     roots.append(c)
 
@@ -359,6 +359,25 @@ class Graph:
             pre.append(v)
 
         return pre
+
+    # def post(self, vertices, top_order):
+    #     """
+    #     Find all nodes that succeed the given set of vertices under a topological order.
+    #
+    #     :param vertices: iterable of vertex names.
+    #     :param top_order: a valid topological order.
+    #     :return: list corresponding to the order up until the given vertices.
+    #     """
+    #
+    #     # find all elements that are previous in the topological order
+    #     # by iterating over the order until we encounter one of the vertices
+    #     post = []
+    #     for v in top_order:
+    #         if v in vertices:
+    #             break
+    #         pre.append(v)
+    #
+    #     return post
 
     def draw(self, direction=None):
         """

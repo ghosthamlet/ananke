@@ -68,6 +68,27 @@ class AutomatedIF:
 
         return top_order
 
+    def format_density(self, Vi, intervened=True):
+        """
+        Provide appropriate formatting of a p(Vi | mp(Vi))
+
+        :param Vi: vertex of interest
+        :return: string formatted appropriately
+        """
+
+        pillow_Vi = self.graph.markov_pillow([Vi], self.top_order_)
+        density = ""
+
+        if len(pillow_Vi) == 0:
+            density =  "p({})".format(Vi)
+        else:
+            density = "p({}|{})".format(Vi, ",".join(pillow_Vi))
+
+        if Vi in self.M and intervened:
+            density = density.replace(self.A, self.A.lower())
+
+        return density
+
     def compute_if(self):
         """
         Compute the IF.
@@ -75,41 +96,104 @@ class AutomatedIF:
         :return: a string corresponding to the IF.
         """
 
+        # keep a dictionary of IF terms
+        IF_terms = {}
         IF = ""
-        f = "" # the part of the identifying functional corresponding to district of A
-        if len(self.L) > 0:
-            f = "\sum_{} ".format(self.A)
-            for Li in self.L:
-                f += "p({}|{}) ".format(Li, ",".join(self.graph.markov_pillow([Li], self.top_order_)))
-        print(f)
 
+        # sum over each Mi
         for Mi in self.M:
+
+            IF_term = ""
+            print("Processing", Mi)
+
+            # get all Li < Mi
             pre_Mi = set(self.graph.pre([Mi], self.top_order_)).intersection(self.L.union({self.A}))
-            post_Mi = (set(self.graph.vertices) - set(self.graph.pre([Mi], self.top_order_)) -
-                       set({Mi})).intersection(self.M)
-            print("Processing", Mi, pre_Mi)
+
+            # get all Vi > Mi
+            post_Mi = set(self.graph.vertices) - set(self.graph.pre([Mi], self.top_order_)) - set({Mi})
+
+            # process the denominator under the indicator I(A=a)
             denominator = ""
             for Li in pre_Mi:
-                denominator += "p({}|{})".format(Li, ",".join(self.graph.markov_pillow([Li], self.top_order_)))
-            IF += (r"\frac{\mathbb{I}(A=a)}{%s}" % (denominator))
-            IF += "[ "
-            product = ""
-            for Pi in post_Mi:
-                product += "p({}|{})".format(Pi, ",".join(self.graph.markov_pillow([Pi], self.top_order_)))
+                denominator += self.format_density(Li)
+
+            IF_term += (r"\frac{\mathbb{I}(A=a)}{%s}" % (denominator))
+            IF_term += "[ "
+
+            # add summation over A, Vi > Mi
+            summation = (r"\sum_{%s") % ("A")
             if len(post_Mi) > 0:
-                IF += "[ \sum_{{}}".format(",".join(post_Mi))
-                IF += product
+                summation += (r",%s") % (",".join(post_Mi))
+            IF_term += summation + "} "
 
-            IF += "{} - ".format(f)
-            IF += ("\sum_{%s}" % ",".join(post_Mi.union({Mi})))
-            IF += product
-            IF += "p({}|{})".format(Mi, ",".join(self.graph.markov_pillow([Mi], self.top_order_)))
-            IF += f + "]"
-            print(IF)
+            product = "Y"
+            product_Mi = post_Mi.union(self.L)
+            if len(product_Mi) > 0:
+                product += r"\times "
+            for Vi in product_Mi:
+                product += self.format_density(Vi)
 
-        for Li in self.L:
-            pre_Li = set(self.graph.pre([Li], self.top_order_)).intersection(self.M.union({self.A}))
-            post_Mi = (set(self.graph.vertices) - set(self.graph.pre([Mi], self.top_order_)) -
-                       set({Mi})).intersection(self.M)
+            IF_term += product
+            IF_term += " - " + summation + "," + Mi + "} "
+            IF_term += self.format_density(Mi) + product
+            IF_term += " ]"
+            print(IF_term)
+            IF_terms[Mi] = IF_term
+            IF += "+ " + IF_term
+
+        # sum over each Li excluding treatment
+        for Li in self.L - set({self.A}):
+
+            IF_term = ""
+            print("Processing", Li)
+
+            # get all Mi < Li
+            pre_Li = set(self.graph.pre([Li], self.top_order_)).intersection(self.M)
+
+            # get all Vi > Li
+            post_Li = set(self.graph.vertices) - set(self.graph.pre([Li], self.top_order_)) - set({Li})
+
+            # process ratio fixes
+            numerator = ""
+            denominator = ""
+            for Mi in pre_Li:
+                numerator += self.format_density(Mi)
+                denominator += self.format_density(Mi, intervened=False)
+
+            IF_term += (r"\frac{%s}{%s}") % (numerator, denominator)
+            IF_term += "[ "
+
+            if len(post_Li) > 0:
+                IF_term += (r"\sum_{%s} ") % (",".join(post_Li))
+
+            product = "Y"
+            if len(post_Li) > 0:
+                product += r"\times "
+
+            for Vi in post_Li:
+                product += self.format_density(Vi)
+
+            IF_term += product
+            IF_term += " - "
+            IF_term += (r"\sum_{%s} ") % (",".join(set({Li}).union(post_Li)))
+            IF_term += self.format_density(Li) + product
+            IF_term += " ]"
+            print(IF_term)
+            IF_terms[Mi] = IF_term
+            IF += "+ " + IF_term
+
+        # processing treatments and post-treatments
+        print("Processing treatment and pre-treatments")
+        IF_term = (r"(\sum_{%s} ") % (",".join(set(self.graph.vertices) - self.C.union({self.A})))
+        IF_term += r"Y\times "
+
+        for Mi in self.M:
+            IF_term += self.format_density(Mi)
+
+        for Li in self.L - set({self.A}):
+            IF_term += self.format_density(Li)
+
+        print(IF_term)
+        IF += "+ " + IF_term
 
         return IF

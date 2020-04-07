@@ -33,6 +33,7 @@ class TestADMG(unittest.TestCase):
         eif = AutomatedIF(G, 'A', 'Y')
         print("Top order:", eif.top_order_)
         print("Pretreatments:", eif.C, ", Mediators:", eif.M, ", Post district of A:", eif.L)
+        print(eif.if_)
 
 
 if __name__ == '__main__':
