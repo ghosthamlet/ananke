@@ -6,3 +6,4 @@
 env/
 docs/build/*
 .coverage
+tests/intermediates
