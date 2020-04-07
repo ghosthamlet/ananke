@@ -1,5 +1,5 @@
 """
-Class for one line ID.
+Class for one line ID algorithms.
 """
 
 import copy
@@ -17,7 +17,7 @@ class OneLineID:
 
     def __init__(self, graph, treatments, outcomes):
         """
-        Constructor.
+        Applies the ID algorithm (Shpitser and Pearl, 2006) reformulated in a 'one-line' fashion (Richardson et al., 2017).
 
         :param graph: Graph on which the query will run.
         :param treatments: iterable of names of variables being intervened on.
@@ -149,6 +149,13 @@ class OneLineID:
 class OneLineGID:
 
     def __init__(self, graph, interventions, outcomes):
+        """
+        Applies the naive one-line GID algorithm.
+
+        :param graph: Graph on which the query will be run
+        :param interventions: Iterable of treatment variables
+        :param outcomes: Iterable of outcome variables
+        """
         self.graph = graph
         self.interventions = interventions
         self.outcomes = outcomes
@@ -178,6 +185,12 @@ class OneLineGID:
         return allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders
 
     def functional(self, experiments=[set()]):
+        """
+        Creates a string representing the identifying functional
+
+        :param experiments: A list of sets denoting the interventions of the available experimental distributions
+        :return:
+        """
         if not self.id(experiments=experiments):
             raise NotIdentifiedError
 
@@ -210,6 +223,12 @@ class OneLineGID:
         return functional
 
     def id(self, experiments=[set()]):
+        """
+        Checks if identification query is identified given the set of experimental distributions
+
+        :param experiments: A list of sets denoting the interventions of the available experimental distributions
+        :return:
+        """
         required_intrinsic_sets = self._required_intrinsic_sets()
         allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders = self._allowed_intrinsic_sets(experiments)
         self.required_intrinsic_sets = required_intrinsic_sets

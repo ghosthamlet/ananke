@@ -52,7 +52,7 @@ class TestOneLine(unittest.TestCase):
         self.assertFalse(one_id.id())
 
 
-class TestOneLineGZID(unittest.TestCase):
+class TestOneLineGID(unittest.TestCase):
 
     def test_is_id(self):
         vertices = ["X_1", "X_2", "W", "Y"]
