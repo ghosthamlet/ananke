@@ -104,24 +104,33 @@ class ADMG(SG):
         :return: set corresponding to the reachable closure, the fixing order for vertices
                  outside of the closure, and the CADMG corresponding to the closure.
         """
+
+        # initialize set of vertices that must still be fixed
         remaining_vertices = set(self.vertices) - set(vertices) - set(v for v in self.vertices if self.vertices[v].fixed)
-        fixing_order = []
-        fixed = True
+        fixing_order = []  # keep track of the valid fixing order
+        fixed = True  # flag to track that a vertex was successfully fixed in a given pass
         G = copy.deepcopy(self)
 
+        # keep iterating over remaining vertices until there are no more or we failed to fix
         while remaining_vertices and fixed:
+
             fixed = False
 
+            # check if any remaining vertex van be fixed
             for v in remaining_vertices:
+
+                # fixability check
                 if len(G.descendants([v]).intersection(G.district(v))) == 1:
                     G.fix([v])
                     remaining_vertices.remove(v)
                     fixing_order.append(v)
-                    fixed = True
-                    break
+                    fixed = True  # flag that we succeeded
+                    break  # stop the current pass over vertices
 
+        # compute final reachable closure based on vertices successfully fixed
         reachable_closure = set(G.vertices) - set(v for v in G.vertices if G.vertices[v].fixed)
 
+        # return the reachable closure, the valid order, and the resulting CADMG
         return reachable_closure, fixing_order, G
 
     def fixable(self, vertices):
@@ -165,69 +174,6 @@ class ADMG(SG):
         # and the fixing order
         return True, fixing_order
 
-    # def _m_connecting_paths(self, x, y, Z=set()):
-    #     """
-    #     Get all m-connecting paths between x and y after conditioning on Z using BFS.
-    #
-    #     :param x: name of vertex x.
-    #     :param y: name of vertex y.
-    #     :param Z: name of set of vertices Z being conditioned on.
-    #     :return: list of m-connecting paths.
-    #     """
-    #
-    #     queue = [(self.vertices[x], [self.vertices[x]], [])]
-    #     y = self.vertices[y]
-    #     ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])
-    #
-    #     while queue:
-    #
-    #         (vertex, vertex_path, edge_path) = queue.pop(0)
-    #
-    #         for v in vertex.children - set(vertex_path):
-    #
-    #             if vertex in Z:
-    #                 continue
-    #
-    #             if v == y:
-    #                 yield edge_path + [(vertex.name, v.name, '->')]
-    #             else:
-    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '->')]))
-    #
-    #         # check colliders before doing parents/siblings
-    #         # if it is a collider v must be in ancestors_z
-    #         if edge_path and (edge_path[-1][-1] == '->' or edge_path[-1][-1] == '<->'):
-    #             if vertex not in ancestors_z:
-    #                 continue
-    #
-    #         for v in vertex.parents - set(vertex_path):
-    #
-    #             if v == y:
-    #                 yield edge_path + [(vertex.name, v.name, '<-')]
-    #             else:
-    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<-')]))
-    #
-    #         for v in vertex.siblings - set(vertex_path):
-    #
-    #             if v == y:
-    #                 yield edge_path + [(vertex.name, v.name, '<->')]
-    #             else:
-    #                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, '<->')]))
-    #
-    # def _m_separation(self, x, y, Z=set()):
-    #     """
-    #     Test if x and y are m-separated after conditioning on Z.
-    #
-    #     :param x: name of vertex x.
-    #     :param y: name of vertex y.
-    #     :param Z: name of set of vertices Z being conditioned on.
-    #     :return: boolean True or False.
-    #     """
-    #
-    #     # if there are no m-connecting paths return True
-    #     if len(list(self._m_connecting_paths(x, y, Z))) == 0:
-    #         return True
-    #     return False
-
     def subgraph(self, vertices):
         """
         Return a subgraph on the given vertices (i.e. a graph containing only
@@ -253,9 +199,10 @@ class ADMG(SG):
         """
         Computes intrinsic sets (and returns the fixing order for each intrinsic set).
 
-
         :return: list of intrinsic sets and fixing orders used to reach each one
         """
+
+        # create an intrinsic set graph and obtain the intrinsic sets + valid fixing orders leading to them
         ig = IG(copy.deepcopy(self))
         intrinsic_sets = ig.get_intrinsic_sets()
         fixing_orders = ig.iset_fixing_order_map
@@ -266,7 +213,7 @@ class ADMG(SG):
         """
         Get the maximal arid projection that encodes the same conditional independences and
         Vermas as the original ADMG. This operation is described in Acyclic
-        Linear SEMs obey the Nested Markov property.
+        Linear SEMs obey the Nested Markov property by Shpitser et al 2018.
 
         :return: An ADMG corresponding to the maximal arid projection.
         """
