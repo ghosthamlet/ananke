@@ -113,8 +113,8 @@ class AverageCausalEffect:
         :param formula: string encoding an R-style formula e.g: Y ~ X1 + X2.
         :return: the fitted model.
         """
-        model = sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
-        return model
+
+        return sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
 
     def _fit_continuous_glm(self, data, formula):
         """
@@ -124,8 +124,8 @@ class AverageCausalEffect:
         :param formula: string encoding an R-style formula: e.g. Y ~ X1 + X2.
         :return: the fitted model.
         """
-        model = sm.GLM.from_formula(formula, data=data, family=sm.families.Gaussian()).fit()
-        return model
+
+        return sm.GLM.from_formula(formula, data=data, family=sm.families.Gaussian()).fit()
 
     def _ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
@@ -608,4 +608,3 @@ class AverageCausalEffect:
         quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
         print("ACE = ", ace)
         print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
-        print(ace_vec)

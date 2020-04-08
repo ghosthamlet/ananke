@@ -71,9 +71,9 @@ class TestCounterfactualMean(unittest.TestCase):
 
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
         cmean.bootstrap_ace(data, "ipw")
-        # cmean.bootstrap_ace(data, "gformula")
-        # cmean.bootstrap_ace(data, "aipw")
-        # cmean.bootstrap_ace(data, "eif-aipw")
+        cmean.bootstrap_ace(data, "gformula")
+        cmean.bootstrap_ace(data, "aipw")
+        cmean.bootstrap_ace(data, "eif-aipw")
 
 
     def test_p_fixability_1(self):
@@ -129,17 +129,14 @@ class TestCounterfactualMean(unittest.TestCase):
 
         # t = f(c1, c2, u5, u6)
         p_t = expit(0.5 + 0.5 * C1 - 0.4 * C2 - 0.4 * U5 + 0.4 * U6)
-        print(stats.describe(p_t))
         T = np.random.binomial(1, p_t, size)
 
         # m = f(t)
         p_m = expit(-0.3 + 1.5 * T - 0.3 * C2)
-        print(stats.describe(p_m))
         M = np.random.binomial(1, p_m, size)
 
         # l = f(m, c1, c2, u5, u6)
         p_l = expit(0.75 - 0.8 * M - 0.4 * C1 - 0.3 * C2 - 0.4 * U5 + 0.5 * U6)
-        print(stats.describe(p_l))
         L = np.random.binomial(1, p_l, size)
 
         # y = f(l)
@@ -149,8 +146,8 @@ class TestCounterfactualMean(unittest.TestCase):
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'L':L, 'Y':Y})
 
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
-        # cmean.bootstrap_ace(data, "p-ipw")
-        # cmean.bootstrap_ace(data, "d-ipw")
+        cmean.bootstrap_ace(data, "p-ipw")
+        cmean.bootstrap_ace(data, "d-ipw")
         cmean.bootstrap_ace(data, "apipw")
         cmean.bootstrap_ace(data, "eif-apipw")
 
