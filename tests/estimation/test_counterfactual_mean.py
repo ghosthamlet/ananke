@@ -95,7 +95,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
 
     def test_p_fixability_3(self):
-        np.random.seed(10)
+        np.random.seed(0)
         vertices = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
         di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
                     ('T', 'M'), ('M', 'L'), ('L', 'Y')]
