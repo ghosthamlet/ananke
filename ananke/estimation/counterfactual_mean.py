@@ -230,8 +230,6 @@ class CounterfactualMean:
 
         return np.mean(eif_vec)
 
-
-
     def _beta_primal(self, data, assignment, model_binary=None, model_continuous=None):
 
         if not model_binary:
@@ -347,7 +345,7 @@ class CounterfactualMean:
             return RuntimeError("Dual IPW will not return valid estimates as treatment is not p-fixable")
         return np.mean(self._beta_dual(data, assignment, model_binary, model_continuous))
 
-    def _augmented_primal_ipw(self, data, assigned, model_binary, model_continuous):
+    def _augmented_primal_ipw(self, data, assigned, model_binary=None, model_continuous=None):
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
@@ -355,9 +353,39 @@ class CounterfactualMean:
             model_binary = self._fit_binary_glm
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
-        return 0
 
-    def _eif_augmented_primal_ipw(self, data, assigned, model_binary, model_continuous):
+        beta_primal = self._beta_primal(data, assigned, model_binary, model_continuous)
+        beta_dual = self._beta_dual(data, assigned, model_binary, model_continuous)
+        data["beta_primal"] = beta_primal
+        data["beta_dual"] = beta_dual
+
+        Y = data[self.outcome]
+        C = self.graph.pre([self.treatment], self.order)
+        post = set(self.graph.vertices).difference(C)
+        L = post.intersection(self.graph.district(self.treatment))
+        M = post - L - set([self.outcome])
+
+        IF = 0
+        for V in post.difference([self.treatment]):
+            pre_V = self.graph.pre([V], self.order)
+            if V in M:
+                formula = "beta_primal" + " ~ " + '+'.join(pre_V)
+            elif V in L:
+                formula = "beta_dual" + " ~ " + '+'.join(pre_V)
+            model_preV = model_continuous(data, formula)
+            formula = formula + " + " + V
+            model_VpreV = model_continuous(data, formula)
+
+            IF += model_VpreV.predict(data) - model_preV.predict(data)
+
+        formula = "beta_dual" + " ~ " + '+'.join(C)
+        model_C = model_continuous(data, formula)
+
+        IF += model_C.predict(data)
+
+        return np.mean(IF)
+
+    def _eif_augmented_primal_ipw(self, data, assigned, model_binary=None, model_continuous=None):
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
@@ -367,9 +395,41 @@ class CounterfactualMean:
             model_binary = self._fit_binary_glm
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
-        return 0
 
-    def _nested_ipw(self, data, assigned, model_binary, model_continuous):
+        beta_primal = self._beta_primal(data, assigned, model_binary, model_continuous)
+        beta_dual = self._beta_dual(data, assigned, model_binary, model_continuous)
+        data["beta_primal"] = beta_primal
+        data["beta_dual"] = beta_dual
+
+        Y = data[self.outcome]
+        C = self.graph.pre([self.treatment], self.order)
+        post = set(self.graph.vertices).difference(C)
+        L = post.intersection(self.graph.district(self.treatment))
+        M = post - L - set([self.outcome])
+
+        IF = 0
+        for V in self.graph.vertices:
+            mp_V = self.graph.markov_pillow([V], self.order)
+            if V in M:
+                formula = "beta_primal" + " ~ " + '+'.join(mp_V)
+            else:
+                formula = "beta_dual" + " ~ " + '+'.join(mp_V)
+
+            if len(mp_V) == 0:
+                pred_mpV = np.mean(beta_dual)
+            else:
+                model_mpV = model_continuous(data, formula)
+                pred_mpV = model_mpV.predict(data)
+            formula = formula + " + " + V
+            model_VmpV = model_continuous(data, formula)
+            pred_VmpV = model_VmpV.predict(data)
+            IF += pred_VmpV - pred_mpV
+
+        IF += np.mean(beta_dual)
+
+        return np.mean(IF)
+
+    def _nested_ipw(self, data, assigned, model_binary=None, model_continuous=None):
 
         if self.strategy == "Not ID":
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
@@ -379,7 +439,7 @@ class CounterfactualMean:
             model_continuous = self._fit_continuous_glm
         return 0
 
-    def _augmented_nested_ipw(self, data, assigned, model_binary, model_continuous):
+    def _augmented_nested_ipw(self, data, assigned, model_binary=None, model_continuous=None):
 
         if self.strategy == "Not ID":
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")

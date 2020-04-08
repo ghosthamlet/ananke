@@ -151,6 +151,8 @@ class TestCounterfactualMean(unittest.TestCase):
         cmean = CounterfactualMean(G, 'T', 'Y', order)
         cmean.bootstrap_ace(data, "p-ipw")
         cmean.bootstrap_ace(data, "d-ipw")
+        cmean.bootstrap_ace(data, "apipw")
+        cmean.bootstrap_ace(data, "eif-apipw")
 
 
     def test_nested_fixability(self):
