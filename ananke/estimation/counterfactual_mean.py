@@ -113,7 +113,6 @@ class CounterfactualMean:
 
         if self.strategy != "a-fixable":
             return RuntimeError("IPW will not return valid estimates as treatment is not a-fixable")
-
         if not model_binary:
             model_binary = self._fit_binary_glm
 
@@ -134,10 +133,8 @@ class CounterfactualMean:
 
         if self.strategy != "a-fixable":
             return RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
-
         if not model_binary:
             model_binary = self._fit_binary_glm
-
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
@@ -157,10 +154,8 @@ class CounterfactualMean:
 
         if self.strategy != "a-fixable":
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
-
         if not model_binary:
             model_binary = self._fit_binary_glm
-
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
@@ -193,10 +188,8 @@ class CounterfactualMean:
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
         if not self.is_mb_shielded:
             return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
-
         if not model_binary:
             model_binary = self._fit_binary_glm
-
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
@@ -237,14 +230,12 @@ class CounterfactualMean:
 
         return np.mean(eif_vec)
 
-    def _primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
 
-        if self.strategy != "p-fixable" and self.strategy != "a-fixable":
-            return RuntimeError("Primal IPW will not return valid estimates as treatment is not p-fixable")
+
+    def _beta_primal(self, data, assignment, model_binary=None, model_continuous=None):
 
         if not model_binary:
             model_binary = self._fit_binary_glm
-
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
@@ -263,7 +254,7 @@ class CounterfactualMean:
         prob = 1
         prob_T1 = 1
         prob_T0 = 1
-        for V in L:
+        for V in L.difference([self.outcome]):
             # Fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.order)
             formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
@@ -282,43 +273,119 @@ class CounterfactualMean:
             prob *= prob_V
             prob_T1 *= prob_V_T1
             prob_T0 *= prob_V_T0
-        prob_sumT = prob_T1 + prob_T0
 
-        return np.mean(indices*(prob_sumT/prob)*Y)
+        if self.outcome in L:
+            mp_Y = self.graph.markov_pillow(self.outcome, self.order)
+            formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
+            if set([0, 1]).issuperset(data[self.outcome].unique()):
+                model = model_binary(data, formula)
+            else:
+                model = model_continuous(data, formula)
+            Yhat_T1 = model.predict(data_T1)
+            Yhat_T0 = model.predict(data_T0)
+            prob_sumT = prob_T1*Yhat_T1 + prob_T0*Yhat_T0
+            beta_primal = indices*(prob_sumT/prob)
+        else:
+            prob_sumT = prob_T1 + prob_T0
+            beta_primal = indices * (prob_sumT / prob)*Y
+        return beta_primal
 
-    def _dual_ipw(self, data):
+    def _primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+
+        if self.strategy != "p-fixable" and self.strategy != "a-fixable":
+            return RuntimeError("Primal IPW will not return valid estimates as treatment is not p-fixable")
+        return np.mean(self._beta_primal(data, assignment, model_binary, model_continuous))
+
+    def _beta_dual(self, data, assignment, model_binary=None, model_continuous=None):
+
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
+
+        Y = data[self.outcome]
+        C = self.graph.pre([self.treatment], self.order)
+        post = set(self.graph.vertices).difference(C)
+        L = post.intersection(self.graph.district(self.treatment))
+        M = post - L - set([self.outcome])
+        M = set([m for m in M if self.treatment in self.graph.markov_pillow([m], self.order)])
+
+        data_assigned = data.copy()
+        data_assigned[self.treatment] = assignment
+
+        prob = 1
+        for V in M.difference([self.outcome]):
+            # Fit V | mp(V)
+            mp_V = self.graph.markov_pillow([V], self.order)
+            formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
+            model = model_binary(data, formula)
+            indices_V0 = data.index[data[V] == 0]
+            # p(V | .)
+            prob_V = model.predict(data)
+            prob_V[indices_V0] = 1 - prob_V[indices_V0]
+            # p(V | . ) when T=assignment
+            prob_V_assigned = model.predict(data_assigned)
+            prob_V_assigned[indices_V0] = 1 - prob_V_assigned[indices_V0]
+
+            prob *= prob_V/prob_V_assigned
+
+        if self.outcome in M:
+            mp_Y = self.graph.markov_pillow(self.outcome, self.order)
+            formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
+            if set([0, 1]).issuperset(data[self.outcome].unique()):
+                model = model_binary(data, formula)
+            else:
+                model = model_continuous(data, formula)
+            Yhat_assigned = model.predict(data_assigned)
+        else:
+            Yhat_assigned = Y
+        return prob*Yhat_assigned
+
+    def _dual_ipw(self, data, assignment, model_binary=None, model_continuous=None):
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Dual IPW will not return valid estimates as treatment is not p-fixable")
-        return 0
+        return np.mean(self._beta_dual(data, assignment, model_binary, model_continuous))
 
-    def _augmented_primal_ipw(self, data):
+    def _augmented_primal_ipw(self, data, assigned, model_binary, model_continuous):
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
         return 0
 
-    def _eif_augmented_primal_ipw(self, data):
+    def _eif_augmented_primal_ipw(self, data, assigned, model_binary, model_continuous):
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
         if not self.is_mb_shielded:
             return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
         return 0
 
-    def _nested_ipw(self, data):
+    def _nested_ipw(self, data, assigned, model_binary, model_continuous):
+
+        if self.strategy == "Not ID":
+            return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
+        return 0
+
+    def _augmented_nested_ipw(self, data, assigned, model_binary, model_continuous):
 
         if self.strategy == "Not ID":
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
-    def _augmented_nested_ipw(self, data):
-
-        if self.strategy == "Not ID":
-            return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        return 0
-
-    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=1):
+    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=10):
         data['ones'] = np.ones(len(data))
 
         method = self.estimators[estimator]

@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 from scipy.special import expit
 import pandas as pd
+from scipy import stats
 
 from ananke.graphs import ADMG
 from ananke.estimation import CounterfactualMean
@@ -94,6 +95,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
 
     def test_p_fixability_3(self):
+        np.random.seed(10)
         vertices = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
         di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
                     ('T', 'M'), ('M', 'L'), ('L', 'Y')]
@@ -127,14 +129,17 @@ class TestCounterfactualMean(unittest.TestCase):
 
         # t = f(c1, c2, u5, u6)
         p_t = expit(0.5 + 0.5 * C1 - 0.4 * C2 - 0.4 * U5 + 0.4 * U6)
+        print(stats.describe(p_t))
         T = np.random.binomial(1, p_t, size)
 
         # m = f(t)
         p_m = expit(-0.3 + 1.5 * T - 0.3 * C2)
+        print(stats.describe(p_m))
         M = np.random.binomial(1, p_m, size)
 
         # l = f(m, c1, c2, u5, u6)
         p_l = expit(0.75 - 0.8 * M - 0.4 * C1 - 0.3 * C2 - 0.4 * U5 + 0.5 * U6)
+        print(stats.describe(p_l))
         L = np.random.binomial(1, p_l, size)
 
         # y = f(l)
@@ -145,6 +150,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
         cmean.bootstrap_ace(data, "p-ipw")
+        cmean.bootstrap_ace(data, "d-ipw")
 
 
     def test_nested_fixability(self):
