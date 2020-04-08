@@ -1,2 +1,2 @@
 from .automated_if import AutomatedIF
-from .counterfactual_mean import CounterfactualMean
+from .counterfactual_mean import AverageCausalEffect

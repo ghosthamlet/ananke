@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class ADMG(SG):
+    """
+    Class for creating and manipulating (conditional) acyclic directed mixed graphs (ADMGs/CADMGs).
+    """
 
     def __init__(self, vertices=[], di_edges=set(), bi_edges=set(), **kwargs):
         """

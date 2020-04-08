@@ -6,7 +6,7 @@ import pandas as pd
 from scipy import stats
 
 from ananke.graphs import ADMG
-from ananke.estimation import CounterfactualMean
+from ananke.estimation import AverageCausalEffect
 
 
 class TestCounterfactualMean(unittest.TestCase):
@@ -69,7 +69,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
-        cmean = CounterfactualMean(G, 'T', 'Y', order)
+        cmean = AverageCausalEffect(G, 'T', 'Y', order)
         cmean.bootstrap_ace(data, "ipw")
         # cmean.bootstrap_ace(data, "gformula")
         # cmean.bootstrap_ace(data, "aipw")
@@ -82,7 +82,7 @@ class TestCounterfactualMean(unittest.TestCase):
                     ('L', 'Y')]
         bi_edges = [('T', 'L'), ('T', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
-        cmean = CounterfactualMean(G, 'T', 'Y')
+        cmean = AverageCausalEffect(G, 'T', 'Y')
 
 
     def test_p_fixability_2(self):
@@ -91,7 +91,7 @@ class TestCounterfactualMean(unittest.TestCase):
                     ('L', 'Y')]
         bi_edges = [('T', 'L'), ('M', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
-        cmean = CounterfactualMean(G, 'T', 'Y')
+        cmean = AverageCausalEffect(G, 'T', 'Y')
 
 
     def test_p_fixability_3(self):
@@ -148,7 +148,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'L':L, 'Y':Y})
 
-        cmean = CounterfactualMean(G, 'T', 'Y', order)
+        cmean = AverageCausalEffect(G, 'T', 'Y', order)
         # cmean.bootstrap_ace(data, "p-ipw")
         # cmean.bootstrap_ace(data, "d-ipw")
         cmean.bootstrap_ace(data, "apipw")
@@ -161,7 +161,7 @@ class TestCounterfactualMean(unittest.TestCase):
                     ('M', 'Y')]
         bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
-        cmean = CounterfactualMean(G, 'T', 'Y')
+        cmean = AverageCausalEffect(G, 'T', 'Y')
 
 if __name__ == '__main__':
     unittest.main()

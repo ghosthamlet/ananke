@@ -1,25 +1,25 @@
 """
-Estimate the counterfactual mean E[Y(t)]
+Class that provides an interface to estimation strategies for the counterfactual mean E[Y(t)]
 """
-
 import numpy as np
 import statsmodels.api as sm
 from statsmodels.gam.generalized_additive_model import GLMGam
 from itertools import combinations
-
 from ananke.identification import OneLineID
 
-class CounterfactualMean:
+
+class AverageCausalEffect:
     """
-    estimation strategies for E[Y(t)]
+    Provides an interface to various estimation strategies for the ACE: E[Y(1) - Y(0)].
     """
+
     def __init__(self, graph, treatment, outcome, order=[]):
         """
         Constructor.
 
-        :param graph: ADMG corresponding to substantive knowledge/model
-        :param treatment: name of vertex corresponding to the treatment
-        :param outcome: name of vertex corresponding to the outcome
+        :param graph: ADMG corresponding to substantive knowledge/model.
+        :param treatment: name of vertex corresponding to the treatment.
+        :param outcome: name of vertex corresponding to the outcome.
         """
 
         self.graph = graph
@@ -28,6 +28,8 @@ class CounterfactualMean:
         self.order = order
         self.strategy = None
         self.is_mb_shielded = self.mb_shielded()
+
+        # a dictionary of names for available estimators
         self.estimators = {"ipw": self._ipw,
                            "gformula": self._gformula,
                            "aipw": self._aipw,
@@ -38,13 +40,15 @@ class CounterfactualMean:
                            "eif-apipw": self._eif_augmented_primal_ipw,
                            "n-ipw": self._nested_ipw,
                            "anipw": self._augmented_nested_ipw}
+
+        # a dictionary of names for available modeling strategies
         self.models = {"glm-binary": self._fit_binary_glm,
                        "glm-continuous": self._fit_continuous_glm}
 
-        # Check if the query is ID
+        # check if the query is ID
         one_id = OneLineID(graph, [treatment], [outcome])
 
-        # Check the fixability criteria for the treatment
+        # check the fixability criteria for the treatment
         if len(self.graph.district(treatment).intersection(self.graph.descendants([treatment]))) == 1:
             self.strategy = "a-fixable"
             if self.is_mb_shielded:
@@ -102,14 +106,37 @@ class CounterfactualMean:
         return True
 
     def _fit_binary_glm(self, data, formula):
+        """
+        Fit a binary GLM to data given a formula.
+
+        :param data: pandas data frame containing the data.
+        :param formula: string encoding an R-style formula e.g: Y ~ X1 + X2.
+        :return: the fitted model.
+        """
         model = sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
         return model
 
     def _fit_continuous_glm(self, data, formula):
+        """
+        Fit a linear GLM to data given a formula.
+
+        :param data: pandas data frame containing the data.
+        :param formula: string encoding an R-style formula: e.g. Y ~ X1 + X2.
+        :return: the fitted model.
+        """
         model = sm.GLM.from_formula(formula, data=data, family=sm.families.Gaussian()).fit()
         return model
 
     def _ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for propensity score: e.g. glm-binary.
+        :param model_continuous: this argument is ignored for IPW.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "a-fixable":
             return RuntimeError("IPW will not return valid estimates as treatment is not a-fixable")
@@ -130,6 +157,15 @@ class CounterfactualMean:
         return np.mean((indices / prob_T) * Y)
 
     def _gformula(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Outcome regression estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: this argument is ignored for g-formula.
+        :param model_continuous: string specifying modeling strategy to use for outcome regression: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "a-fixable":
             return RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
@@ -151,6 +187,15 @@ class CounterfactualMean:
         return np.mean(Yhat_vec)
 
     def _aipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Augmented IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for propensity score: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for outcome regression: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "a-fixable":
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
@@ -183,6 +228,15 @@ class CounterfactualMean:
         return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
     def _eif_augmented_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Efficient augmented IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "a-fixable":
             return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
@@ -231,6 +285,15 @@ class CounterfactualMean:
         return np.mean(eif_vec)
 
     def _beta_primal(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Utility function to compute primal estimates for a dataset.
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: numpy array of floats corresponding to primal estimates for each sample.
+        """
 
         if not model_binary:
             model_binary = self._fit_binary_glm
@@ -291,12 +354,30 @@ class CounterfactualMean:
         return beta_primal
 
     def _primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Primal IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Primal IPW will not return valid estimates as treatment is not p-fixable")
         return np.mean(self._beta_primal(data, assignment, model_binary, model_continuous))
 
     def _beta_dual(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Utility function to compute dual estimates for a dataset.
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: numpy array of floats corresponding to dual estimates for each sample.
+        """
 
         if not model_binary:
             model_binary = self._fit_binary_glm
@@ -344,12 +425,30 @@ class CounterfactualMean:
         return prob*Yhat_assigned
 
     def _dual_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Dual IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Dual IPW will not return valid estimates as treatment is not p-fixable")
         return np.mean(self._beta_dual(data, assignment, model_binary, model_continuous))
 
-    def _augmented_primal_ipw(self, data, assigned, model_binary=None, model_continuous=None):
+    def _augmented_primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Augmented primal IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
@@ -358,8 +457,8 @@ class CounterfactualMean:
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
-        beta_primal = self._beta_primal(data, assigned, model_binary, model_continuous)
-        beta_dual = self._beta_dual(data, assigned, model_binary, model_continuous)
+        beta_primal = self._beta_primal(data, assignment, model_binary, model_continuous)
+        beta_dual = self._beta_dual(data, assignment, model_binary, model_continuous)
         data["beta_primal"] = beta_primal
         data["beta_dual"] = beta_dual
 
@@ -393,7 +492,16 @@ class CounterfactualMean:
             IF += model_C.predict(data)
         return np.mean(IF)
 
-    def _eif_augmented_primal_ipw(self, data, assigned, model_binary=None, model_continuous=None):
+    def _eif_augmented_primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Efficient augmented primal IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
@@ -404,8 +512,8 @@ class CounterfactualMean:
         if not model_continuous:
             model_continuous = self._fit_continuous_glm
 
-        beta_primal = self._beta_primal(data, assigned, model_binary, model_continuous)
-        beta_dual = self._beta_dual(data, assigned, model_binary, model_continuous)
+        beta_primal = self._beta_primal(data, assignment, model_binary, model_continuous)
+        beta_dual = self._beta_dual(data, assignment, model_binary, model_continuous)
         data["beta_primal"] = beta_primal
         data["beta_dual"] = beta_dual
 
@@ -437,7 +545,16 @@ class CounterfactualMean:
 
         return np.mean(IF)
 
-    def _nested_ipw(self, data, assigned, model_binary=None, model_continuous=None):
+    def _nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Nested IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy == "Not ID":
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
@@ -447,13 +564,32 @@ class CounterfactualMean:
             model_continuous = self._fit_continuous_glm
         return 0
 
-    def _augmented_nested_ipw(self, data, assigned, model_binary=None, model_continuous=None):
+    def _augmented_nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+        """
+        Augmented nested IPW estimator for the counterfactual mean E[Y(t)].
+
+        :param data: pandas data frame containing the data.
+        :param assignment: assignment value for treatment.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: float corresponding to computed E[Y(t)].
+        """
 
         if self.strategy == "Not ID":
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
     def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=10):
+        """
+        Bootstrap functionality to compute the Average Causal Effect
+        :param data: pandas data frame containing the data.
+        :param estimator: string indicating what estimator to use: e.g. eif-apipw.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :param n_bootstraps: number of bootstraps.
+        :return: None
+        """
+
         data['ones'] = np.ones(len(data))
 
         method = self.estimators[estimator]
