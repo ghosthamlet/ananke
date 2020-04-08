@@ -286,6 +286,8 @@ class CounterfactualMean:
         else:
             prob_sumT = prob_T1 + prob_T0
             beta_primal = indices * (prob_sumT / prob)*Y
+
+        # TODO: fix fitting a binary vs a continuous variable
         return beta_primal
 
     def _primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -337,6 +339,8 @@ class CounterfactualMean:
             Yhat_assigned = model.predict(data_assigned)
         else:
             Yhat_assigned = Y
+
+        # TODO: fix fitting a binary vs a continuous variable
         return prob*Yhat_assigned
 
     def _dual_ipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -363,26 +367,30 @@ class CounterfactualMean:
         C = self.graph.pre([self.treatment], self.order)
         post = set(self.graph.vertices).difference(C)
         L = post.intersection(self.graph.district(self.treatment))
-        M = post - L - set([self.outcome])
+        M = post - L
 
         IF = 0
-        for V in post.difference([self.treatment]):
+        for V in post:
             pre_V = self.graph.pre([V], self.order)
             if V in M:
                 formula = "beta_primal" + " ~ " + '+'.join(pre_V)
             elif V in L:
                 formula = "beta_dual" + " ~ " + '+'.join(pre_V)
-            model_preV = model_continuous(data, formula)
+            if len(pre_V) != 0:
+                model_preV = model_continuous(data, formula)
+                pred_preV = model_preV.predict(data)
+            else:
+                pred_preV = 0
             formula = formula + " + " + V
             model_VpreV = model_continuous(data, formula)
+            pred_VpreV = model_VpreV.predict(data)
 
-            IF += model_VpreV.predict(data) - model_preV.predict(data)
+            IF += pred_VpreV - pred_preV
 
-        formula = "beta_dual" + " ~ " + '+'.join(C)
-        model_C = model_continuous(data, formula)
-
-        IF += model_C.predict(data)
-
+        if len(C) != 0:
+            formula = "beta_dual" + " ~ " + '+'.join(C)
+            model_C = model_continuous(data, formula)
+            IF += model_C.predict(data)
         return np.mean(IF)
 
     def _eif_augmented_primal_ipw(self, data, assigned, model_binary=None, model_continuous=None):
@@ -405,7 +413,7 @@ class CounterfactualMean:
         C = self.graph.pre([self.treatment], self.order)
         post = set(self.graph.vertices).difference(C)
         L = post.intersection(self.graph.district(self.treatment))
-        M = post - L - set([self.outcome])
+        M = post - L
 
         IF = 0
         for V in self.graph.vertices:

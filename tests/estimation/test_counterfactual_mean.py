@@ -149,8 +149,8 @@ class TestCounterfactualMean(unittest.TestCase):
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'L':L, 'Y':Y})
 
         cmean = CounterfactualMean(G, 'T', 'Y', order)
-        cmean.bootstrap_ace(data, "p-ipw")
-        cmean.bootstrap_ace(data, "d-ipw")
+        # cmean.bootstrap_ace(data, "p-ipw")
+        # cmean.bootstrap_ace(data, "d-ipw")
         cmean.bootstrap_ace(data, "apipw")
         cmean.bootstrap_ace(data, "eif-apipw")
 
