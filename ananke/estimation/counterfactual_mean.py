@@ -25,7 +25,6 @@ class AverageCausalEffect:
         self.graph = copy.deepcopy(graph)
         self.treatment = treatment
         self.outcome = outcome
-        self.order = order
         self.strategy = None
         self.is_mb_shielded = self.graph.mb_shielded()
 
@@ -46,7 +45,7 @@ class AverageCausalEffect:
                        "glm-continuous": self._fit_continuous_glm}
 
         # check if the query is ID
-        one_id = OneLineID(graph, [treatment], [outcome])
+        self.one_id = OneLineID(graph, [treatment], [outcome])
 
         # check the fixability criteria for the treatment
         if len(self.graph.district(treatment).intersection(self.graph.descendants([treatment]))) == 1:
@@ -81,7 +80,7 @@ class AverageCausalEffect:
                       "Dual IPW (d-ipw)\n" +
                       "APIPW (apipw)")
 
-        elif one_id.id():
+        elif self.one_id.id():
             self.strategy = "nested-fixable"
             print("Effect is identified. Suggested estimator is Augmented NIPW \n" +
                   "Available estimators:\n" +
@@ -91,6 +90,40 @@ class AverageCausalEffect:
         else:
             self.strategy = "Not ID"
             print("Query is not identified!")
+
+        # finally, fix a valid topological order for estimation queries
+        self.p_order = self._find_valid_order("p-fixable") # used for a-fixable/p-fixable strategies
+        self.n_order = self._find_valid_order("nested-fixable") # used for nested-fixable strategies
+        print(self.p_order)
+        print(self.n_order)
+
+    def _find_valid_order(self, order_type):
+        """
+        Utility function to find a valid order that satisfies the requirements in
+        Semiparametric Inference (Bhattacharya, Nabi & Shpitser 2020) paper.
+
+        :param order_type: string specifying if the topological order is required for p-fixable or n-fixable problems.
+        :return: list corresponding to a valid toplogical order.
+        """
+
+        # if we are a-fixing or p-fixing, just ensure that the
+        # treatment appears after all its non-descendants
+        if order_type != "nested-fixable":
+            focal_vertices = {self.treatment}
+
+        # otherwise we ensure the vertices in Y* that intersect with district
+        # of the treatment appear after all their non-descendants
+        else:
+            focal_vertices = self.one_id.ystar.intersection(self.graph.district(self.treatment))
+
+        # perform a sort on the nondescendants first
+        nondescendants = set(self.graph.vertices) - self.graph.descendants(focal_vertices)
+        order = self.graph.subgraph(nondescendants).topological_sort()
+
+        # then sort the focal vertices and its descendants
+        order += self.graph.subgraph(self.graph.descendants(focal_vertices)).topological_sort()
+
+        return order
 
     def _fit_binary_glm(self, data, formula):
         """
@@ -135,7 +168,7 @@ class AverageCausalEffect:
 
         # extract outcome from data frame and compute Markov pillow of treatment
         Y = data[self.outcome]
-        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
         # fit T | mp(T) and compute probability of treatment for each sample
         formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
@@ -170,7 +203,7 @@ class AverageCausalEffect:
             model_continuous = self._fit_continuous_glm
 
         # fit Y | T=t, mp(T)
-        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
         formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
 
         # create a dataset where T=t
@@ -209,7 +242,7 @@ class AverageCausalEffect:
 
         # extract the outcome and get Markov pillow of the treatment
         Y = data[self.outcome]
-        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
         # fit T | mp(T) and predict treatment probabilities
         formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
@@ -257,7 +290,7 @@ class AverageCausalEffect:
 
         # extract the outcome and get Markov pillow of treatment
         Y = data[self.outcome]
-        mp_T = self.graph.markov_pillow([self.treatment], self.order)
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
         # fit T | mp(T) and compute treatment probabilities
         formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
@@ -281,7 +314,7 @@ class AverageCausalEffect:
         for v in eif_vars:
 
             # get the Markov pillow of the variable
-            mpV = self.graph.markov_pillow([v], self.order)
+            mpV = self.graph.markov_pillow([v], self.p_order)
 
             # compute E[primal | mp(V)]
             formula = "primal ~ " + '+'.join(mpV)
@@ -328,7 +361,7 @@ class AverageCausalEffect:
         Y = data[self.outcome]
 
         # C := pre-treatment vars and L := post-treatment vars in district of treatment
-        C = self.graph.pre([self.treatment], self.order)
+        C = self.graph.pre([self.treatment], self.p_order)
         post = set(self.graph.vertices).difference(C)
         L = post.intersection(self.graph.district(self.treatment))
 
@@ -347,7 +380,7 @@ class AverageCausalEffect:
         for V in L.difference([self.outcome]):
 
             # fit V | mp(V)
-            mp_V = self.graph.markov_pillow([V], self.order)
+            mp_V = self.graph.markov_pillow([V], self.p_order)
             formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
             model = model_binary(data, formula)
             indices_V0 = data.index[data[V] == 0]
@@ -378,7 +411,7 @@ class AverageCausalEffect:
         if self.outcome in L:
 
             # fit a binary/continuous model for Y | mp(Y)
-            mp_Y = self.graph.markov_pillow([self.outcome], self.order)
+            mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
             formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
             if set([0, 1]).issuperset(data[self.outcome].unique()):
                 model = model_binary(data, formula)
@@ -436,7 +469,7 @@ class AverageCausalEffect:
         Y = data[self.outcome]
 
         # M := inverse Markov pillow of the treatment
-        M = set([m for m in self.graph.vertices if self.treatment in self.graph.markov_pillow([m], self.order)])
+        M = set([m for m in self.graph.vertices if self.treatment in self.graph.markov_pillow([m], self.p_order)])
 
         # create a dataset where T=t
         data_assigned = data.copy()
@@ -446,7 +479,7 @@ class AverageCausalEffect:
         for V in M.difference([self.outcome]):
 
             # Fit V | mp(V)
-            mp_V = self.graph.markov_pillow([V], self.order)
+            mp_V = self.graph.markov_pillow([V], self.p_order)
             formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
             model = model_binary(data, formula)
             indices_V0 = data.index[data[V] == 0]
@@ -463,7 +496,7 @@ class AverageCausalEffect:
 
         # special case for if the outcome is in M
         if self.outcome in M:
-            mp_Y = self.graph.markov_pillow([self.outcome], self.order)
+            mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
             formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
             if set([0, 1]).issuperset(data[self.outcome].unique()):
                 model = model_binary(data, formula)
@@ -524,7 +557,7 @@ class AverageCausalEffect:
         # C := pre-treatment vars
         # L := post-treatment vars in the district of T
         # M := post treatment vars not in L (a.k.a. the rest)
-        C = self.graph.pre([self.treatment], self.order)
+        C = self.graph.pre([self.treatment], self.p_order)
         post = set(self.graph.vertices).difference(C)
         L = post.intersection(self.graph.district(self.treatment))
         M = post - L
@@ -535,7 +568,7 @@ class AverageCausalEffect:
         for V in post:
 
             # compute all predecessors according to the topological order
-            pre_V = self.graph.pre([V], self.order)
+            pre_V = self.graph.pre([V], self.p_order)
 
             # if the variables is in M, project using the primal otherwise use the dual
             # to fit E[beta | pre(V)]
@@ -600,7 +633,7 @@ class AverageCausalEffect:
         # C := pre-treatment vars
         # L := post-treatment vars in the district of T
         # M := post treatment vars not in L (a.k.a. the rest)
-        C = self.graph.pre([self.treatment], self.order)
+        C = self.graph.pre([self.treatment], self.p_order)
         post = set(self.graph.vertices).difference(C)
         L = post.intersection(self.graph.district(self.treatment))
         M = post - L
@@ -610,7 +643,7 @@ class AverageCausalEffect:
         for V in self.graph.vertices:
 
             # get the Markov pillow
-            mp_V = self.graph.markov_pillow([V], self.order)
+            mp_V = self.graph.markov_pillow([V], self.p_order)
 
             # if the variables is in M, project using the primal otherwise use the dual
             # to fit E[beta | mp(V)]

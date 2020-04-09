@@ -278,7 +278,8 @@ class ADMG(SG):
     def nonparametric_saturated(self):
         """
         Check if the nested Markov model implied by the ADMG is nonparametric saturated.
-        The following is an implementation of Algorithm 1 in (Bhattacharya, Nabi & Shpitser 2020)
+        The following is an implementation of Algorithm 1 in Semiparametric Inference for
+        Causal Effects in Graphical Models with Hidden Variables (Bhattacharya, Nabi & Shpitser 2020)
         which was shown to be sound and complete for this task.
 
         :return: boolean indicating if it is nonparametric saturated or not.
