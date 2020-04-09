@@ -4,8 +4,8 @@ Class that provides an interface to estimation strategies for the counterfactual
 import numpy as np
 import statsmodels.api as sm
 from statsmodels.gam.generalized_additive_model import GLMGam
-from itertools import combinations
 from ananke.identification import OneLineID
+import copy
 
 
 class AverageCausalEffect:
@@ -22,12 +22,12 @@ class AverageCausalEffect:
         :param outcome: name of vertex corresponding to the outcome.
         """
 
-        self.graph = graph
+        self.graph = copy.deepcopy(graph)
         self.treatment = treatment
         self.outcome = outcome
         self.order = order
         self.strategy = None
-        self.is_mb_shielded = self.mb_shielded()
+        self.is_mb_shielded = self.graph.mb_shielded()
 
         # a dictionary of names for available estimators
         self.estimators = {"ipw": self._ipw,
@@ -91,19 +91,6 @@ class AverageCausalEffect:
         else:
             self.strategy = "Not ID"
             print("Query is not identified!")
-
-    def mb_shielded(self):
-        """
-        Check if the input graph is a Markov blanket shielded ADMG.
-
-        :return: boolean indicating if it is mb-shielded or not.
-        """
-
-        for v1, v2 in combinations(self.graph.vertices, 2):
-            if not (v1 in self.graph.siblings([v2]) or (v1, v2) in self.graph.di_edges or (v2, v1) in self.graph.di_edges):
-                if v1 in self.graph.markov_blanket([v2]) or v2 in self.graph.markov_blanket([v1]):
-                    return False
-        return True
 
     def _fit_binary_glm(self, data, formula):
         """

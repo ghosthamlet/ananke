@@ -256,3 +256,41 @@ class ADMG(SG):
                         bi_edges.append((a, b))
 
         return ADMG(vertices=vertices, di_edges=di_edges, bi_edges=bi_edges)
+
+    def mb_shielded(self):
+        """
+        Check if the ADMG is a Markov blanket shielded ADMG. That is, check if
+        two vertices are non-adjacent only when they are absent from each others'
+        Markov blankets.
+
+        :return: boolean indicating if it is mb-shielded or not.
+        """
+
+        # iterate over all pairs of vertices
+        for Vi, Vj in itertools.combinations(self.vertices, 2):
+            # check if the pair is not adjacent
+            if not (Vi in self.siblings([Vj]) or (Vi, Vj) in self.di_edges or (Vj, Vi) in self.di_edges):
+                # if one is in the Markov blanket of the other, then it is not mb-shielded
+                if Vi in self.markov_blanket([Vj]) or Vj in self.markov_blanket([Vi]):
+                    return False
+        return True
+
+    def nonparametric_saturated(self):
+        """
+        Check if the nested Markov model implied by the ADMG is nonparametric saturated.
+        The following is an implementation of Algorithm 1 in (Bhattacharya, Nabi & Shpitser 2020)
+        which was shown to be sound and complete for this task.
+
+        :return: boolean indicating if it is nonparametric saturated or not.
+        """
+
+        # iterate over all pairs of vertices
+        for Vi, Vj in itertools.combinations(self.vertices, 2):
+
+            # check if there is no dense inducing path between Vi and Vj
+            # and return not NPS if either of the checks fail
+            if not (Vi in self.parents(self.reachable_closure([Vj])[0]) or
+                    Vj in self.parents(self.reachable_closure([Vi])[0]) or
+                    Vi in self.reachable_closure([Vi, Vj])[2].district(Vj)):
+                return False
+        return True

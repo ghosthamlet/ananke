@@ -118,7 +118,6 @@ class TestADMG(unittest.TestCase):
         self.assertEqual(G.markov_pillow(['A', 'D'], top_order), set())
         self.assertEqual(G.markov_pillow(['C'], top_order), set(['A', 'B', 'D']))
 
-
     def test_markov_blanket(self):
         vertices = ['A', 'B', 'C', 'D', 'Y']
         di_edges = [('A', 'B'), ('B', 'C'), ('D', 'C'), ('C', 'Y')]
@@ -126,6 +125,28 @@ class TestADMG(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
         self.assertEqual(G.markov_blanket(['A', 'D']), set(['C', 'B', 'Y']))
         self.assertEqual(G.markov_blanket(['C']), set(['A', 'B', 'D']))
+
+    def test_nps(self):
+        vertices = ['Treatment', 'M', 'L', 'Confounders', 'Outcome']
+        di_edges = [('Confounders', 'M'), ('Confounders', 'L'),
+                    ('Treatment', 'M'), ('Treatment', 'Outcome'), ('Treatment', 'L'),
+                    ('M', 'L'), ('L', 'Outcome')]
+        bi_edges_G1 = [('Treatment', 'Confounders'), ('M', 'Outcome'), ('L', 'Outcome')]
+        bi_edges_G2 = [('Treatment', 'Confounders'), ('M', 'Outcome')]
+
+        G1 = ADMG(vertices, di_edges, bi_edges_G1)
+        G2 = ADMG(vertices, di_edges, bi_edges_G2)
+
+        self.assertTrue(G1.nonparametric_saturated())
+        self.assertFalse(G2.nonparametric_saturated())
+
+        vertices = ['A', 'B', 'C']
+        di_edges = [('B', 'A'), ('B', 'C')]
+        bi_edges = [('A', 'B'), ('C', 'B')]
+        G3 = ADMG(vertices, di_edges, bi_edges)
+
+        self.assertTrue(G3.nonparametric_saturated())
+
 
 if __name__ == '__main__':
     unittest.main()
