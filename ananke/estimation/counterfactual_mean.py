@@ -94,8 +94,6 @@ class AverageCausalEffect:
         # finally, fix a valid topological order for estimation queries
         self.p_order = self._find_valid_order("p-fixable") # used for a-fixable/p-fixable strategies
         self.n_order = self._find_valid_order("nested-fixable") # used for nested-fixable strategies
-        print(self.p_order)
-        print(self.n_order)
 
     def _find_valid_order(self, order_type):
         """
