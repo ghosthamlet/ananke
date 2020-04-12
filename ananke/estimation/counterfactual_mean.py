@@ -55,14 +55,14 @@ class AverageCausalEffect:
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n" +
-                      "4. Efficient generalized AIPW (eif-aipw) \n \n" +
-                      "Suggested estimator is efficient generalized AIPW.")
+                      "4. Efficient Generalized AIPW (eif-aipw) \n \n" +
+                      "Suggested estimator is Efficient Generalized AIPW.")
             else:
                 print("\n Treatment is a-fixable.\n\n Available estimators are :\n" +
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n \n" +
-                      "Suggested estimator is generalized AIPW")
+                      "Suggested estimator is Generalized AIPW")
 
         elif len(self.graph.district(treatment).intersection(self.graph.children([treatment]))) == 0:
             self.strategy = "p-fixable"
@@ -72,7 +72,7 @@ class AverageCausalEffect:
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw)\n" +
                       "4. Efficient APIPW (eif-apipw) \n \n" +
-                      "Suggested estimator is efficient APIPW")
+                      "Suggested estimator is Efficient APIPW")
             else:
                 print("\n Treatment is p-fixable. \n\n Available estimators are:\n" +
                       "1. Primal IPW (p-ipw)\n" +
@@ -82,10 +82,10 @@ class AverageCausalEffect:
 
         elif self.one_id.id():
             self.strategy = "nested-fixable"
-            print("Effect is identified. Suggested estimator is Augmented NIPW \n" +
-                  "Available estimators:\n" +
-                  "Nested IPW (n-ipw)\n" +
-                  "Augmented NIPW (anipw)")
+            print("\n Effect is identified. \n \n Available estimators:\n" +
+                  "1. Nested IPW (n-ipw)\n" +
+                  "2. Augmented NIPW (anipw) \n\n" +
+                  "Suggested estimator is Augmented NIPW")
 
         else:
             self.strategy = "Not ID"

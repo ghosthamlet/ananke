@@ -199,6 +199,15 @@ class TestCounterfactualMean(unittest.TestCase):
         bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C', 'M'), ('C', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
         cmean = AverageCausalEffect(G, 'T', 'Y')
+        self.assertEqual(cmean.strategy, "nested-fixable")
+
+    def test_bow_arc(self):
+        vertices = ['C', 'T', 'Y']
+        di_edges = [('C', 'T'), ('C', 'Y'), ('T', 'Y')]
+        bi_edges = [('T', 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        cmean = AverageCausalEffect(G, 'T', 'Y')
+        self.assertEqual(cmean.strategy, "Not ID")
 
 if __name__ == '__main__':
     unittest.main()
