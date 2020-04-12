@@ -11,7 +11,7 @@ from ananke.estimation import AverageCausalEffect
 
 class TestCounterfactualMean(unittest.TestCase):
 
-    def test_a_fixability(self):
+    def test_a_fixability_mbshielded(self):
         np.random.seed(0)
 
         vertices = ['Z1', 'Z2', 'C1', 'C2', 'T', 'M', 'Y', 'D1', 'D2']
@@ -69,32 +69,65 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
+        ace_truth = -0.5
+
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
-        cmean.bootstrap_ace(data, "ipw")
-        cmean.bootstrap_ace(data, "gformula")
-        cmean.bootstrap_ace(data, "aipw")
-        cmean.bootstrap_ace(data, "eif-aipw")
+        quantiles_ipw = cmean.bootstrap_ace(data, "ipw")
+        quantiles_gformula = cmean.bootstrap_ace(data, "gformula")
+        quantiles_aipw = cmean.bootstrap_ace(data, "aipw")
+        quantiles_eif = cmean.bootstrap_ace(data, "eif-aipw")
+
+        self.assertTrue((quantiles_ipw[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_gformula[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_aipw[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_eif[0] - ace_truth) < 0.01)
+
+    def test_a_fixability_not_mbshielded(self):
+        np.random.seed(0)
+
+        vertices = ['Z1', 'Z2', 'C1', 'C2', 'T', 'M', 'Y', 'D1', 'D2']
+        di_edges = [('C1', 'Z1'), ('C1', 'T'), ('C1', 'M'), ('C2', 'Z1'), ('C2', 'T'), ('C2', 'M'),
+                    ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'M'), ('M', 'Y'), ('M', 'D1'), ('Y', 'D2'), ('D1', 'D2')]
+        bi_edges = [('Z1', 'T'), ('Z2', 'C1'), ('C2', 'Y'), ('D1', 'Y')]
+        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'Y', 'D1', 'D2']
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        cmean = AverageCausalEffect(G, 'T', 'Y', order)
+        self.assertFalse(cmean.is_mb_shielded)
+        self.assertEqual(cmean.strategy, "a-fixable")
 
 
-    def test_p_fixability_1(self):
+    def test_p_fixability_mbshielded_1(self):
         vertices = ['C', 'T', 'M', 'L', 'Y']
         di_edges = [('C', 'T'), ('C', 'M'), ('C', 'L'), ('C', 'Y'), ('T', 'M'), ('M', 'L'), ('M', 'Y'),
                     ('L', 'Y')]
         bi_edges = [('T', 'L'), ('T', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
         cmean = AverageCausalEffect(G, 'T', 'Y')
+        self.assertTrue(cmean.is_mb_shielded)
+        self.assertEqual(cmean.strategy, "p-fixable")
 
 
-    def test_p_fixability_2(self):
+    def test_p_fixability_mbshielded_2(self):
         vertices = ['C', 'T', 'M', 'L', 'Y']
         di_edges = [('C', 'T'), ('C', 'M'), ('C', 'L'), ('C', 'Y'), ('T', 'M'), ('M', 'L'), ('T', 'Y'),
                     ('L', 'Y')]
         bi_edges = [('T', 'L'), ('M', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
         cmean = AverageCausalEffect(G, 'T', 'Y')
+        self.assertTrue(cmean.is_mb_shielded)
+        self.assertEqual(cmean.strategy, "p-fixable")
 
+    def test_p_fixability_not_mbshielded(self):
+        vertices = ['C', 'T', 'M', 'L', 'Y']
+        di_edges = [('C', 'T'), ('C', 'M'), ('C', 'L'), ('C', 'Y'), ('T', 'M'), ('M', 'L'), ('L', 'Y')]
+        bi_edges = [('T', 'L'), ('M', 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+        cmean = AverageCausalEffect(G, 'T', 'Y')
+        self.assertFalse(cmean.is_mb_shielded)
+        self.assertEqual(cmean.strategy, "p-fixable")
 
-    def test_p_fixability_3(self):
+    def test_p_fixability_compute_ace(self):
         np.random.seed(0)
         vertices = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
         di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
@@ -145,11 +178,18 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'L':L, 'Y':Y})
 
+        ace_truth = -0.07
+
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
-        cmean.bootstrap_ace(data, "p-ipw")
-        cmean.bootstrap_ace(data, "d-ipw")
-        cmean.bootstrap_ace(data, "apipw")
-        cmean.bootstrap_ace(data, "eif-apipw")
+        quantiles_pipw = cmean.bootstrap_ace(data, "p-ipw")
+        quantiles_dipw = cmean.bootstrap_ace(data, "d-ipw")
+        quantiles_apipw = cmean.bootstrap_ace(data, "apipw")
+        quantiles_eif = cmean.bootstrap_ace(data, "eif-apipw")
+
+        self.assertTrue((quantiles_pipw[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_dipw[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_apipw[0] - ace_truth) < 0.01)
+        self.assertTrue((quantiles_eif[0] - ace_truth) < 0.01)
 
 
     def test_nested_fixability(self):

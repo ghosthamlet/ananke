@@ -51,34 +51,34 @@ class AverageCausalEffect:
         if len(self.graph.district(treatment).intersection(self.graph.descendants([treatment]))) == 1:
             self.strategy = "a-fixable"
             if self.is_mb_shielded:
-                print("Treatment is a-fixable and graph is mb-shielded. Suggested estimator is efficient gAIPW \n" +
-                      "Available estimators:\n" +
-                      "IPW (ipw)\n" +
-                      "Outcome regression (gformula)\n" +
-                      "Generalized AIPW (aipw)\n" +
-                      "Efficient generalized AIPW (eif-aipw)")
+                print("\n Treatment is a-fixable and graph is mb-shielded. \n\n Available estimators are:\n" +
+                      "1. IPW (ipw)\n" +
+                      "2. Outcome regression (gformula)\n" +
+                      "3. Generalized AIPW (aipw)\n" +
+                      "4. Efficient generalized AIPW (eif-aipw) \n \n" +
+                      "Suggested estimator is efficient generalized AIPW.")
             else:
-                print("Treatment is a-fixable. Suggested estimator is gAIPW \n" +
-                      "Available estimators:\n" +
-                      "IPW (ipw)\n" +
-                      "Outcome regression (gformula)\n" +
-                      "Generalized AIPW (aipw)")
+                print("\n Treatment is a-fixable.\n\n Available estimators are :\n" +
+                      "1. IPW (ipw)\n" +
+                      "2. Outcome regression (gformula)\n" +
+                      "3. Generalized AIPW (aipw)\n \n" +
+                      "Suggested estimator is generalized AIPW")
 
         elif len(self.graph.district(treatment).intersection(self.graph.children([treatment]))) == 0:
             self.strategy = "p-fixable"
             if self.is_mb_shielded:
-                print("Treatment is p-fixable and graph is mb-shielded. Suggested estimator is efficient APIPW \n" +
-                      "Available estimators:\n" +
-                      "Primal IPW (p-ipw)\n" +
-                      "Dual IPW (d-ipw)\n" +
-                      "APIPW (apipw)\n" +
-                      "Efficient APIPW (eif-apipw)")
+                print("\n Treatment is p-fixable and graph is mb-shielded. \n\n Available estimators are:\n" +
+                      "1. Primal IPW (p-ipw)\n" +
+                      "2. Dual IPW (d-ipw)\n" +
+                      "3. APIPW (apipw)\n" +
+                      "4. Efficient APIPW (eif-apipw) \n \n" +
+                      "Suggested estimator is efficient APIPW")
             else:
-                print("Treatment is p-fixable. Suggested estimator is APIPW \n" +
-                      "Available estimators:\n" +
-                      "Primal IPW (p-ipw)\n" +
-                      "Dual IPW (d-ipw)\n" +
-                      "APIPW (apipw)")
+                print("\n Treatment is p-fixable. \n\n Available estimators are:\n" +
+                      "1. Primal IPW (p-ipw)\n" +
+                      "2. Dual IPW (d-ipw)\n" +
+                      "3. APIPW (apipw) \n\n" +
+                      "Suggested estimator is APIPW")
 
         elif self.one_id.id():
             self.strategy = "nested-fixable"
@@ -706,7 +706,7 @@ class AverageCausalEffect:
             return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
-    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=10):
+    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5):
         """
         Bootstrap functionality to compute the Average Causal Effect
         :param data: pandas data frame containing the data.
@@ -741,5 +741,6 @@ class AverageCausalEffect:
 
         # Quantile calculation
         quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
-        print("ACE = ", ace)
-        print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
+        # print("ACE = ", ace)
+        # print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
+        return quantiles
