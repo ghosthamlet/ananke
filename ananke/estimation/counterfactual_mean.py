@@ -158,7 +158,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "a-fixable":
-            return RuntimeError("IPW will not return valid estimates as treatment is not a-fixable")
+            raise RuntimeError("IPW will not return valid estimates as treatment is not a-fixable")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -192,7 +192,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "a-fixable":
-            return RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
+            raise RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -230,7 +230,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "a-fixable":
-            return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
+            raise RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -276,9 +276,9 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "a-fixable":
-            return RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
+            raise RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
         if not self.is_mb_shielded:
-            return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
+            raise RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -441,7 +441,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
-            return RuntimeError("Primal IPW will not return valid estimates as treatment is not p-fixable")
+            raise RuntimeError("Primal IPW will not return valid estimates as treatment is not p-fixable")
 
         # return primal IPW estimate
         return np.mean(self._beta_primal(data, assignment, model_binary, model_continuous))
@@ -520,7 +520,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
-            return RuntimeError("Dual IPW will not return valid estimates as treatment is not p-fixable")
+            raise RuntimeError("Dual IPW will not return valid estimates as treatment is not p-fixable")
 
         # return primal dual IPW estimate
         return np.mean(self._beta_dual(data, assignment, model_binary, model_continuous))
@@ -538,7 +538,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
-            return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
+            raise RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -612,9 +612,9 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
-            return RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
+            raise RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
         if not self.is_mb_shielded:
-            return RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
+            raise RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
 
         # instantiate modeling strategy with defaults
         if not model_binary:
@@ -684,11 +684,7 @@ class AverageCausalEffect:
 
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy == "Not ID":
-            return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
+            raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
     def _augmented_nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -703,7 +699,7 @@ class AverageCausalEffect:
         """
 
         if self.strategy == "Not ID":
-            return RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
+            raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
         return 0
 
     def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5):
