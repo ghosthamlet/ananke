@@ -13,7 +13,7 @@ class AverageCausalEffect:
     Provides an interface to various estimation strategies for the ACE: E[Y(1) - Y(0)].
     """
 
-    def __init__(self, graph, treatment, outcome, order=[]):
+    def __init__(self, graph, treatment, outcome):
         """
         Constructor.
 

@@ -21,7 +21,6 @@ class TestCounterfactualMean(unittest.TestCase):
         di_edges = [('C1', 'Z1'), ('C1', 'T'), ('C1', 'M'), ('C2', 'Z1'), ('C2', 'T'), ('C2', 'M'), ('C2', 'D1'),
                     ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'M'), ('M', 'Y'), ('M', 'D1'), ('Y', 'D2'), ('D1', 'D2')]
         bi_edges = [('Z1', 'T'), ('Z2', 'C1'), ('C2', 'Y'), ('D1', 'Y')]
-        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'Y', 'D1', 'D2']
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -74,7 +73,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         ace_truth = -0.5
 
-        cmean = AverageCausalEffect(G, 'T', 'Y', order)
+        cmean = AverageCausalEffect(G, 'T', 'Y')
         ace_ipw, _ = cmean.bootstrap_ace(data, "ipw")
         ace_gformula, _ = cmean.bootstrap_ace(data, "gformula")
         ace_aipw, _ = cmean.bootstrap_ace(data, "aipw")
@@ -92,7 +91,6 @@ class TestCounterfactualMean(unittest.TestCase):
         di_edges = [('C1', 'Z1'), ('C1', 'T'), ('C1', 'M'), ('C2', 'Z1'), ('C2', 'T'), ('C2', 'M'),
                     ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'M'), ('M', 'Y'), ('M', 'D1'), ('Y', 'D2'), ('D1', 'D2')]
         bi_edges = [('Z1', 'T'), ('Z2', 'C1'), ('C2', 'Y'), ('D1', 'Y')]
-        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'Y', 'D1', 'D2']
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -143,7 +141,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame({'C1':C1, 'C2':C2, 'Z1':Z1, 'Z2':Z2, 'T':T, 'M':M, 'Y':Y, 'D1':D1, 'D2':D2})
 
-        cmean = AverageCausalEffect(G, 'T', 'Y', order)
+        cmean = AverageCausalEffect(G, 'T', 'Y')
         self.assertFalse(cmean.is_mb_shielded)
         self.assertEqual(cmean.strategy, "a-fixable")
         with self.assertRaises(RuntimeError):
@@ -177,7 +175,6 @@ class TestCounterfactualMean(unittest.TestCase):
         di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
                     ('T', 'M'), ('M', 'L'), ('L', 'Y')]
         bi_edges = [('Z1', 'C1'), ('Z2', 'C2'), ('T', 'L')]
-        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -224,7 +221,7 @@ class TestCounterfactualMean(unittest.TestCase):
 
         ace_truth = -0.07
 
-        cmean = AverageCausalEffect(G, 'T', 'Y', order)
+        cmean = AverageCausalEffect(G, 'T', 'Y')
         ace_pipw, _ = cmean.bootstrap_ace(data, "p-ipw")
         ace_dipw, _ = cmean.bootstrap_ace(data, "d-ipw")
         ace_apipw, _ = cmean.bootstrap_ace(data, "apipw")
@@ -253,7 +250,6 @@ class TestCounterfactualMean(unittest.TestCase):
         di_edges = [('C1', 'T'), ('C1', 'L'), ('C2', 'M'), ('C2', 'L'), ('C2', 'Y'),
                     ('T', 'M'), ('M', 'L'), ('L', 'Y')]
         bi_edges = [('Z1', 'C1'), ('Z2', 'C2'), ('T', 'L')]
-        order = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y']
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -310,7 +306,6 @@ class TestCounterfactualMean(unittest.TestCase):
         vertices = ['C', 'T', 'M', 'Y']
         di_edges = [('C', 'T'), ('C', 'M'), ('C', 'Y'), ('T', 'M'), ('M', 'Y')]
         bi_edges = [('T', 'Y')]
-        order = ['C', 'T', 'M', 'Y']
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -358,7 +353,6 @@ class TestCounterfactualMean(unittest.TestCase):
         di_edges = [('C1', 'T'), ('C1', 'Y'), ('C2', 'T'), ('C2', 'Y'), ('R2', 'Y'), ('Z', 'T'),
                     ('T', 'R1'), ('T', 'Y'), ('R1', 'M'), ('M', 'Y')]
         bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C1', 'M'), ('C1', 'Y'), ('C2', 'M'), ('C2', 'Y')]
-        order = [('Z', 'C', 'T', 'R1', 'R2', 'M', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
@@ -428,7 +422,6 @@ class TestCounterfactualMean(unittest.TestCase):
         vertices = ['C', 'T', 'Y']
         di_edges = [('C', 'T'), ('C', 'Y'), ('T', 'Y')]
         bi_edges = [('T', 'Y')]
-        order = [('C', 'T', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
 
         data = pd.DataFrame()
