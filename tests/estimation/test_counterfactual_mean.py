@@ -4,7 +4,6 @@ import numpy as np
 from scipy.special import expit
 import pandas as pd
 from scipy import stats
-import matplotlib.pyplot as plt
 
 from ananke.graphs import ADMG
 from ananke.estimation import AverageCausalEffect
