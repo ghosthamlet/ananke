@@ -4,9 +4,12 @@ import numpy as np
 from scipy.special import expit
 import pandas as pd
 from scipy import stats
+import matplotlib.pyplot as plt
 
 from ananke.graphs import ADMG
 from ananke.estimation import AverageCausalEffect
+
+TOL = 0.05
 
 
 class TestCounterfactualMean(unittest.TestCase):
@@ -72,15 +75,15 @@ class TestCounterfactualMean(unittest.TestCase):
         ace_truth = -0.5
 
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
-        quantiles_ipw = cmean.bootstrap_ace(data, "ipw")
-        quantiles_gformula = cmean.bootstrap_ace(data, "gformula")
-        quantiles_aipw = cmean.bootstrap_ace(data, "aipw")
-        quantiles_eif = cmean.bootstrap_ace(data, "eif-aipw")
+        ace_ipw, _ = cmean.bootstrap_ace(data, "ipw")
+        ace_gformula, _ = cmean.bootstrap_ace(data, "gformula")
+        ace_aipw, _ = cmean.bootstrap_ace(data, "aipw")
+        ace_eif, _ = cmean.bootstrap_ace(data, "eif-aipw")
 
-        self.assertTrue((quantiles_ipw[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_gformula[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_aipw[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_eif[0] - ace_truth) < 0.01)
+        self.assertTrue(abs(ace_ipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_gformula - ace_truth) < TOL)
+        self.assertTrue(abs(ace_aipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_eif - ace_truth) < TOL)
 
     def test_a_fixability_not_mbshielded(self):
         np.random.seed(0)
@@ -222,15 +225,19 @@ class TestCounterfactualMean(unittest.TestCase):
         ace_truth = -0.07
 
         cmean = AverageCausalEffect(G, 'T', 'Y', order)
-        quantiles_pipw = cmean.bootstrap_ace(data, "p-ipw")
-        quantiles_dipw = cmean.bootstrap_ace(data, "d-ipw")
-        quantiles_apipw = cmean.bootstrap_ace(data, "apipw")
-        quantiles_eif = cmean.bootstrap_ace(data, "eif-apipw")
+        ace_pipw, _ = cmean.bootstrap_ace(data, "p-ipw")
+        ace_dipw, _ = cmean.bootstrap_ace(data, "d-ipw")
+        ace_apipw, _ = cmean.bootstrap_ace(data, "apipw")
+        ace_eif, _ = cmean.bootstrap_ace(data, "eif-apipw")
 
-        self.assertTrue((quantiles_pipw[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_dipw[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_apipw[0] - ace_truth) < 0.01)
-        self.assertTrue((quantiles_eif[0] - ace_truth) < 0.01)
+        print(ace_pipw)
+        print(ace_dipw)
+        print(ace_apipw)
+        print(ace_eif)
+        self.assertTrue(abs(ace_pipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_dipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_apipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_eif - ace_truth) < TOL)
         with self.assertRaises(RuntimeError):
             cmean.bootstrap_ace(data, "ipw")
         with self.assertRaises(RuntimeError):
@@ -298,6 +305,54 @@ class TestCounterfactualMean(unittest.TestCase):
             cmean.bootstrap_ace(data, "eif-apipw")
 
 
+    def test_front_door(self):
+        np.random.seed(0)
+        vertices = ['C', 'T', 'M', 'Y']
+        di_edges = [('C', 'T'), ('C', 'M'), ('C', 'Y'), ('T', 'M'), ('M', 'Y')]
+        bi_edges = [('T', 'Y')]
+        order = ['C', 'T', 'M', 'Y']
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        size = 2000
+        U1 = np.random.binomial(1, 0.4, size)
+        U2 = np.random.uniform(0, 1.5, size)
+
+        C = np.random.normal(0, 1, size)
+
+        # T = f(C, U1, U2)
+        p_t = expit(0.5 + 0.5 * C - 0.4 * U1 + 0.4 * U2)
+        T = np.random.binomial(1, p_t, size)
+
+        # M = f(C, T)
+        p_m = expit(-0.3 + 1.5 * T - 0.3 * C)
+        M = np.random.binomial(1, p_m, size)
+
+        # Y = f(C, M, U1, U2)
+        eps_y = np.random.normal(0, 1, size)
+        Y = 1 + C + 0.2*M + 0.4*U1 + 0.5*U2 + eps_y
+
+        data = pd.DataFrame({'C': C, 'T': T, 'M': M, 'Y': Y, 'U1': U1, 'U2': U2})
+
+        cmean = AverageCausalEffect(G, 'T', 'Y')
+
+        # # Estimate ACE
+        # formula = "Y ~ T + C + U1 + U2"
+        # model = cmean._fit_continuous_glm(data, formula)
+        # data_T1 = data.copy()
+        # data_T1[cmean.treatment] = 1
+        # data_T0 = data.copy()
+        # data_T0[cmean.treatment] = 0
+        # ace_truth = np.mean(model.predict(data_T1) - model.predict(data_T0))
+
+        ace_truth = 0.064
+
+        ace_pipw, _ = cmean.bootstrap_ace(data, "p-ipw")
+
+        self.assertTrue(cmean.is_mb_shielded)
+        self.assertEqual(cmean.strategy, "p-fixable")
+        self.assertTrue(abs(ace_pipw - ace_truth) < TOL)
+
+
     def test_nested_fixability(self):
         vertices = ['C1',  'C2',  'T', 'M', 'Z', 'R1', 'R2', 'Y']
         di_edges = [('C1', 'T'), ('C1', 'Y'), ('C2', 'T'), ('C2', 'Y'), ('R2', 'Y'), ('Z', 'T'),
@@ -354,12 +409,12 @@ class TestCounterfactualMean(unittest.TestCase):
         data = pd.DataFrame({'C1': C1, 'C2': C2, 'T': T, 'M': M, 'Z': Z, 'R1': R1, 'R2': R2, 'Y': Y})
 
         cmean = AverageCausalEffect(G, 'T', 'Y')
-        quantiles_nipw = cmean.bootstrap_ace(data, "n-ipw")
-        quantiles_anipw = cmean.bootstrap_ace(data, "anipw")
+        ace_nipw, _ = cmean.bootstrap_ace(data, "n-ipw")
+        ace_anipw, _ = cmean.bootstrap_ace(data, "anipw")
 
         self.assertEqual(cmean.strategy, "nested-fixable")
-        self.assertEqual(quantiles_nipw[0], 0)
-        self.assertEqual(quantiles_anipw[0], 0)
+        self.assertEqual(ace_nipw, 0)
+        self.assertEqual(ace_anipw, 0)
         with self.assertRaises(RuntimeError):
             cmean.bootstrap_ace(data, "p-ipw")
         with self.assertRaises(RuntimeError):
@@ -376,27 +431,14 @@ class TestCounterfactualMean(unittest.TestCase):
         order = [('C', 'T', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
 
-        size = 2000
-        # Us
-        U1 = np.random.binomial(1, 0.4, size)
-        U2 = np.random.uniform(0, 1.5, size)
-        # C = f(U1, U2)
-        C = np.random.binomial(1, 0.5, size)
-        # T = f(C, U1, U2)
-        p_t = expit(0.5 + 0.5 * C - 0.4 * U1 + 0.4 * U2)
-        T = np.random.binomial(1, p_t, size)
-        # Y = f(C, T, U1, U2)
-        eps_y = np.random.normal(0, 1, size)
-        Y = 1 + 1 * T + C + U1 + U2 + eps_y
-        # data
-        data = pd.DataFrame({'C': C, 'T': T, 'Y': Y})
-
+        data = pd.DataFrame()
         cmean = AverageCausalEffect(G, 'T', 'Y')
         self.assertEqual(cmean.strategy, "Not ID")
         with self.assertRaises(RuntimeError):
             cmean.bootstrap_ace(data, "n-ipw")
         with self.assertRaises(RuntimeError):
             cmean.bootstrap_ace(data, "anipw")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -72,24 +72,24 @@ class AverageCausalEffect:
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw)\n" +
                       "4. Efficient APIPW (eif-apipw) \n \n" +
-                      "Suggested estimator is Efficient APIPW")
+                      "Suggested estimator is Efficient APIPW \n")
             else:
                 print("\n Treatment is p-fixable. \n\n Available estimators are:\n" +
                       "1. Primal IPW (p-ipw)\n" +
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw) \n\n" +
-                      "Suggested estimator is APIPW")
+                      "Suggested estimator is APIPW \n")
 
         elif self.one_id.id():
             self.strategy = "nested-fixable"
             print("\n Effect is identified. \n \n Available estimators:\n" +
                   "1. Nested IPW (n-ipw)\n" +
                   "2. Augmented NIPW (anipw) \n\n" +
-                  "Suggested estimator is Augmented NIPW")
+                  "Suggested estimator is Augmented NIPW \n")
 
         else:
             self.strategy = "Not ID"
-            print("Query is not identified!")
+            print("Query is not identified! \n")
 
         # finally, fix a valid topological order for estimation queries
         self.p_order = self._find_valid_order("p-fixable") # used for a-fixable/p-fixable strategies
@@ -468,6 +468,7 @@ class AverageCausalEffect:
 
         # M := inverse Markov pillow of the treatment
         M = set([m for m in self.graph.vertices if self.treatment in self.graph.markov_pillow([m], self.p_order)])
+        M = M.difference(self.graph.district(self.treatment))
 
         # create a dataset where T=t
         data_assigned = data.copy()
@@ -721,7 +722,7 @@ class AverageCausalEffect:
         point_estimate_T1 = method(data, 1, model_binary, model_continuous)
         point_estimate_T0 = method(data, 0, model_binary, model_continuous)
         ace = point_estimate_T1 - point_estimate_T0
-        ace_vec = [ace]
+        ace_vec = []
 
         # iterate over bootstraps
         for iter in range(n_bootstraps):
@@ -736,7 +737,7 @@ class AverageCausalEffect:
             ace_vec.append(estimate_T1 - estimate_T0)
 
         # Quantile calculation
-        quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
+        # quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
         # print("ACE = ", ace)
         # print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
-        return quantiles
+        return ace, ace_vec
