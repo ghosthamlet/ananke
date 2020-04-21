@@ -2,3 +2,4 @@ Sphinx
 pytest
 nbsphinx
 pytest-cov
+ipykernel
