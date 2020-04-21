@@ -52,6 +52,14 @@ ananke.graphs.ig module
    :undoc-members:
    :show-inheritance:
 
+ananke.graphs.missing\_admg module
+----------------------------------
+
+.. automodule:: ananke.graphs.missing_admg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ananke.graphs.sg module
 -----------------------
 

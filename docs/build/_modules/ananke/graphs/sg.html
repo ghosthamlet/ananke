@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>ananke.graphs.sg &#8212; ananke  documentation</title>
+    <title>ananke.graphs.sg &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -315,9 +316,6 @@
 <span class="sd">        :return: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
-
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
@@ -351,16 +349,12 @@
 <span class="sd">        :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># if it&#39;s just a single vertex we&#39;re checking it&#39;s easy</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">vertices</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
-            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[]</span>
-
+        <span class="c1"># keep track of vertices still left to fix</span>
+        <span class="c1"># and initialize a fixing order</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">remaining_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
         <span class="n">fixing_order</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag to check if we fixed a variable on each pass</span>
-        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># while we have more vertices to fix, and were able to perform a fix</span>
         <span class="k">while</span> <span class="n">remaining_vertices</span> <span class="ow">and</span> <span class="n">fixed</span><span class="p">:</span>
@@ -369,7 +363,7 @@
 
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">remaining_vertices</span><span class="p">:</span>
 
-                <span class="c1"># Check if any nodes are reachable via -&gt; AND &lt;-&gt;</span>
+                <span class="c1"># check if any nodes are reachable via -&gt; AND &lt;-&gt;</span>
                 <span class="c1"># by looking at intersection of district and descendants</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">descendants</span><span class="p">([</span><span class="n">v</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">G</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
@@ -378,9 +372,13 @@
                     <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">break</span>
 
+            <span class="c1"># if unsuccessful, return failure and</span>
+            <span class="c1"># fixing order up until point of failure</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fixing_order</span>
 
+        <span class="c1"># if fixing vertices was successful, return success</span>
+        <span class="c1"># and the fixing order</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fixing_order</span></div></div>
 </pre></div>
 
@@ -390,7 +388,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../../index.html">ananke</a></h1>
+<h1 class="logo"><a href="../../../index.html">ananke-causal</a></h1>
 
 
 
@@ -444,7 +442,7 @@
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

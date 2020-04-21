@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>ananke.graphs package &#8212; ananke  documentation</title>
+    <title>ananke.graphs package &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -12,12 +12,11 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ananke.identification package" href="ananke.identification.html" />
-    <link rel="prev" title="Causal Inference with Graphical Models" href="notebooks/causal_graphs.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -81,25 +80,26 @@ an order in the form of a list, else returns an empty list.</p>
 <dd><p>Computes intrinsic sets (and returns the fixing order for each intrinsic set).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>list of intrinsic sets and fixing orders used to reach each one</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="ananke.graphs.admg.ADMG.m_connecting_paths">
-<code class="sig-name descname">m_connecting_paths</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">Z={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/admg.html#ADMG.m_connecting_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.admg.ADMG.m_connecting_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all m-connecting paths between x and y after conditioning on Z using BFS.</p>
+<dt id="ananke.graphs.admg.ADMG.markov_pillow">
+<code class="sig-name descname">markov_pillow</code><span class="sig-paren">(</span><em class="sig-param">vertices</em>, <em class="sig-param">top_order</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/admg.html#ADMG.markov_pillow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.admg.ADMG.markov_pillow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Markov pillow of a set of vertices. That is,
+the Markov blanket of the vertices given a valid topological order
+on the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – name of vertex x.</p></li>
-<li><p><strong>y</strong> – name of vertex y.</p></li>
-<li><p><strong>Z</strong> – name of set of vertices Z being conditioned on.</p></li>
+<li><p><strong>vertices</strong> – iterable of vertex names.</p></li>
+<li><p><strong>top_order</strong> – a valid topological order.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>list of m-connecting paths.</p>
+<dd class="field-even"><p>set corresponding to Markov pillow.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -147,20 +147,6 @@ the specified vertices and edges between them).</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="function">
-<dt id="ananke.graphs.admg.get_intrinsic_sets">
-<code class="sig-prename descclassname">ananke.graphs.admg.</code><code class="sig-name descname">get_intrinsic_sets</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/admg.html#get_intrinsic_sets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.admg.get_intrinsic_sets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes all intrinsic sets given an ADMG. Allows for fixed variables.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>graph</strong> – ADMG</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -430,6 +416,23 @@ the specified vertices and edges between them).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="ananke.graphs.graph.Graph.pre">
+<code class="sig-name descname">pre</code><span class="sig-paren">(</span><em class="sig-param">vertices</em>, <em class="sig-param">top_order</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/graph.html#Graph.pre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.graph.Graph.pre" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all nodes prior to the given set of vertices under a topological order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vertices</strong> – iterable of vertex names.</p></li>
+<li><p><strong>top_order</strong> – a valid topological order.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list corresponding to the order up until the given vertices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="ananke.graphs.graph.Graph.siblings">
 <code class="sig-name descname">siblings</code><span class="sig-paren">(</span><em class="sig-param">vertices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/graph.html#Graph.siblings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.graph.Graph.siblings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get siblings of a vertex or set of vertices.</p>
@@ -454,6 +457,18 @@ the specified vertices and edges between them).</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a new Graph object corresponding to the subgraph.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ananke.graphs.graph.Graph.topological_sort">
+<code class="sig-name descname">topological_sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/graph.html#Graph.topological_sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.graph.Graph.topological_sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a topological sort from roots (parentless nodes)
+to leaves, as ordered by directed edges on the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list corresponding to a valid topological order.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -547,6 +562,23 @@ new intrinsic set s3.</p>
 <dd class="field-even"><p>None.</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ananke.graphs.missing_admg">
+<span id="ananke-graphs-missing-admg-module"></span><h2>ananke.graphs.missing_admg module<a class="headerlink" href="#module-ananke.graphs.missing_admg" title="Permalink to this headline">¶</a></h2>
+<p>Class for missing data acyclic directed mixed graphs</p>
+<dl class="class">
+<dt id="ananke.graphs.missing_admg.MissingADMG">
+<em class="property">class </em><code class="sig-prename descclassname">ananke.graphs.missing_admg.</code><code class="sig-name descname">MissingADMG</code><span class="sig-paren">(</span><em class="sig-param">vertices=[]</em>, <em class="sig-param">di_edges={}</em>, <em class="sig-param">bi_edges={}</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/missing_admg.html#MissingADMG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.missing_admg.MissingADMG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ananke.graphs.admg.ADMG" title="ananke.graphs.admg.ADMG"><code class="xref py py-class docutils literal notranslate"><span class="pre">ananke.graphs.admg.ADMG</span></code></a></p>
+<dl class="method">
+<dt id="ananke.graphs.missing_admg.MissingADMG.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><em class="sig-param">direction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ananke/graphs/missing_admg.html#MissingADMG.draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ananke.graphs.missing_admg.MissingADMG.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the graph.</p>
+<p>:return : dot language representation of the graph.</p>
 </dd></dl>
 
 </dd></dl>
@@ -748,7 +780,7 @@ CGs, ADMGs, CPDAGs, CADMGs etc.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">ananke</a></h1>
+<h1 class="logo"><a href="index.html">ananke-causal</a></h1>
 
 
 
@@ -759,31 +791,18 @@ CGs, ADMGs, CPDAGs, CADMGs etc.</p>
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="notebooks/causal_graphs.html">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ananke.graphs package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.admg">ananke.graphs.admg module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.bg">ananke.graphs.bg module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.cg">ananke.graphs.cg module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.dag">ananke.graphs.dag module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.graph">ananke.graphs.graph module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.ig">ananke.graphs.ig module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.sg">ananke.graphs.sg module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.ug">ananke.graphs.ug module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs.vertex">ananke.graphs.vertex module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ananke.graphs">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="ananke.identification.html">ananke.identification package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/linear_gaussian_sems.html">Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="notebooks/causal_graphs.html" title="previous chapter">Causal Inference with Graphical Models</a></li>
-      <li>Next: <a href="ananke.identification.html" title="next chapter">ananke.identification package</a></li>
   </ul></li>
 </ul>
 </div>
@@ -813,7 +832,7 @@ CGs, ADMGs, CPDAGs, CADMGs etc.</p>
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
