@@ -21,6 +21,6 @@ python:
   version: 3.7
   install:
     - requirements: requirements.txt
-	- requirements: dev_requirements.txt
-     - method: pip
-       path: .
+    - requirements: dev_requirements.txt
+    - method: pip
+      path: .
