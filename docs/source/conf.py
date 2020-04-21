@@ -80,3 +80,5 @@ latex_elements = {
     #
      'figure_align': 'htbp',
 }
+
+master_doc = 'index'
