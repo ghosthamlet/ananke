@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>ananke.graphs.graph &#8212; ananke  documentation</title>
+    <title>ananke.graphs.graph &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -39,7 +40,7 @@
 <span class="sd">TODO: Add error checking</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">.vertex</span> <span class="k">import</span> <span class="n">Vertex</span>
 
 
@@ -196,8 +197,6 @@
 <span class="sd">        :return: set of parents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1">#if isinstance(vertices, str):</span>
-        <span class="c1">#    return {p.name for p in self.vertices[vertices].parents}</span>
         <span class="n">parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">parents</span><span class="p">:</span>
@@ -256,10 +255,6 @@
 
         <span class="n">ancestors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1">#if isinstance(vertices, str):</span>
-        <span class="c1">#    visit_stack = [self.vertices[vertices]]</span>
-        <span class="c1">#else:</span>
-        <span class="c1">#    visit_stack = list([self.vertices[v] for v in vertices])</span>
         <span class="n">visit_stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">])</span>
 
         <span class="k">while</span> <span class="n">visit_stack</span><span class="p">:</span>
@@ -346,6 +341,80 @@
             <span class="n">directed_paths</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bfs_directed_paths</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">sink</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">directed_paths</span></div>
 
+<div class="viewcode-block" id="Graph.topological_sort"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.graph.Graph.topological_sort">[docs]</a>    <span class="k">def</span> <span class="nf">topological_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a topological sort from roots (parentless nodes)</span>
+<span class="sd">        to leaves, as ordered by directed edges on the graph.</span>
+
+<span class="sd">        :return: list corresponding to a valid topological order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># create a copy of the graph</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># initialize roots -- vertices that have no incoming edges</span>
+        <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">parents</span><span class="p">([</span><span class="n">v</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_order</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># iterate until we have explored all nodes</span>
+        <span class="k">while</span> <span class="n">roots</span><span class="p">:</span>
+
+            <span class="c1"># pick a current root</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">roots</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">top_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+            <span class="c1"># iterate over all its children</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">children</span><span class="p">([</span><span class="n">r</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+
+                <span class="c1"># delete the edge</span>
+                <span class="n">G</span><span class="o">.</span><span class="n">delete_diedge</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+                <span class="c1"># if r was the only remaining parent, this is now a root</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">parents</span><span class="p">([</span><span class="n">c</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">roots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># return the order</span>
+        <span class="k">return</span> <span class="n">top_order</span></div>
+
+<div class="viewcode-block" id="Graph.pre"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.graph.Graph.pre">[docs]</a>    <span class="k">def</span> <span class="nf">pre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">top_order</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find all nodes prior to the given set of vertices under a topological order.</span>
+
+<span class="sd">        :param vertices: iterable of vertex names.</span>
+<span class="sd">        :param top_order: a valid topological order.</span>
+<span class="sd">        :return: list corresponding to the order up until the given vertices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># find all elements that are previous in the topological order</span>
+        <span class="c1"># by iterating over the order until we encounter one of the vertices</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">top_order</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">pre</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pre</span></div>
+
+    <span class="c1"># def post(self, vertices, top_order):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Find all nodes that succeed the given set of vertices under a topological order.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     :param vertices: iterable of vertex names.</span>
+    <span class="c1">#     :param top_order: a valid topological order.</span>
+    <span class="c1">#     :return: list corresponding to the order up until the given vertices.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # find all elements that are previous in the topological order</span>
+    <span class="c1">#     # by iterating over the order until we encounter one of the vertices</span>
+    <span class="c1">#     post = []</span>
+    <span class="c1">#     for v in top_order:</span>
+    <span class="c1">#         if v in vertices:</span>
+    <span class="c1">#             break</span>
+    <span class="c1">#         pre.append(v)</span>
+    <span class="c1">#</span>
+    <span class="c1">#     return post</span>
+
 <div class="viewcode-block" id="Graph.draw"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.graph.Graph.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize the graph.</span>
@@ -383,7 +452,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../../index.html">ananke</a></h1>
+<h1 class="logo"><a href="../../../index.html">ananke-causal</a></h1>
 
 
 
@@ -437,7 +506,7 @@
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
