@@ -9,8 +9,8 @@ Ananke: A module for causal inference
 How to install
 ==============
 
-.. code-block::
-    >>> sudo pip3 install ananke-causal
+Run the following command::
+    sudo pip3 install ananke-causal
 
 Documentation
 *************
