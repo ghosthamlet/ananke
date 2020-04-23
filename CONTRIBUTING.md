@@ -15,12 +15,12 @@ source env/bin/activate # this activates your environment
 pip3 install -e .
 ```
 
-It is also necessary to install separate dev python packages:
+It is also necessary to install separate development python packages:
 ```{bash}
 pip3 install -r dev_requirements.txt
 ```
 
-as well as separate system packages:
+as well as separate system packages mostly required for building the sphinx-notebook support:
 
 ```{bash}
 # this will depend on your environment, e.g.
@@ -43,6 +43,12 @@ python3 -m pytest tests/graphs/test_admg.py::TestADMG::test_obtaining_districts 
 
 Continuous integration has been set up to run tests on pushes to the `master` branch.
 
+## Before Pushing 
+Consider using the following command to lint the code
+
+`flake8 ananke/`
+
+
 ## Test Coverage
 
 ```{bash}
@@ -54,4 +60,5 @@ pytest --cov=ananke tests/  # to generate the base report
 
 * To build docs, run `bash docs/run.sh`
 * Add tutorial notebooks in `docs/notebooks`. These are automatically built into webpages.
+
 

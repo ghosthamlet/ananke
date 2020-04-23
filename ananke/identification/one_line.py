@@ -146,6 +146,40 @@ class OneLineID:
                                              "phi" + fixed_vars + "_dis" + dis_name + ".gv"))
 
 
+def convert_experiments_str_to_graphs(experiments, graph):
+    # Convert GID experiments specified as strings to graphs
+
+    if any(isinstance(experiment, str) for experiment in experiments):
+
+        new_experiments = []
+        for experiment in experiments:
+            swig = copy.deepcopy(graph)
+            swig.fix(experiment)
+            new_experiments.append(swig)
+
+        experiments = new_experiments
+
+    return experiments
+
+
+def get_required_intrinsic_sets(admg):
+    required_intrinsic_sets, _ = admg.get_intrinsic_sets()
+    return required_intrinsic_sets
+
+
+def get_allowed_intrinsic_sets(experiments):
+    allowed_intrinsic_sets = set()
+    allowed_intrinsic_dict = dict()
+    fixing_orders = dict()
+    for index, experiment in enumerate(experiments):
+        intrinsic_sets, order_dict = experiment.get_intrinsic_sets()
+        allowed_intrinsic_sets.update(intrinsic_sets)
+        fixing_orders[index] = order_dict
+        for s in intrinsic_sets:
+            allowed_intrinsic_dict[frozenset(s)] = index
+    return allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders
+
+
 class OneLineGID:
 
     def __init__(self, graph, interventions, outcomes):
@@ -164,10 +198,6 @@ class OneLineGID:
         self.ystar = {v for v in self.swig.ancestors(self.outcomes) if not self.swig.vertices[v].fixed}
         self.Gystar = self.graph.subgraph(self.ystar)
 
-    def _required_intrinsic_sets(self):
-        required_intrinsic_sets, _ = self.Gystar.get_intrinsic_sets()
-        return required_intrinsic_sets
-
     def _allowed_intrinsic_sets(self, experiments):
         allowed_intrinsic_sets = set()
         allowed_intrinsic_dict = dict()
@@ -180,8 +210,6 @@ class OneLineGID:
             fixing_orders[frozenset(experiment)] = order_dict
             for s in intrinsic_sets:
                 allowed_intrinsic_dict[frozenset(s)] = experiment
-            # allowed_intrinsic_dict[frozenset(experiment)] = intrinsic_sets
-
         return allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders
 
     def functional(self, experiments=[set()]):
@@ -218,7 +246,8 @@ class OneLineGID:
 
             correct_order = self.fixing_orders[frozenset(fixed)][frozenset(item) - frozenset(fixed)]
 
-            functional += '\u03A6' + ','.join(reversed(correct_order)) + ' p(V \ {0} | do({0}))'.format(",".join(fixed))
+            functional += '\u03A6' + ','.join(reversed(correct_order)) + ' p(V \\ {0} | do({0}))'.format(
+                ",".join(fixed))
 
         return functional
 
@@ -229,7 +258,7 @@ class OneLineGID:
         :param experiments: A list of sets denoting the interventions of the available experimental distributions
         :return:
         """
-        required_intrinsic_sets = self._required_intrinsic_sets()
+        required_intrinsic_sets = get_required_intrinsic_sets(self.Gystar)
         allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders = self._allowed_intrinsic_sets(experiments)
         self.required_intrinsic_sets = required_intrinsic_sets
         self.allowed_intrinsic_sets = allowed_intrinsic_sets
@@ -242,3 +271,98 @@ class OneLineGID:
             is_id = True
 
         return is_id
+
+
+def check_experiments_ancestral(admg, experiments):
+    """
+    Check that each experiment G(S(b_i)) is ancestral in ADMG G(V(b_i))
+
+    :param admg: An ADMG
+    :param experiments: A list of ADMGs representing experiments
+    :return:
+    """
+    for experiment in experiments:
+        graph = copy.deepcopy(admg)
+        fixed = experiment.fixed
+        graph.fix(fixed)
+        if not experiment.is_ancestral_subgraph(admg):
+            return False
+
+    return True
+
+
+class OnelineAID:
+
+    def __init__(self, graph, interventions, outcomes):
+        """
+        Applies the one-line AID algorithm.
+
+        :param graph: Graph on which the query will be run
+        :param interventions: Iterable of treatment variables
+        :param outcomes: Iterable of outcome variables
+        """
+        self.graph = graph
+        self.interventions = interventions
+        self.outcomes = outcomes
+        self.swig = copy.deepcopy(graph)
+        self.swig.fix(self.interventions)
+        self.ystar = {v for v in self.swig.ancestors(self.outcomes) if not self.swig.vertices[v].fixed}
+        self.Gystar = self.graph.subgraph(self.ystar)
+
+        self.checked_id = False
+
+    def id(self, experiments):
+        if not check_experiments_ancestral(admg=self.graph, experiments=experiments):
+            raise NotIdentifiedError
+        self.required_intrinsic_sets = get_required_intrinsic_sets(admg=self.Gystar)
+        self.allowed_intrinsic_sets, self.allowed_intrinsic_dict, self.fixing_orders = get_allowed_intrinsic_sets(
+            experiments=experiments)
+
+        is_id = False
+        if self.allowed_intrinsic_sets >= self.required_intrinsic_sets:
+            is_id = True
+
+        self.checked_id = True
+
+        return is_id
+
+    def functional(self, experiments):
+        """
+        Creates a string representing the identifying functional
+
+        :param experiments: A list of sets denoting the interventions of the available experimental distributions
+        :return:
+        """
+        if not check_experiments_ancestral(admg=self.graph, experiments=experiments):
+            raise NotIdentifiedError
+        if not self.id(experiments=experiments):
+            raise NotIdentifiedError
+
+        # create and return the functional
+        functional = '' if set(self.ystar) == set(self.outcomes) else '\u03A3'
+
+        for y in self.ystar:
+            if y not in self.outcomes:
+                functional += y
+        if len(self.ystar) > 1: functional += ' '
+
+        # guarantee a deterministic printing order
+        fixing = []
+        intrinsic_sets = []
+        for intrinsic_set in self.required_intrinsic_sets:
+            fixed = experiments[self.allowed_intrinsic_dict[intrinsic_set]].fixed
+            fixing.append(list(fixed))
+            intrinsic_sets.append(intrinsic_set)
+
+        sorted_intrinsic_sets = sorted(intrinsic_sets, key=dict(zip(intrinsic_sets, fixing)).get)
+        sorted_fixing = sorted(fixing)
+
+        for i, intrinsic_set in enumerate(sorted_intrinsic_sets):
+            fixed = sorted_fixing[i]
+            vars = [v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]
+            correct_order = self.fixing_orders[self.allowed_intrinsic_dict[intrinsic_set]][
+                frozenset(intrinsic_set) - frozenset(fixed)]
+            functional += '\u03A6' + ','.join(reversed(correct_order)) + ' p({0} | do({1}))'.format(",".join(vars),
+                                                                                                    ",".join(fixed))
+
+        return functional
