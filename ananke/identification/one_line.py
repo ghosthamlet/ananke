@@ -105,7 +105,8 @@ class OneLineID:
                 functional += y
         if len(self.ystar) > 1: functional += ' '
 
-        for district in self.fixing_orders:
+        print(self.fixing_orders)
+        for district in sorted(list(self.fixing_orders)):
             functional += '\u03A6' + ''.join(reversed(self.fixing_orders[district])) + '(p(V);G) '
         return functional
 
@@ -144,22 +145,6 @@ class OneLineID:
                 G.fix(v)
                 G.draw().render(os.path.join(folder,
                                              "phi" + fixed_vars + "_dis" + dis_name + ".gv"))
-
-
-def convert_experiments_str_to_graphs(experiments, graph):
-    # Convert GID experiments specified as strings to graphs
-
-    if any(isinstance(experiment, str) for experiment in experiments):
-
-        new_experiments = []
-        for experiment in experiments:
-            swig = copy.deepcopy(graph)
-            swig.fix(experiment)
-            new_experiments.append(swig)
-
-        experiments = new_experiments
-
-    return experiments
 
 
 def get_required_intrinsic_sets(admg):
@@ -276,7 +261,7 @@ class OneLineGID:
 def check_experiments_ancestral(admg, experiments):
     """
     Check that each experiment G(S(b_i)) is ancestral in ADMG G(V(b_i))
-
+https://simpleflying.com/
     :param admg: An ADMG
     :param experiments: A list of ADMGs representing experiments
     :return:
@@ -359,7 +344,8 @@ class OnelineAID:
 
         for i, intrinsic_set in enumerate(sorted_intrinsic_sets):
             fixed = sorted_fixing[i]
-            vars = sorted(set([v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]) - set(fixed))
+            vars = sorted(
+                set([v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]) - set(fixed))
             correct_order = self.fixing_orders[self.allowed_intrinsic_dict[intrinsic_set]][
                 frozenset(intrinsic_set) - frozenset(fixed)]
             if len(correct_order):

@@ -51,6 +51,16 @@ class TestOneLine(unittest.TestCase):
         one_id = OneLineID(G, ['A', 'B'], ['Y'])
         self.assertFalse(one_id.id())
 
+    def test_functional(self):
+        vertices = ["M", "A", "Y"]
+        di_edges = [("A", "M"), ("M", "Y")]
+        bi_edges = [("A", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        one_id = OneLineID(G, ['A'], ['Y'])
+        functional = one_id.functional()
+        print(functional)
+        self.assertEqual("ΣM ΦAY(p(V);G) ΦAM(p(V);G) ", functional)
+
 
 class TestOneLineGID(unittest.TestCase):
 
@@ -111,6 +121,7 @@ class TestOneLineGID(unittest.TestCase):
         status = ol.id([{"A"}, {"A", "Y"}])
         print(status)
 
+
 class TestOnelineAID(unittest.TestCase):
 
     def test_oneline_aid(self):
@@ -119,7 +130,7 @@ class TestOnelineAID(unittest.TestCase):
         bi_edges = [("X1", "X2"), ("X1", "W"), ("X2", "Y")]
         G = ADMG(vertices, di_edges, bi_edges)
 
-        vertices = ["X1","W"]
+        vertices = ["X1", "W"]
         di_edges = [("X1", "W")]
         bi_edges = [("X1", "W")]
         G1 = ADMG(vertices, di_edges, bi_edges)
@@ -140,7 +151,6 @@ class TestOnelineAID(unittest.TestCase):
         self.assertTrue(ol.id(experiments=experiments))
         print(ol.functional(experiments=experiments))
         self.assertEqual("ΣW  p(W | do(X1))ΦX1,W p(W,X1,Y | do(X2))", ol.functional(experiments))
-
 
 
 if __name__ == '__main__':
