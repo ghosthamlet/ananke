@@ -1,7 +1,9 @@
 """
 Class that provides an interface to estimation strategies for the counterfactual mean E[Y(t)]
 """
+
 import numpy as np
+from scipy.stats import norm
 import statsmodels.api as sm
 from statsmodels.gam.generalized_additive_model import GLMGam
 from ananke.identification import OneLineID
@@ -32,11 +34,11 @@ class AverageCausalEffect:
         self.estimators = {"ipw": self._ipw,
                            "gformula": self._gformula,
                            "aipw": self._aipw,
-                           "eif-aipw": self._eif_augmented_ipw,
+                           "eff-aipw": self._eff_augmented_ipw,
                            "p-ipw": self._primal_ipw,
                            "d-ipw": self._dual_ipw,
                            "apipw": self._augmented_primal_ipw,
-                           "eif-apipw": self._eif_augmented_primal_ipw,
+                           "eff-apipw": self._eff_augmented_primal_ipw,
                            "n-ipw": self._nested_ipw,
                            "anipw": self._augmented_nested_ipw}
 
@@ -89,19 +91,20 @@ class AverageCausalEffect:
 
         else:
             self.strategy = "Not ID"
-            print("Query is not identified! \n")
+            print("Effect is not identified! \n")
 
         # finally, fix a valid topological order for estimation queries
         self.p_order = self._find_valid_order("p-fixable") # used for a-fixable/p-fixable strategies
         self.n_order = self._find_valid_order("nested-fixable") # used for nested-fixable strategies
+        self.state_space_map_ = {}  # maps from variable names to state space of the variable (binary/continuous)
 
     def _find_valid_order(self, order_type):
         """
         Utility function to find a valid order that satisfies the requirements in
-        Semiparametric Inference (Bhattacharya, Nabi & Shpitser 2020) paper.
+        Semiparametric Inference (Bhattacharya, Nabi, & Shpitser 2020) paper.
 
         :param order_type: string specifying if the topological order is required for p-fixable or n-fixable problems.
-        :return: list corresponding to a valid toplogical order.
+        :return: list corresponding to a valid topological order.
         """
 
         # if we are a-fixing or p-fixing, just ensure that the
@@ -160,10 +163,6 @@ class AverageCausalEffect:
         if self.strategy != "a-fixable":
             raise RuntimeError("IPW will not return valid estimates as treatment is not a-fixable")
 
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-
         # extract outcome from data frame and compute Markov pillow of treatment
         Y = data[self.outcome]
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
@@ -193,12 +192,6 @@ class AverageCausalEffect:
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy != "a-fixable":
             raise RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
-
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
 
         # fit Y | T=t, mp(T)
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
@@ -232,12 +225,6 @@ class AverageCausalEffect:
         if self.strategy != "a-fixable":
             raise RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
 
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
-
         # extract the outcome and get Markov pillow of the treatment
         Y = data[self.outcome]
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
@@ -263,7 +250,7 @@ class AverageCausalEffect:
         # return AIPW estimate
         return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
-    def _eif_augmented_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+    def _eff_augmented_ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
         Efficient augmented IPW estimator for the counterfactual mean E[Y(t)].
 
@@ -279,12 +266,6 @@ class AverageCausalEffect:
             raise RuntimeError("Augmented IPW will not return valid estimates as treatment is not a-fixable")
         if not self.is_mb_shielded:
             raise RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
-
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
 
         # extract the outcome and get Markov pillow of treatment
         Y = data[self.outcome]
@@ -305,14 +286,14 @@ class AverageCausalEffect:
 
         # get the variables that are actually involved in the efficient influence function
         # TODO: prune extra variables
-        eif_vars = [v for v in self.graph.vertices]
+        eif_vars = [V for V in self.graph.vertices]
         eif_vars.remove(self.treatment)
 
         # iterate over variables
-        for v in eif_vars:
+        for V in eif_vars:
 
             # get the Markov pillow of the variable
-            mpV = self.graph.markov_pillow([v], self.p_order)
+            mpV = self.graph.markov_pillow([V], self.p_order)
 
             # compute E[primal | mp(V)]
             formula = "primal ~ " + '+'.join(mpV)
@@ -321,11 +302,11 @@ class AverageCausalEffect:
             if len(mpV) == 0:
                 primal_mpV = np.mean(primal)
             else:
-                model_mpV = model_continuous(data, formula)
+                model_mpV = model_continuous(data, formula)  # primal is a continuous r.v.
                 primal_mpV = model_mpV.predict(data)
 
             # compute E[primal | V, mp(V)]
-            formula = formula + "+" + v
+            formula = formula + "+" + V
             model_VmpV = model_continuous(data, formula)
             primal_VmpV = model_VmpV.predict(data)
 
@@ -348,12 +329,6 @@ class AverageCausalEffect:
         :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
         :return: numpy array of floats corresponding to primal estimates for each sample.
         """
-
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
 
         # extract the outcome
         Y = data[self.outcome]
@@ -380,23 +355,29 @@ class AverageCausalEffect:
             # fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
             formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
-            model = model_binary(data, formula)
             indices_V0 = data.index[data[V] == 0]
 
-            # p(V | .)
+            # p(V = 1 | .), p(V = 1 | . , T=1), p(V = 1 | ., T=0)
+            if self.state_space_map_[V] == "binary":
+                model = model_binary(data, formula)
+            else:
+                model = model_continuous(data, formula)
+
             prob_V = model.predict(data)
+            prob_V_T1 = model.predict(data_T1)
+            prob_V_T0 = model.predict(data_T0)
+
+            if self.state_space_map_[V] == "continuous":
+                prob_V = norm.pdf(V, loc=prob_V, scale=np.sd(V))
+                prob_V_T1 = norm.pdf(V, loc=prob_V_T1, scale=np.std(V))
+                prob_V_T0 = norm.pdf(V, loc=prob_V_T0, scale=np.std(V))
+
+            # p(V | .)
             prob_V[indices_V0] = 1 - prob_V[indices_V0]
 
-            # p(V | . ) when T=1
-            prob_V_T1 = model.predict(data_T1)
-            # special case for treatment which is set to be 1
+            # p(V | ., T=t) (special case for treatment which is set to be t)
             if V != self.treatment:
                 prob_V_T1[indices_V0] = 1 - prob_V_T1[indices_V0]
-
-            # p(V | . ) when T=0
-            prob_V_T0 = model.predict(data_T0)
-            # special case for treatment which is set to be 0
-            if V != self.treatment:
                 prob_V_T0[indices_V0] = 1 - prob_V_T0[indices_V0]
             else:
                 prob_V_T0 = 1 - prob_V_T0
@@ -425,7 +406,6 @@ class AverageCausalEffect:
             prob_sumT = prob_T1 + prob_T0
             beta_primal = indices * (prob_sumT / prob)*Y
 
-        # TODO: fix fitting a binary vs a continuous variable
         return beta_primal
 
     def _primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -457,12 +437,6 @@ class AverageCausalEffect:
         :return: numpy array of floats corresponding to dual estimates for each sample.
         """
 
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
-
         # extract the outcome
         Y = data[self.outcome]
 
@@ -480,15 +454,23 @@ class AverageCausalEffect:
             # Fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
             formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
-            model = model_binary(data, formula)
             indices_V0 = data.index[data[V] == 0]
 
-            # p(V | .)
-            prob_V = model.predict(data)
-            prob_V[indices_V0] = 1 - prob_V[indices_V0]
+            # p(V = 1 | .), p(V = 1 | . , T=assigned)
+            if self.state_space_map_[V] == "binary":
+                model = model_binary(data, formula)
+            else:
+                model = model_continuous(data, formula)
 
-            # p(V | . ) when T=assignment
+            prob_V = model.predict(data)
             prob_V_assigned = model.predict(data_assigned)
+
+            if self.state_space_map_[V] == "continuous":
+                prob_V = norm.pdf(V, loc=prob_V, scale=np.sd(V))
+                prob_V_assigned = norm.pdf(V, loc=prob_V_assigned, scale=np.std(V))
+
+            # p(V | .) and p(V | ., T=assignment)
+            prob_V[indices_V0] = 1 - prob_V[indices_V0]
             prob_V_assigned[indices_V0] = 1 - prob_V_assigned[indices_V0]
 
             prob *= prob_V_assigned/prob_V
@@ -505,7 +487,6 @@ class AverageCausalEffect:
         else:
             Yhat_assigned = Y
 
-        # TODO: fix fitting a binary vs a continuous variable
         return prob*Yhat_assigned
 
     def _dual_ipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -541,12 +522,6 @@ class AverageCausalEffect:
         if self.strategy != "p-fixable" and self.strategy != "a-fixable":
             raise RuntimeError("Augmented primal IPW will not return valid estimates as treatment is not p-fixable")
 
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
-
         # compute the primal and dual estimates and them to the data frame
         beta_primal = self._beta_primal(data, assignment, model_binary, model_continuous)
         beta_dual = self._beta_dual(data, assignment, model_binary, model_continuous)
@@ -576,9 +551,9 @@ class AverageCausalEffect:
             elif V in L:
                 formula = "beta_dual" + " ~ " + '+'.join(pre_V)
 
-            # special logic for if there are no predecessors for the variable
+            # special logic for if there are no predecessors for the variable (which could only happen to T)
             if len(pre_V) != 0:
-                model_preV = model_continuous(data, formula)
+                model_preV = model_continuous(data, formula)  # primal/dual is a continuous r.v.
                 pred_preV = model_preV.predict(data)
             else:
                 pred_preV = 0
@@ -594,13 +569,13 @@ class AverageCausalEffect:
         # final contribution from E[beta | C] (if C is not empty)
         if len(C) != 0:
             formula = "beta_dual" + " ~ " + '+'.join(C)
-            model_C = model_continuous(data, formula)
+            model_C = model_continuous(data, formula)  # dual is a continuous r.v.
             IF += model_C.predict(data)
 
         # return APIPW estimate
         return np.mean(IF)
 
-    def _eif_augmented_primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
+    def _eff_augmented_primal_ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
         Efficient augmented primal IPW estimator for the counterfactual mean E[Y(t)].
 
@@ -617,12 +592,6 @@ class AverageCausalEffect:
         if not self.is_mb_shielded:
             raise RuntimeError("EIF will not return valid estimates as graph is not mb-shielded")
 
-        # instantiate modeling strategy with defaults
-        if not model_binary:
-            model_binary = self._fit_binary_glm
-        if not model_continuous:
-            model_continuous = self._fit_continuous_glm
-
         # compute primal and dual estimates and add them to the data frame
         beta_primal = self._beta_primal(data, assignment, model_binary, model_continuous)
         beta_dual = self._beta_dual(data, assignment, model_binary, model_continuous)
@@ -638,6 +607,7 @@ class AverageCausalEffect:
         M = post - L
 
         IF = 0
+
         # iterate over all variables
         for V in self.graph.vertices:
 
@@ -686,7 +656,7 @@ class AverageCausalEffect:
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy == "Not ID":
             raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        return 0
+        return 0.5
 
     def _augmented_nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
@@ -701,9 +671,9 @@ class AverageCausalEffect:
 
         if self.strategy == "Not ID":
             raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        return 0
+        return 0.5
 
-    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5):
+    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5, Ql=0.025, Qu=0.975):
         """
         Bootstrap functionality to compute the Average Causal Effect
         :param data: pandas data frame containing the data.
@@ -714,14 +684,33 @@ class AverageCausalEffect:
         :return: None
         """
 
+        # instantiate modeling strategy with defaults
+        if not model_binary:
+            model_binary = self._fit_binary_glm
+        if not model_continuous:
+            model_continuous = self._fit_continuous_glm
+
         # add a column of ones to fit intercept terms
         data['ones'] = np.ones(len(data))
+
+        # get state space of all variables
+        for colname, colvalues in data.iteritems():
+            if set([0, 1]).issuperset(colvalues.unique()):
+                self.state_space_map_[colname] = "binary"
+            else:
+                self.state_space_map_[colname] = "continuous"
 
         # instantiate estimator and get point estimate of ACE
         method = self.estimators[estimator]
         point_estimate_T1 = method(data, 1, model_binary, model_continuous)
         point_estimate_T0 = method(data, 0, model_binary, model_continuous)
-        ace = point_estimate_T1 - point_estimate_T0
+
+        # if Y is binary report log of odds ration, if Y is continuous report ACE
+        if self.state_space_map_[self.outcome] == "binary":
+            ace = np.log((point_estimate_T1/(1-point_estimate_T1))/(point_estimate_T0/(1-point_estimate_T0)))
+        else:
+            ace = point_estimate_T1 - point_estimate_T0
+
         ace_vec = []
 
         # iterate over bootstraps
@@ -734,10 +723,16 @@ class AverageCausalEffect:
             # estimate ACE in resampled data
             estimate_T1 = method(data_sampled, 1, model_binary, model_continuous)
             estimate_T0 = method(data_sampled, 0, model_binary, model_continuous)
-            ace_vec.append(estimate_T1 - estimate_T0)
 
-        # Quantile calculation
-        # quantiles = np.quantile(ace_vec, q=[0.025, 0.975])
-        # print("ACE = ", ace)
-        # print("(2.5%, 97.5%) = ", "(", quantiles[0], ",", quantiles[1], ")")
-        return ace, ace_vec
+            # if Y is binary report log of odds ration, if Y is continuous report ACE
+            if self.state_space_map_[self.outcome] == "binary":
+                ace_vec.append(np.log((estimate_T1/(1-estimate_T1))/(estimate_T0/(1-estimate_T0))))
+            else:
+                ace_vec.append(estimate_T1 - estimate_T0)
+
+        # quantile calculation
+        quantiles = np.quantile(ace_vec, q=[Ql, Qu])
+        q_low = quantiles[0]
+        q_up = quantiles[1]
+
+        return ace, q_low, q_up
