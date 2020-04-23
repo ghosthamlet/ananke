@@ -293,16 +293,16 @@ def check_experiments_ancestral(admg, experiments):
 
 class OnelineAID:
 
-    def __init__(self, graph, interventions, outcomes):
+    def __init__(self, graph, treatments, outcomes):
         """
         Applies the one-line AID algorithm.
 
         :param graph: Graph on which the query will be run
-        :param interventions: Iterable of treatment variables
+        :param treatments: Iterable of treatment variables
         :param outcomes: Iterable of outcome variables
         """
         self.graph = graph
-        self.interventions = interventions
+        self.interventions = treatments
         self.outcomes = outcomes
         self.swig = copy.deepcopy(graph)
         self.swig.fix(self.interventions)
@@ -359,10 +359,11 @@ class OnelineAID:
 
         for i, intrinsic_set in enumerate(sorted_intrinsic_sets):
             fixed = sorted_fixing[i]
-            vars = [v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]
+            vars = set([v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]) - set(fixed)
             correct_order = self.fixing_orders[self.allowed_intrinsic_dict[intrinsic_set]][
                 frozenset(intrinsic_set) - frozenset(fixed)]
-            functional += '\u03A6' + ','.join(reversed(correct_order)) + ' p({0} | do({1}))'.format(",".join(vars),
-                                                                                                    ",".join(fixed))
+            if len(correct_order):
+                functional += '\u03A6' + ','.join(reversed(correct_order))
+            functional += ' p({0} | do({1}))'.format(",".join(vars), ",".join(fixed))
 
         return functional

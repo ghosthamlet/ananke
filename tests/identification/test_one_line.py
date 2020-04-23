@@ -139,7 +139,7 @@ class TestOnelineAID(unittest.TestCase):
 
         self.assertTrue(ol.id(experiments=experiments))
         print(ol.functional(experiments=experiments))
-        self.assertEqual("ΣW Φ p(X1,W | do(X1))ΦX1,W p(X1,X2,W,Y | do(X2))", ol.functional(experiments))
+        self.assertEqual("ΣW  p(W | do(X1))ΦX1,W p(X1,W,Y | do(X2))", ol.functional(experiments))
 
 
 
