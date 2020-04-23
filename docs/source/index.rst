@@ -10,6 +10,7 @@ How to install
 ==============
 
 Run the following command::
+
     sudo pip3 install ananke-causal
 
 Documentation
