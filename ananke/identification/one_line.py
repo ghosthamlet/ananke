@@ -359,7 +359,7 @@ class OnelineAID:
 
         for i, intrinsic_set in enumerate(sorted_intrinsic_sets):
             fixed = sorted_fixing[i]
-            vars = set([v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]) - set(fixed)
+            vars = sorted(set([v for v in experiments[self.allowed_intrinsic_dict[intrinsic_set]].vertices]) - set(fixed))
             correct_order = self.fixing_orders[self.allowed_intrinsic_dict[intrinsic_set]][
                 frozenset(intrinsic_set) - frozenset(fixed)]
             if len(correct_order):
