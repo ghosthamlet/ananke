@@ -57,7 +57,7 @@ class AverageCausalEffect:
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n" +
-                      "4. Efficient Generalized AIPW (eif-aipw) \n \n" +
+                      "4. Efficient Generalized AIPW (eff-aipw) \n \n" +
                       "Suggested estimator is Efficient Generalized AIPW.")
             else:
                 print("\n Treatment is a-fixable.\n\n Available estimators are :\n" +
@@ -73,7 +73,7 @@ class AverageCausalEffect:
                       "1. Primal IPW (p-ipw)\n" +
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw)\n" +
-                      "4. Efficient APIPW (eif-apipw) \n \n" +
+                      "4. Efficient APIPW (eff-apipw) \n \n" +
                       "Suggested estimator is Efficient APIPW \n")
             else:
                 print("\n Treatment is p-fixable. \n\n Available estimators are:\n" +
@@ -167,10 +167,14 @@ class AverageCausalEffect:
         Y = data[self.outcome]
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
-        # fit T | mp(T) and compute probability of treatment for each sample
-        formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
-        model = model_binary(data, formula)
-        prob_T = model.predict(data)
+        if len(mp_T) != 0:
+            # fit T | mp(T) and compute probability of treatment for each sample
+            formula = self.treatment + " ~ " + '+'.join(mp_T) # + "+ ones"
+            model = model_binary(data, formula)
+            prob_T = model.predict(data)
+        else:
+            prob_T = np.ones(len(data)) * np.mean(data[self.treatment])
+
         indices_T0 = data.index[data[self.treatment] == 0]
         prob_T[indices_T0] = 1 - prob_T[indices_T0]
 
@@ -195,14 +199,17 @@ class AverageCausalEffect:
 
         # fit Y | T=t, mp(T)
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
-        formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
+        if len(mp_T) != 0:
+            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) #+ "+ ones"
+        else:
+            formula = self.outcome + " ~ " + self.treatment
 
         # create a dataset where T=t
         data_assign = data.copy()
         data_assign[self.treatment] = assignment
 
         # predict outcome appropriately depending on binary vs continuous
-        if set([0, 1]).issuperset(data[self.outcome].unique()):
+        if self.state_space_map_[self.outcome] == "binary":
             model = model_binary(data, formula)
         else:
             model = model_continuous(data, formula)
@@ -229,19 +236,26 @@ class AverageCausalEffect:
         Y = data[self.outcome]
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
-        # fit T | mp(T) and predict treatment probabilities
-        formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
-        model = model_binary(data, formula)
-        prob_T = model.predict(data)
+        if len(mp_T) != 0:
+            # fit T | mp(T) and predict treatment probabilities
+            formula = self.treatment + " ~ " + '+'.join(mp_T) #+ "+ ones"
+            model = model_binary(data, formula)
+            prob_T = model.predict(data)
+        else:
+            prob_T = np.ones(len(data)) * np.mean(data[self.treatment])
+
         indices_T0 = data.index[data[self.treatment] == 0]
         prob_T[indices_T0] = 1 - prob_T[indices_T0]
         indices = data[self.treatment] == assignment
 
         # fit Y | T=t, mp(T) and predict outcomes under assignment T=t
-        formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) + "+ ones"
+        if len(mp_T) != 0:
+            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T)  # + "+ ones"
+        else:
+            formula = self.outcome + " ~ " + self.treatment
         data_assign = data.copy()
         data_assign[self.treatment] = assignment
-        if set([0, 1]).issuperset(data[self.outcome].unique()):
+        if self.state_space_map_[self.outcome] == "binary":
             model = model_binary(data, formula)
         else:
             model = model_continuous(data, formula)
@@ -272,9 +286,13 @@ class AverageCausalEffect:
         mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
 
         # fit T | mp(T) and compute treatment probabilities
-        formula = self.treatment + " ~ " + '+'.join(mp_T) + "+ ones"
-        model = model_binary(data, formula)
-        prob_T = model.predict(data)
+        if len(mp_T) != 0:
+            formula = self.treatment + " ~ " + '+'.join(mp_T) #+ "+ ones"
+            model = model_binary(data, formula)
+            prob_T = model.predict(data)
+        else:
+            prob_T = np.ones(len(data)) * np.mean(data[self.treatment])
+
         indices_T0 = data.index[data[self.treatment] == 0]
         prob_T[indices_T0] = 1 - prob_T[indices_T0]
         indices = data[self.treatment] == assignment
@@ -299,11 +317,11 @@ class AverageCausalEffect:
             formula = "primal ~ " + '+'.join(mpV)
 
             # special case if mp(V) is empty, then E[primal | mp(V)] = E[primal]
-            if len(mpV) == 0:
-                primal_mpV = np.mean(primal)
-            else:
+            if len(mpV) != 0:
                 model_mpV = model_continuous(data, formula)  # primal is a continuous r.v.
                 primal_mpV = model_mpV.predict(data)
+            else:
+                primal_mpV = np.mean(primal)
 
             # compute E[primal | V, mp(V)]
             formula = formula + "+" + V
@@ -345,42 +363,58 @@ class AverageCausalEffect:
         data_T0[self.treatment] = 0
 
         indices = data[self.treatment] == assignment
-        prob = 1  # stores \prod_{Li in L} p(Li | mp(Li))
-        prob_T1 = 1  # stores \prod_{Li in L} p(Li | mp(Li)) at T=1
-        prob_T0 = 1  # stores \prod_{Li in L} p(Li | mp(Li)) at T=0
+
+        # prob: stores \prod_{Li in L} p(Li | mp(Li))
+        # prob_T1: stores \prod_{Li in L} p(Li | mp(Li)) at T=1
+        # prob_T0: stores \prod_{Li in L} p(Li | mp(Li)) at T=0
+
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
+        indices_T0 = data.index[data[self.treatment] == 0]
+
+        if len(mp_T) != 0:
+            formula = self.treatment + " ~ " + '+'.join(mp_T)  # + "+ ones"
+            model = model_binary(data, formula)
+            prob = model.predict(data)
+            prob[indices_T0] = 1 - prob[indices_T0]
+            prob_T1 = model.predict(data)
+            prob_T0 = 1 - prob_T1
+        else:
+            prob = np.ones(len(data)) * np.mean(data[self.treatment])
+            prob[indices_T0] = 1 - prob[indices_T0]
+            prob_T1 = np.ones(len(data)) * np.mean(data[self.treatment])
+            prob_T0 = 1 - prob_T1
 
         # iterate over vertices in L (except the outcome)
-        for V in L.difference([self.outcome]):
+        for V in L.difference([self.treatment, self.outcome]):
 
             # fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
-            indices_V0 = data.index[data[V] == 0]
+            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
 
-            # p(V = 1 | .), p(V = 1 | . , T=1), p(V = 1 | ., T=0)
+            # p(V =v | .), p(V = v | . , T=1), p(V = v | ., T=0)
             if self.state_space_map_[V] == "binary":
                 model = model_binary(data, formula)
-            else:
-                model = model_continuous(data, formula)
+                prob_V = model.predict(data)
+                prob_V_T1 = model.predict(data_T1)
+                prob_V_T0 = model.predict(data_T0)
 
-            prob_V = model.predict(data)
-            prob_V_T1 = model.predict(data_T1)
-            prob_V_T0 = model.predict(data_T0)
+                indices_V0 = data.index[data[V] == 0]
 
-            if self.state_space_map_[V] == "continuous":
-                prob_V = norm.pdf(V, loc=prob_V, scale=np.sd(V))
-                prob_V_T1 = norm.pdf(V, loc=prob_V_T1, scale=np.std(V))
-                prob_V_T0 = norm.pdf(V, loc=prob_V_T0, scale=np.std(V))
-
-            # p(V | .)
-            prob_V[indices_V0] = 1 - prob_V[indices_V0]
-
-            # p(V | ., T=t) (special case for treatment which is set to be t)
-            if V != self.treatment:
+                # p(V | .), p(V | ., T=t)
+                prob_V[indices_V0] = 1 - prob_V[indices_V0]
                 prob_V_T1[indices_V0] = 1 - prob_V_T1[indices_V0]
                 prob_V_T0[indices_V0] = 1 - prob_V_T0[indices_V0]
+
             else:
-                prob_V_T0 = 1 - prob_V_T0
+                model = model_continuous(data, formula)
+                E_V = model.predict(data)
+                E_V_T1 = model.predict(data_T1)
+                E_V_T0 = model.predict(data_T0)
+
+                std = np.std(data[V] - E_V)
+                prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+                prob_V_T1 = norm.pdf(data[V], loc=E_V_T1, scale=std)
+                prob_V_T0 = norm.pdf(data[V], loc=E_V_T0, scale=std)
 
             prob *= prob_V
             prob_T1 *= prob_V_T1
@@ -391,8 +425,8 @@ class AverageCausalEffect:
 
             # fit a binary/continuous model for Y | mp(Y)
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
-            if set([0, 1]).issuperset(data[self.outcome].unique()):
+            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
                 model = model_continuous(data, formula)
@@ -453,33 +487,36 @@ class AverageCausalEffect:
 
             # Fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) + "+ ones"
-            indices_V0 = data.index[data[V] == 0]
+            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
 
             # p(V = 1 | .), p(V = 1 | . , T=assigned)
             if self.state_space_map_[V] == "binary":
                 model = model_binary(data, formula)
+                prob_V = model.predict(data)
+                prob_V_assigned = model.predict(data_assigned)
+
+                indices_V0 = data.index[data[V] == 0]
+
+                # p(V | .) and p(V | ., T=assignment)
+                prob_V[indices_V0] = 1 - prob_V[indices_V0]
+                prob_V_assigned[indices_V0] = 1 - prob_V_assigned[indices_V0]
+
             else:
                 model = model_continuous(data, formula)
+                E_V = model.predict(data)
+                E_V_assigned = model.predict(data_assigned)
 
-            prob_V = model.predict(data)
-            prob_V_assigned = model.predict(data_assigned)
-
-            if self.state_space_map_[V] == "continuous":
-                prob_V = norm.pdf(V, loc=prob_V, scale=np.sd(V))
-                prob_V_assigned = norm.pdf(V, loc=prob_V_assigned, scale=np.std(V))
-
-            # p(V | .) and p(V | ., T=assignment)
-            prob_V[indices_V0] = 1 - prob_V[indices_V0]
-            prob_V_assigned[indices_V0] = 1 - prob_V_assigned[indices_V0]
+                std = np.std(data[V] - E_V)
+                prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+                prob_V_assigned = norm.pdf(data[V], loc=E_V_assigned, scale=std)
 
             prob *= prob_V_assigned/prob_V
 
         # special case for if the outcome is in M
         if self.outcome in M:
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) + "+ ones"
-            if set([0, 1]).issuperset(data[self.outcome].unique()):
+            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
                 model = model_continuous(data, formula)
@@ -622,11 +659,11 @@ class AverageCausalEffect:
                 formula = "beta_dual" + " ~ " + '+'.join(mp_V)
 
             # special logic for if there the Markov pillow is empty
-            if len(mp_V) == 0:
-                pred_mpV = np.mean(beta_dual)
-            else:
+            if len(mp_V) != 0:
                 model_mpV = model_continuous(data, formula)
                 pred_mpV = model_mpV.predict(data)
+            else:
+                pred_mpV = np.mean(beta_dual)
 
             # fit E[beta | V, mp(V)]
             formula = formula + " + " + V
