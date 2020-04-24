@@ -58,13 +58,13 @@ class AverageCausalEffect:
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n" +
                       "4. Efficient Generalized AIPW (eff-aipw) \n \n" +
-                      "Suggested estimator is Efficient Generalized AIPW.")
+                      "Suggested estimator is Efficient Generalized AIPW \n")
             else:
                 print("\n Treatment is a-fixable.\n\n Available estimators are :\n" +
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n \n" +
-                      "Suggested estimator is Generalized AIPW")
+                      "Suggested estimator is Generalized AIPW \n")
 
         elif len(self.graph.district(treatment).intersection(self.graph.children([treatment]))) == 0:
             self.strategy = "p-fixable"
@@ -197,24 +197,23 @@ class AverageCausalEffect:
         if self.strategy != "a-fixable":
             raise RuntimeError("g-formula will not return valid estimates as treatment is not a-fixable")
 
-        # fit Y | T=t, mp(T)
-        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
-        if len(mp_T) != 0:
-            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T) #+ "+ ones"
-        else:
-            formula = self.outcome + " ~ " + self.treatment
-
         # create a dataset where T=t
         data_assign = data.copy()
         data_assign[self.treatment] = assignment
 
-        # predict outcome appropriately depending on binary vs continuous
+        # fit Y | T=t, mp(T)
+        mp_T = self.graph.markov_pillow([self.treatment], self.p_order)
+        if len(mp_T) != 0:
+            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T)
+            # predict outcome appropriately depending on binary vs continuous
+        else:
+            formula = self.outcome + " ~ " + self.treatment
+
         if self.state_space_map_[self.outcome] == "binary":
             model = model_binary(data, formula)
         else:
             model = model_continuous(data, formula)
 
-        # return E[Y(t)]
         return np.mean(model.predict(data_assign))
 
     def _aipw(self, data, assignment, model_binary=None, model_continuous=None):
@@ -238,27 +237,25 @@ class AverageCausalEffect:
 
         if len(mp_T) != 0:
             # fit T | mp(T) and predict treatment probabilities
-            formula = self.treatment + " ~ " + '+'.join(mp_T) #+ "+ ones"
-            model = model_binary(data, formula)
+            formula_T = self.treatment + " ~ " + '+'.join(mp_T) #+ "+ ones"
+            model = model_binary(data, formula_T)
             prob_T = model.predict(data)
+            formula_Y = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T)
         else:
             prob_T = np.ones(len(data)) * np.mean(data[self.treatment])
+            formula_Y = self.outcome + " ~ " + self.treatment
 
         indices_T0 = data.index[data[self.treatment] == 0]
         prob_T[indices_T0] = 1 - prob_T[indices_T0]
         indices = data[self.treatment] == assignment
 
         # fit Y | T=t, mp(T) and predict outcomes under assignment T=t
-        if len(mp_T) != 0:
-            formula = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T)  # + "+ ones"
-        else:
-            formula = self.outcome + " ~ " + self.treatment
         data_assign = data.copy()
         data_assign[self.treatment] = assignment
         if self.state_space_map_[self.outcome] == "binary":
-            model = model_binary(data, formula)
+            model = model_binary(data, formula_Y)
         else:
-            model = model_continuous(data, formula)
+            model = model_continuous(data, formula_Y)
         Yhat_vec = model.predict(data_assign)
 
         # return AIPW estimate
