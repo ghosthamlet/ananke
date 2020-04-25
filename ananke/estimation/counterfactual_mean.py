@@ -678,12 +678,12 @@ class AverageCausalEffect:
 
     def _fit_intrinsic_kernel(self, data, district, model_binary=None, model_continuous=None):
         """
-        Get estimates of an intrinsic kernel.
+        Get estimates of an intrinsic kernel q_D(D|pa(D)) for each sample.
 
-        :param data:
-        :param model_binary:
-        :param model_continuous:
-        :return:
+        :param data: pandas data frame containing the data.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: numpy array of estimated probabilities of the kernel for each sample.
         """
 
         fixing_prob = np.ones(len(data))
@@ -694,8 +694,9 @@ class AverageCausalEffect:
         G = self.graph.subgraph(self.graph.ancestors(district))
 
         # we know D is intrinsic because of prior checks
-        remaining_vertices = set(G.vertices) - district
-        while not G.fixable(parents):
+        remaining_vertices = set(G.vertices) - district - parents  # is subtracting parents here ok? think so..
+
+        while not G.fixable(parents)[0]:
 
             fixed = False
 
@@ -703,14 +704,16 @@ class AverageCausalEffect:
             # childless vertices as these correspond to just sums
             # also find a backup fixable vertex in case there are no childless ones
             iter_gen = iter(remaining_vertices)
-            fixable_V
-            while not fixed:
+            i = 0
+
+            while not fixed and i < len(remaining_vertices):
+                i += 1
                 V = next(iter_gen)
-                if len(G.children(V)) == 0:
+                if len(G.children([V])) == 0:
                     G.fix([V])
                     fixed = True
                     remaining_vertices.remove(V)
-                elif G.fixable([V]):
+                elif G.fixable([V])[0]:
                     fixable_V = V
 
             # if we fixed something go back and see if we can fix another childless vertex
@@ -741,6 +744,8 @@ class AverageCausalEffect:
                 prob_V = norm.pdf(data[V], loc=E_V, scale=std)
 
             fixing_prob *= prob_V
+            G.fix([V])
+            remaining_vertices.remove(V)
 
         # get the Markov blanket of the parents in this final graph
         mb_parents = G.markov_blanket(parents)
@@ -810,7 +815,7 @@ class AverageCausalEffect:
         :param data: pandas data frame containing the data.
         :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
         :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
-        :return: numpy array corresponding to rebalancing weights
+        :return: numpy array corresponding to rebalancing weights.
         """
 
         # first get all districts of GY* that intersect with district of T
