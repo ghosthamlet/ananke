@@ -420,21 +420,70 @@ class TestCounterfactualMean(unittest.TestCase):
 
     # nested-fixable
     def test_nested_fixability(self):
+        np.random.seed(0)
         vertices = ['C1',  'C2',  'T', 'M', 'Z', 'R1', 'R2', 'Y']
         di_edges = [('C1', 'T'), ('C1', 'Y'), ('C2', 'T'), ('C2', 'Y'), ('R2', 'Y'), ('Z', 'T'),
                     ('T', 'R1'), ('T', 'Y'), ('R1', 'M'), ('M', 'Y')]
         bi_edges = [('Z', 'R2'), ('T', 'R2'), ('Z', 'R1'), ('C1', 'M'), ('C1', 'Y'), ('C2', 'M'), ('C2', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
 
-        data = pd.DataFrame({'Y': np.ones(100)})
+        size = 5000
+        # U1, U2, U3, U4, U5, U6, U7, U8, U9, U10
+        U1 = np.random.binomial(1, 0.4, size)
+        U2 = np.random.uniform(0, 0.5, size)
+        U3 = np.random.binomial(1, 0.3, size)
+        U4 = np.random.uniform(0, 0.5, size)
+        U5 = np.random.binomial(1, 0.4, size)
+        U6 = np.random.uniform(0, 1.5, size)
+        U7 = np.random.binomial(1, 0.3, size)
+        U8 = np.random.uniform(0, 0.5, size)
+        U9 = np.random.binomial(1, 0.3, size)
+        U10 = np.random.uniform(0, 0.5, size)
+
+        # R2 = f(U1, U2, U3, U4)
+        p_r2 = expit(-0.2 + U1 - 0.8 * U2 + U3 + U4)
+        R2 = np.random.binomial(1, p_r2, size)
+
+        # C1 = f(U7, U8, U9, U10)
+        eps_c1 = np.random.normal(0, 1, size)
+        C1 = U7 - U8 + U9 + U10 + eps_c1
+
+        # C2 = f(U7, U8)
+        eps_c2 = np.random.normal(0, 1, size)
+        C2 = U7 - U8 + U9 * U10 + eps_c2
+
+        # Z = f(U1, U2, U5, U6)
+        eps_z = np.random.normal(0, 1, size)
+        Z = U1 - U2 - U5 - U6 + eps_z
+
+        # T = f(C1, C2, Z, U3, U4)
+        p_t1 = expit(0.8 - 0.5 * C1 + 0.5 * C2 + 0.3 * Z + 0.5 * U3 - 0.4 * U4)
+        T = np.random.binomial(1, p_t1, size)
+
+        # R1 = f(T, U5, U6)
+        p_r1 = expit(0.2 + 0.7 * T - 0.6 * U5 - 0.6 * U6)
+        R1 = np.random.binomial(1, p_r1, size)
+
+        # M = f(R1, U7, U8)
+        eps_m = np.random.normal(0, 1, size)
+        M = 1 - R1 - U7 + U8 + eps_m
+
+        # Y = f(M, T, U9, U10)
+        eps_y = np.random.normal(0, 1, size)
+        Y = 1 + R2 + M + 1 * T + C1 + C2 + U9 + U10 + eps_y
+
+        data = pd.DataFrame({'C1': C1, 'C2': C2, 'R1': R1, 'R2': R2, 'Z': Z, 'T': T, 'M': M, 'Y': Y})
 
         ace = AverageCausalEffect(G, 'T', 'Y')
         ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw")
         ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw")
 
+        print(ace_nipw)
+        print(ace_anipw)
+
         self.assertEqual(ace.strategy, "nested-fixable")
-        self.assertEqual(ace_nipw, 0)
-        self.assertEqual(ace_anipw, 0)
+        #self.assertEqual(ace_nipw, 0)
+        #self.assertEqual(ace_anipw, 0)
         with self.assertRaises(RuntimeError):
             ace.bootstrap_ace(data, "p-ipw")
         with self.assertRaises(RuntimeError):

@@ -126,7 +126,7 @@ class AverageCausalEffect:
 
         return order
 
-    def _fit_binary_glm(self, data, formula):
+    def _fit_binary_glm(self, data, formula, weights=None):
         """
         Fit a binary GLM to data given a formula.
 
@@ -135,9 +135,9 @@ class AverageCausalEffect:
         :return: the fitted model.
         """
 
-        return sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial()).fit()
+        return sm.GLM.from_formula(formula, data=data, family=sm.families.Binomial(), freq_weights=weights).fit()
 
-    def _fit_continuous_glm(self, data, formula):
+    def _fit_continuous_glm(self, data, formula, weights=None):
         """
         Fit a linear GLM to data given a formula.
 
@@ -146,7 +146,7 @@ class AverageCausalEffect:
         :return: the fitted model.
         """
 
-        return sm.GLM.from_formula(formula, data=data, family=sm.families.Gaussian()).fit()
+        return sm.GLM.from_formula(formula, data=data, family=sm.families.Gaussian(), freq_weights=weights).fit()
 
     def _ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
@@ -676,6 +676,184 @@ class AverageCausalEffect:
         # return efficient APIPW estimate
         return np.mean(IF)
 
+    def _fit_intrinsic_kernel(self, data, district, model_binary=None, model_continuous=None):
+        """
+        Get estimates of an intrinsic kernel.
+
+        :param data:
+        :param model_binary:
+        :param model_continuous:
+        :return:
+        """
+
+        fixing_prob = np.ones(len(data))
+
+        # get parents of the district
+        parents = self.graph.parents(district) - district
+        # initialize with ancestral margin as fixing descendants are just sums
+        G = self.graph.subgraph(self.graph.ancestors(district))
+
+        # we know D is intrinsic because of prior checks
+        remaining_vertices = set(G.vertices) - district
+        while not G.fixable(parents):
+
+            fixed = False
+
+            # at every step try to simplify as much as possible by fixing
+            # childless vertices as these correspond to just sums
+            # also find a backup fixable vertex in case there are no childless ones
+            iter_gen = iter(remaining_vertices)
+            fixable_V
+            while not fixed:
+                V = next(iter_gen)
+                if len(G.children(V)) == 0:
+                    G.fix([V])
+                    fixed = True
+                    remaining_vertices.remove(V)
+                elif G.fixable([V]):
+                    fixable_V = V
+
+            # if we fixed something go back and see if we can fix another childless vertex
+            # or if the requirement that parents are fixable is satisfied
+            if fixed:
+                continue
+
+            # otherwise do a true fix corresponding to reweighting
+            # using the fixable V that we found
+            V = fixable_V
+            mb_V = G.markov_blanket([V])
+            formula = V + " ~ " + '+'.join(mb_V)
+
+            # p(V = 1 | .)
+            if self.state_space_map_[V] == "binary":
+                model = model_binary(data, formula, 1/fixing_prob)
+                prob_V = model.predict(data)
+                indices_V0 = data.index[data[V] == 0]
+
+                # p(V | .)
+                prob_V[indices_V0] = 1 - prob_V[indices_V0]
+
+            # handling continuous data
+            else:
+                model = model_continuous(data, formula, 1/fixing_prob)
+                E_V = model.predict(data)
+                std = np.std(data[V] - E_V)
+                prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+
+            fixing_prob *= prob_V
+
+        # get the Markov blanket of the parents in this final graph
+        mb_parents = G.markov_blanket(parents)
+
+        # iterate over each parent and get weights required to fix them
+        for V in parents:
+
+            # p(V = 1 | .)
+            mp_V = mb_parents.intersection(self.graph.pre([V], self.n_order))
+            if len(mp_V) != 0:
+                formula = V + " ~ " + '+'.join(mp_V)
+            else:
+                formula = V + " ~ -1 + 1"
+
+            if self.state_space_map_[V] == "binary":
+                model = model_binary(data, formula, 1 / fixing_prob)
+                prob_V = model.predict(data)
+                indices_V0 = data.index[data[V] == 0]
+
+                # p(V | .)
+                prob_V[indices_V0] = 1 - prob_V[indices_V0]
+
+            # handling continuous data
+            else:
+                model = model_continuous(data, formula, 1 / fixing_prob)
+                E_V = model.predict(data)
+                std = np.std(data[V] - E_V)
+                prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+
+            fixing_prob *= prob_V
+
+        kernel_prob = np.ones(len(data))
+
+        # iterate over member of the intrinsic set and get the final kernel weights
+        for V in district:
+
+            # p(V = 1 | .)
+            mp_V = parents.union(district.intersection(self.graph.pre(V, self.n_order)))
+            if len(mp_V) != 0:
+                formula = V + " ~ " + '+'.join(mp_V)
+            else:
+                formula = V + " ~ -1 + 1"
+
+            if self.state_space_map_[V] == "binary":
+                model = model_binary(data, formula, 1 / fixing_prob)
+                prob_V = model.predict(data)
+                indices_V0 = data.index[data[V] == 0]
+
+                # p(V | .)
+                prob_V[indices_V0] = 1 - prob_V[indices_V0]
+
+            # handling continuous data
+            else:
+                model = model_continuous(data, formula, 1 / fixing_prob)
+                E_V = model.predict(data)
+                std = np.std(data[V] - E_V)
+                prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+
+            kernel_prob *= prob_V
+
+        return kernel_prob
+
+    def _get_nested_rebalanced_weights(self, data, model_binary=None, model_continuous=None):
+        """
+        Get the rebalancing weights required for nested IPW and augmented nested IPW
+
+        :param data: pandas data frame containing the data.
+        :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
+        :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
+        :return: numpy array corresponding to rebalancing weights
+        """
+
+        # first get all districts of GY* that intersect with district of T
+        district_T = self.graph.district(self.treatment)
+        modified_districts = [district for district in self.one_id.Gystar.districts
+                              if len(district.intersection(district_T)) != 0]
+
+        # placeholder for the rebalancing probability
+        rebalance_prob = np.ones(len(data))
+
+        # iterate over each modified district
+        for district in modified_districts:
+
+            # first compute weights in the denominator of \prod_{Vi in district} p(Vi | mp(Vi))
+            for V in district:
+
+                # Fit V | mp(V)
+                mp_V = self.graph.markov_pillow([V], self.n_order)
+                formula = V + " ~ " + '+'.join(mp_V)
+
+                # p(V = 1 | .)
+                if self.state_space_map_[V] == "binary":
+                    model = model_binary(data, formula)
+                    prob_V = model.predict(data)
+                    indices_V0 = data.index[data[V] == 0]
+
+                    # p(V | .)
+                    prob_V[indices_V0] = 1 - prob_V[indices_V0]
+
+                # handling continuous data
+                else:
+                    model = model_continuous(data, formula)
+                    E_V = model.predict(data)
+                    std = np.std(data[V] - E_V)
+                    prob_V = norm.pdf(data[V], loc=E_V, scale=std)
+
+                rebalance_prob *= 1 / prob_V
+
+            # now compute the q_D(D | pa(D))
+            rebalance_prob *= self._fit_intrinsic_kernel(data, district, model_binary, model_continuous)
+
+        return 1/rebalance_prob
+
     def _nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
         Nested IPW estimator for the counterfactual mean E[Y(t)].
@@ -690,7 +868,27 @@ class AverageCausalEffect:
         # pedantic checks to make sure the method returns valid estimates
         if self.strategy == "Not ID":
             raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        return 0.5
+
+        # fit T | mp(T) with the rebalanced weights and compute the nested IPW
+        rebalance_weights = self._get_nested_rebalanced_weights(data, model_binary, model_continuous)
+        # extract outcome from data frame and compute Markov pillow of treatment
+        Y = data[self.outcome]
+        mp_T = self.graph.markov_pillow([self.treatment], self.n_order)
+
+        if len(mp_T) != 0:
+            # fit T | mp(T) and compute probability of treatment for each sample
+            formula = self.treatment + " ~ " + '+'.join(mp_T)
+            model = model_binary(data, formula, weights=rebalance_weights)
+            prob_T = model.predict(data)
+        else:
+            prob_T = np.ones(len(data)) * np.average(data[self.treatment], weights=rebalance_weights)
+
+        indices_T0 = data.index[data[self.treatment] == 0]
+        prob_T[indices_T0] = 1 - prob_T[indices_T0]
+
+        # compute nested IPW estimate
+        indices = data[self.treatment] == assignment
+        return np.mean((indices / prob_T) * Y)
 
     def _augmented_nested_ipw(self, data, assignment, model_binary=None, model_continuous=None):
         """
@@ -705,17 +903,52 @@ class AverageCausalEffect:
 
         if self.strategy == "Not ID":
             raise RuntimeError("Nested IPW will not return valid estimates as causal effect is not identified")
-        return 0.5
+
+        # get the rebalancing weights
+        rebalance_weights = self._get_nested_rebalanced_weights(data, model_binary, model_continuous)
+
+        # extract the outcome and get Markov pillow of the treatment
+        Y = data[self.outcome]
+        mp_T = self.graph.markov_pillow([self.treatment], self.n_order)
+
+        if len(mp_T) != 0:
+            # fit T | mp(T) and predict treatment probabilities
+            formula_T = self.treatment + " ~ " + '+'.join(mp_T)  # + "+ ones"
+            model = model_binary(data, formula_T, weights=rebalance_weights)
+            prob_T = model.predict(data)
+            formula_Y = self.outcome + " ~ " + self.treatment + '+' + '+'.join(mp_T)
+        else:
+            prob_T = np.ones(len(data)) * np.average(data[self.treatment], weights=rebalance_weights)
+            formula_Y = self.outcome + " ~ " + self.treatment
+
+        indices_T0 = data.index[data[self.treatment] == 0]
+        prob_T[indices_T0] = 1 - prob_T[indices_T0]
+        indices = data[self.treatment] == assignment
+
+        # fit Y | T=t, mp(T) and predict outcomes under assignment T=t
+        data_assign = data.copy()
+        data_assign[self.treatment] = assignment
+        if self.state_space_map_[self.outcome] == "binary":
+            model = model_binary(data, formula_Y, weights=rebalance_weights)
+        else:
+            model = model_continuous(data, formula_Y, weights=rebalance_weights)
+        Yhat_vec = model.predict(data_assign)
+
+        # return ANIPW estimate
+        return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
     def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5, Ql=0.025, Qu=0.975):
         """
-        Bootstrap functionality to compute the Average Causal Effect
+        Bootstrap functionality to compute the Average Causal Effect if the outcome is continuous
+        or the Causal Odds Ratio if the outcome is binary. Returns the point estimate
+        as well as lower and upper quantiles for a user specified confidence interval.
+
         :param data: pandas data frame containing the data.
-        :param estimator: string indicating what estimator to use: e.g. eif-apipw.
+        :param estimator: string indicating what estimator to use: e.g. eff-apipw.
         :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
         :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
         :param n_bootstraps: number of bootstraps.
-        :return: None
+        :return: three floats corresponding to ACE/OR, lower quantile, upper quantile.
         """
 
         # instantiate modeling strategy with defaults
