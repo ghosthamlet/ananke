@@ -496,13 +496,14 @@ class TestCounterfactualMean(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             ace.bootstrap_ace(data, "eff-apipw")
 
-    def test_nested_fixable_w_outcome_in_DT(self):
+    def test_nested_fixable_Y_in_DT(self):
         np.random.seed(0)
-        size = 2000
         vertices = ['C', 'Z1', 'Z2', 'T', 'Y']
         di_edges = [('C', 'T'), ('C', 'Y'), ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'Y')]
         bi_edges = [('Z1', 'T'), ('Z1', 'Y')]
         G = ADMG(vertices, di_edges, bi_edges)
+
+        size = 2000
 
         # U1, U2, U3, U4
         U1 = np.random.binomial(1, 0.4, size)
@@ -536,6 +537,114 @@ class TestCounterfactualMean(unittest.TestCase):
         data = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y})
         ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
         ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
+        print(ace_anipw)
+        print(ace_nipw)
+
+        self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_anipw - ace_truth) < TOL)
+
+    # nested-fixablity: continuous variables
+    def test_nested_fixable_Y_in_DT_continuousZ(self):
+        np.random.seed(0)
+        vertices = ['C', 'Z1', 'Z2', 'T', 'Y']
+        di_edges = [('C', 'T'), ('C', 'Y'), ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'Y')]
+        bi_edges = [('Z1', 'T'), ('Z1', 'Y')]
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        size = 2000
+        # U1, U2, U3, U4
+        U1 = np.random.binomial(1, 0.4, size)
+        U2 = np.random.uniform(0, 1.5, size)
+        U3 = np.random.binomial(1, 0.3, size)
+        U4 = np.random.uniform(0, 0.5, size)
+
+        # C
+        C = np.random.normal(0, 1, size)
+
+        # Z1 = f(U1, U2, U3, U4)
+        eps_z1 = np.random.normal(1, 1, size)
+        Z1 = U1 - U2 + 0.5 * U3 + U4 + eps_z1
+
+        # Z2 = f(Z1)
+        Z2 = 0.4 - 0.4 * Z1 + np.random.normal(0, 1, size)
+
+        # T1 = f(Z2, C, U1, U2)
+        p_t = expit(0.2 + 0.2 * C + 0.5 * Z2 + U1 - U2)
+        T = np.random.binomial(1, p_t, size)
+
+        # Y = f(A, C, U3, U4)
+        eps_y = np.random.normal(0, 1, size)
+        Y = 1 + T - 0.6 * C + U3 + U4 + eps_y
+
+        data = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y})
+
+        # Compute effect
+        # vertices_hidden = ['C', 'Z1', 'Z2', 'T', 'Y', 'U1', 'U2', 'U3', 'U4']
+        # di_edges_hidden = [('C', 'T'), ('C', 'Y'), ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'Y'),
+        #                    ('U1', 'Z1'), ('U2', 'Z1'), ('U3', 'Z1'), ('U4', 'Z1'),
+        #                    ('U1', 'T'), ('U2', 'T'), ('U3', 'Y'), ('U4', 'Y')]
+        # G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
+        #
+        # data_hidden = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y,
+        #                             'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4})
+        # ace_hidden = AverageCausalEffect(G_hidden, 'T', 'Y')
+        # ace_hidden_eff, _, _ = ace_hidden.bootstrap_ace(data_hidden, "eff-aipw", n_bootstraps=1)
+
+        ace_truth = 1
+
+        ace = AverageCausalEffect(G, 'T', 'Y')
+
+        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
+        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
+        print(ace_anipw)
+        print(ace_nipw)
+
+        self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
+        self.assertTrue(abs(ace_anipw - ace_truth) < TOL)
+
+    # nested-fixablity
+    def test_nested_fixable_conditional_ignorability(self):
+        np.random.seed(0)
+        vertices = ['C', 'T', 'Y']
+        di_edges = [('C', 'Y'), ('T', 'Y')]
+        bi_edges = [('C', 'T')]
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        size = 2000
+        # U1, U2, U3, U4
+        U1 = np.random.binomial(1, 0.4, size)
+        U2 = np.random.uniform(0, 1.5, size)
+
+        # C
+        C = -1 + 0.4 * U1 + 0.8 * U2 + np.random.normal(0, 1, size)
+
+        # T1 = f(Z2, C, U1, U2)
+        p_t = expit(0.2 + 0.2 * U1 + 0.5 * U2)
+        T = np.random.binomial(1, p_t, size)
+
+        # Y = f(A, C, U3, U4)
+        p_y = expit(1 + 1.5 * T - 0.6 * C)
+        Y = np.random.binomial(1, p_y, size)
+
+        data = pd.DataFrame({'C': C, 'T': T, 'Y': Y})
+
+        # Compute effect
+        # vertices_hidden = ['C', 'T', 'Y', 'U1', 'U2']
+        # di_edges_hidden = [('C', 'Y'), ('T', 'Y'), ('U1', 'C'), ('U2', 'C'), ('U1', 'T'), ('U2', 'T')]
+        # G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
+        #
+        # data_hidden = pd.DataFrame({'C': C, 'T': T, 'Y': Y, 'U1': U1, 'U2': U2})
+        #
+        # ace_hidden = AverageCausalEffect(G_hidden, 'T', 'Y')
+        # ace_hidden_eff, _, _ = ace_hidden.bootstrap_ace(data_hidden, "eff-aipw", n_bootstraps=1)
+
+        ace_truth = 1.5
+
+        ace = AverageCausalEffect(G, 'T', 'Y')
+
+        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
+        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
+
         print(ace_anipw)
         print(ace_nipw)
 
