@@ -3,7 +3,7 @@ Class for automated derivation of influence functions.
 """
 
 import copy
-from .counterfactual_mean import AverageCausalEffect
+from .counterfactual_mean import CausalEffect
 
 
 class AutomatedIF:
@@ -25,7 +25,7 @@ class AutomatedIF:
         self.treatment = treatment
         self.outcome = outcome
 
-        self.ace = AverageCausalEffect(self.graph, self.treatment, self.outcome)
+        self.ace = CausalEffect(self.graph, self.treatment, self.outcome)
 
         if self.ace.strategy == "Not ID":
             raise RuntimeError("Query is not identified.")
@@ -129,22 +129,34 @@ class AutomatedIF:
 
         self.beta_primal_ = "I({}={}) x 1/[".format(self.treatment, self.treatment.lower())
         primal_terms = []
-        for Li in L:
+        for Li in L.difference([self.outcome]):
             mpLi = self.graph.markov_pillow([Li], self.ace.p_order)
             primal_terms.append(self._format_density(Li, mpLi))
         self.beta_primal_ += ''.join(primal_terms) + '] x Σ_{} '.format(self.treatment)
         self.beta_primal_ += ''.join(primal_terms)
 
+        if self.outcome in L:
+            mpY = self.graph.markov_pillow([self.outcome], self.ace.p_order)
+            self.beta_primal_ += ' x ' + self._format_density(self.outcome, mpY, expectation=True)
+        else:
+            self.beta_primal_ += ' x {}'.format(self.outcome)
+
         # M := inverse Markov pillow of the treatment
         M = set([m for m in self.graph.vertices if self.treatment in self.graph.markov_pillow([m], self.ace.p_order)])
         M = M.difference(self.graph.district(self.treatment))
         dual_terms = []
-        for Mi in M:
+        for Mi in M.difference([self.outcome]):
             mpMi = self.graph.markov_pillow([Mi], self.ace.p_order)
             dual_fixed_term = self._format_density(Mi, mpMi, intervened=True)
             dual_random_term = self._format_density(Mi, mpMi)
             dual_terms.append('[' + dual_fixed_term + '/' + dual_random_term + ']')
         self.beta_dual_ = ' x '.join(dual_terms)
+
+        if self.outcome in M:
+            mpY = self.graph.markov_pillow([self.outcome], self.ace.p_order)
+            self.beta_dual_ += ' x ' + self._format_density(self.outcome, mpY, expectation=True, intervened=True)
+        else:
+            self.beta_dual_ += ' x {}'.format(self.outcome)
 
         # nonparametric IF
         contributions = []

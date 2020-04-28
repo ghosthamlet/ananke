@@ -7,7 +7,7 @@ import statsmodels.api as sm
 from scipy import stats
 
 from ananke.graphs import ADMG
-from ananke.estimation import AverageCausalEffect
+from ananke.estimation import CausalEffect
 
 TOL = 0.1
 
@@ -26,12 +26,12 @@ class TestCounterfactualMean(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
 
         data = pd.DataFrame()
-        ace = AverageCausalEffect(G, 'T', 'Y')
+        ace = CausalEffect(G, 'T', 'Y')
 
         self.assertFalse(ace.is_mb_shielded)
         self.assertEqual(ace.strategy, "a-fixable")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "eff-aipw")
+            ace.compute_effect(data, "eff-aipw")
 
     # a-fixablity: no C and binary/continuous Y
     def test_ignorable_model(self):
@@ -49,11 +49,11 @@ class TestCounterfactualMean(unittest.TestCase):
         Y_1 = -0.2 + ace_truth_1*T + np.random.normal(0, 1, size)
         data_1 = pd.DataFrame({'T': T, 'Y': Y_1})
 
-        ace_1 = AverageCausalEffect(G, 'T', 'Y')
-        ace_1_ipw, _, _ = ace_1.bootstrap_ace(data_1, "ipw")
-        ace_1_gformula, _, _ = ace_1.bootstrap_ace(data_1, "gformula")
-        ace_1_aipw, _, _ = ace_1.bootstrap_ace(data_1, "aipw")
-        ace_1_eff_aipw, _, _ = ace_1.bootstrap_ace(data_1, "eff-aipw")
+        ace_1 = CausalEffect(G, 'T', 'Y')
+        ace_1_ipw = ace_1.compute_effect(data_1, "ipw")
+        ace_1_gformula = ace_1.compute_effect(data_1, "gformula")
+        ace_1_aipw = ace_1.compute_effect(data_1, "aipw")
+        ace_1_eff_aipw = ace_1.compute_effect(data_1, "eff-aipw")
 
         self.assertTrue(ace_1.is_mb_shielded)
         self.assertEqual(ace_1.strategy, "a-fixable")
@@ -68,13 +68,9 @@ class TestCounterfactualMean(unittest.TestCase):
         Y_2 = np.random.binomial(1, p_y, size)
         data_2 = pd.DataFrame({'T': T, 'Y': Y_2})
 
-        ace_2 = AverageCausalEffect(G, 'T', 'Y')
-        ace_2_gformula, _, _ = ace_2.bootstrap_ace(data_2, "gformula")
-        ace_2_aipw, _, _ = ace_2.bootstrap_ace(data_2, "aipw")
-
-        # print("ACE_truth = ", ace_truth_2)
-        # print(ace_2_gformula)
-        # print(ace_2_aipw)
+        ace_2 = CausalEffect(G, 'T', 'Y')
+        ace_2_gformula = ace_2.compute_effect(data_2, "gformula")
+        ace_2_aipw = ace_2.compute_effect(data_2, "aipw")
 
         self.assertTrue(abs(ace_2_gformula - ace_truth_2) < TOL)
         self.assertTrue(abs(ace_2_aipw - ace_truth_2) < TOL)
@@ -115,16 +111,11 @@ class TestCounterfactualMean(unittest.TestCase):
 
         ace_truth = -0.5
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-        ace_ipw, _, _ = ace.bootstrap_ace(data, "ipw")
-        ace_gformula, _, _ = ace.bootstrap_ace(data, "gformula")
-        ace_aipw, _, _ = ace.bootstrap_ace(data, "aipw")
-        ace_eff, _, _ = ace.bootstrap_ace(data, "eff-aipw")
-
-        # print(ace_ipw)
-        # print(ace_gformula)
-        # print(ace_aipw)
-        # print(ace_eff)
+        ace = CausalEffect(G, 'T', 'Y')
+        ace_ipw = ace.compute_effect(data, "ipw")
+        ace_gformula = ace.compute_effect(data, "gformula")
+        ace_aipw = ace.compute_effect(data, "aipw")
+        ace_eff = ace.compute_effect(data, "eff-aipw")
 
         self.assertTrue(abs(ace_ipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_gformula - ace_truth) < TOL)
@@ -140,7 +131,7 @@ class TestCounterfactualMean(unittest.TestCase):
         bi_edges_1 = [('T', 'L'), ('T', 'Y')]
         G_1 = ADMG(vertices_1, di_edges_1, bi_edges_1)
 
-        ace_1 = AverageCausalEffect(G_1, 'T', 'Y')
+        ace_1 = CausalEffect(G_1, 'T', 'Y')
         self.assertTrue(ace_1.is_mb_shielded)
         self.assertEqual(ace_1.strategy, "p-fixable")
 
@@ -150,7 +141,7 @@ class TestCounterfactualMean(unittest.TestCase):
         bi_edges_2 = [('T', 'L'), ('M', 'Y')]
         G_2 = ADMG(vertices_2, di_edges_2, bi_edges_2)
 
-        ace_2 = AverageCausalEffect(G_2, 'T', 'Y')
+        ace_2 = CausalEffect(G_2, 'T', 'Y')
         self.assertTrue(ace_2.is_mb_shielded)
         self.assertEqual(ace_2.strategy, "p-fixable")
 
@@ -162,12 +153,12 @@ class TestCounterfactualMean(unittest.TestCase):
         G_3 = ADMG(vertices_3, di_edges_3, bi_edges_3)
 
         data = pd.DataFrame()
-        ace_3 = AverageCausalEffect(G_3, 'T', 'Y')
+        ace_3 = CausalEffect(G_3, 'T', 'Y')
 
         self.assertFalse(ace_3.is_mb_shielded)
         self.assertEqual(ace_3.strategy, "p-fixable")
         with self.assertRaises(RuntimeError):
-            ace_3.bootstrap_ace(data, "eff-apipw")
+            ace_3.compute_effect(data, "eff-apipw")
 
     # p-fixable: Binary M, Binary L, Continuous Y \not\in {L, M}
     def test_p_fixability_binaryML(self):
@@ -177,14 +168,6 @@ class TestCounterfactualMean(unittest.TestCase):
                     ('T', 'M'), ('M', 'L'), ('L', 'Y')]
         bi_edges = [('Z1', 'C1'), ('Z2', 'C2'), ('T', 'L')]
         G = ADMG(vertices, di_edges, bi_edges)
-
-        vertices_hidden = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6']
-        di_edges_hidden = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'),
-                           ('C2', 'L'), ('C2', 'Y'), ('T', 'M'), ('M', 'L'), ('L', 'Y'),
-                           ('U1', 'Z1'), ('U1', 'C1'), ('U2', 'Z1'), ('U2', 'C1'),
-                           ('U3', 'C2'), ('U3', 'Z2'), ('U4', 'C2'), ('U4', 'Z2'),
-                           ('U5', 'T'), ('U5', 'L'), ('U6', 'T'), ('U6', 'L')]
-        G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
 
         size = 1000
         U1 = np.random.binomial(1, 0.4, size)
@@ -218,6 +201,13 @@ class TestCounterfactualMean(unittest.TestCase):
         data = pd.DataFrame({'C1': C1, 'C2': C2, 'Z1': Z1, 'Z2': Z2, 'T': T, 'M': M, 'L': L, 'Y': Y})
 
         # Compute the true ACE
+        # vertices_hidden = ['C1', 'C2', 'Z1', 'Z2', 'T', 'M', 'L', 'Y', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+        # di_edges_hidden = [('C1', 'T'), ('C1', 'L'), ('C2', 'T'), ('C2', 'M'),
+        #                    ('C2', 'L'), ('C2', 'Y'), ('T', 'M'), ('M', 'L'), ('L', 'Y'),
+        #                    ('U1', 'Z1'), ('U1', 'C1'), ('U2', 'Z1'), ('U2', 'C1'),
+        #                    ('U3', 'C2'), ('U3', 'Z2'), ('U4', 'C2'), ('U4', 'Z2'),
+        #                    ('U5', 'T'), ('U5', 'L'), ('U6', 'T'), ('U6', 'L')]
+        # G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
         # data_hidden = pd.DataFrame({'C1': C1, 'C2': C2, 'Z1': Z1, 'Z2': Z2, 'T': T, 'M': M, 'L': L, 'Y': Y,
         #                             'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, 'U5': U5, 'U6': U6})
         # ace_hidden = AverageCausalEffect(G_hidden, 'T', 'Y')
@@ -230,32 +220,26 @@ class TestCounterfactualMean(unittest.TestCase):
         # print(ace_hidden_gformula)
         # print(ace_hidden_aipw)
         # print(ace_hidden_eff, "\n")
-
         ace_truth = -0.07
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-        ace_pipw, _, _ = ace.bootstrap_ace(data, "p-ipw")
-        ace_dipw, _, _ = ace.bootstrap_ace(data, "d-ipw")
-        ace_apipw, _, _ = ace.bootstrap_ace(data, "apipw")
-        ace_eff, _, _ = ace.bootstrap_ace(data, "eff-apipw")
-
-        # print(ace_pipw)
-        # print(ace_dipw)
-        # print(ace_apipw)
-        # print(ace_eff)
+        ace = CausalEffect(G, 'T', 'Y')
+        ace_pipw = ace.compute_effect(data, "p-ipw")
+        ace_dipw = ace.compute_effect(data, "d-ipw")
+        ace_apipw = ace.compute_effect(data, "apipw")
+        ace_eff = ace.compute_effect(data, "eff-apipw")
 
         self.assertTrue(abs(ace_pipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_dipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_apipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_eff - ace_truth) < TOL)
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "ipw")
+            ace.compute_effect(data, "ipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "gformula")
+            ace.compute_effect(data, "gformula")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "aipw")
+            ace.compute_effect(data, "aipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "eff-aipw")
+            ace.compute_effect(data, "eff-aipw")
 
     # p-fixable: Continuous M, Continuous L, continuous Y \not\in {L, M}
     def test_p_fixability_continuousML(self):
@@ -295,9 +279,9 @@ class TestCounterfactualMean(unittest.TestCase):
         # Compute the true ACE = (coefficient of T in M)*(coefficient of M in L)
         ace_truth = -1.2
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-        ace_pipw, _, _ = ace.bootstrap_ace(data, "p-ipw")
-        ace_dipw, _, _ = ace.bootstrap_ace(data, "d-ipw")
+        ace = CausalEffect(G, 'T', 'Y')
+        ace_pipw = ace.compute_effect(data, "p-ipw")
+        ace_dipw = ace.compute_effect(data, "d-ipw")
 
         print(ace_pipw)
         print(ace_dipw)
@@ -335,11 +319,11 @@ class TestCounterfactualMean(unittest.TestCase):
         ace_truth = 0.8
 
         # Test on the first graph
-        ace_1 = AverageCausalEffect(G_1, 'T', 'Y')
-        ace_1_pipw, _, _ = ace_1.bootstrap_ace(data, "p-ipw")
-        ace_1_dipw, _, _ = ace_1.bootstrap_ace(data, "d-ipw")
-        ace_1_apipw, _, _ = ace_1.bootstrap_ace(data, "apipw")
-        ace_1_eff, _, _ = ace_1.bootstrap_ace(data, "eff-apipw")
+        ace_1 = CausalEffect(G_1, 'T', 'Y')
+        ace_1_pipw, _, _ = ace_1.compute_effect(data, "p-ipw", n_bootstraps=1)
+        ace_1_dipw = ace_1.compute_effect(data, "d-ipw")
+        ace_1_apipw = ace_1.compute_effect(data, "apipw")
+        ace_1_eff = ace_1.compute_effect(data, "eff-apipw")
 
         self.assertTrue(ace_1.is_mb_shielded)
         self.assertTrue(abs(ace_1_pipw - ace_truth) < TOL)
@@ -348,23 +332,15 @@ class TestCounterfactualMean(unittest.TestCase):
         self.assertTrue(abs(ace_1_eff - ace_truth) < TOL)
 
         # Test on the second graph
-        ace_2 = AverageCausalEffect(G_2, 'T', 'Y')
-        ace_2_pipw, _, _ = ace_2.bootstrap_ace(data, "p-ipw", n_bootstraps=1)
-        ace_2_dipw, _, _ = ace_2.bootstrap_ace(data, "d-ipw", n_bootstraps=1)
-        ace_2_apipw, _, _ = ace_2.bootstrap_ace(data, "apipw", n_bootstraps=1)
+        ace_2 = CausalEffect(G_2, 'T', 'Y')
+        ace_2_pipw = ace_2.compute_effect(data, "p-ipw")
+        ace_2_dipw = ace_2.compute_effect(data, "d-ipw")
+        ace_2_apipw = ace_2.compute_effect(data, "apipw")
 
         self.assertFalse(ace_2.is_mb_shielded)
         self.assertTrue(abs(ace_2_pipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_2_dipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_2_apipw - ace_truth) < TOL)
-
-        print(ace_1_pipw)
-        print(ace_1_dipw)
-        print(ace_1_apipw)
-        print(ace_1_eff, "\n")
-        print(ace_2_pipw)
-        print(ace_2_dipw)
-        print(ace_2_apipw)
 
     # p-fixable: Continuous M, no C , binary Y \in {L} AND binary Y \in {M}
     def test_p_fixable_binaryY_inML(self):
@@ -398,25 +374,20 @@ class TestCounterfactualMean(unittest.TestCase):
         ace_truth = 0.32
 
         # Test the first graph
-        ace_1 = AverageCausalEffect(G_1, 'T', 'Y')
-        ace_1_pipw, _, _ = ace_1.bootstrap_ace(data, "p-ipw", n_bootstraps=1)
-        ace_1_dipw, _, _ = ace_1.bootstrap_ace(data, "d-ipw", n_bootstraps=1)
+        ace_1 = CausalEffect(G_1, 'T', 'Y')
+        ace_1_pipw = ace_1.compute_effect(data, "p-ipw")
+        ace_1_dipw = ace_1.compute_effect(data, "d-ipw")
 
         self.assertTrue(abs(ace_1_pipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_1_dipw - ace_truth) < TOL)
 
         # Test the second graph
-        ace_2 = AverageCausalEffect(G_2, 'T', 'Y')
-        ace_2_pipw, _, _ = ace_2.bootstrap_ace(data, "p-ipw", n_bootstraps=1)
-        ace_2_dipw, _, _ = ace_2.bootstrap_ace(data, "d-ipw", n_bootstraps=1)
+        ace_2 = CausalEffect(G_2, 'T', 'Y')
+        ace_2_pipw, _, _ = ace_2.compute_effect(data, "p-ipw", n_bootstraps=1)
+        ace_2_dipw = ace_2.compute_effect(data, "d-ipw")
 
         self.assertTrue(abs(ace_2_pipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_2_dipw - ace_truth) < TOL)
-
-        print(ace_1_pipw)
-        print(ace_1_dipw, "\n")
-        print(ace_2_pipw)
-        print(ace_2_dipw)
 
     # nested-fixable
     def test_nested_fixability(self):
@@ -428,7 +399,6 @@ class TestCounterfactualMean(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
-        # U1, U2, U3, U4, U5, U6, U7, U8, U9, U10
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 0.5, size)
         U3 = np.random.binomial(1, 0.3, size)
@@ -440,47 +410,29 @@ class TestCounterfactualMean(unittest.TestCase):
         U9 = np.random.binomial(1, 0.3, size)
         U10 = np.random.uniform(0, 0.5, size)
 
-        # R2 = f(U1, U2, U3, U4)
         p_r2 = expit(-0.2 + U1 - 0.8 * U2 + U3 + U4)
         R2 = np.random.binomial(1, p_r2, size)
 
-        # C1 = f(U7, U8, U9, U10)
-        eps_c1 = np.random.normal(0, 1, size)
-        C1 = U7 - U8 + U9 + U10 + eps_c1
+        C1 = U7 - U8 + U9 + U10 + np.random.normal(0, 1, size)
+        C2 = U7 - U8 + U9 * U10 + np.random.normal(0, 1, size)
+        Z = U1 - U2 - U5 - U6 + np.random.normal(0, 1, size)
 
-        # C2 = f(U7, U8)
-        eps_c2 = np.random.normal(0, 1, size)
-        C2 = U7 - U8 + U9 * U10 + eps_c2
-
-        # Z = f(U1, U2, U5, U6)
-        eps_z = np.random.normal(0, 1, size)
-        Z = U1 - U2 - U5 - U6 + eps_z
-
-        # T = f(C1, C2, Z, U3, U4)
         p_t1 = expit(0.8 - 0.5 * C1 + 0.5 * C2 + 0.3 * Z + 0.5 * U3 - 0.4 * U4)
         T = np.random.binomial(1, p_t1, size)
 
-        # R1 = f(T, U5, U6)
         p_r1 = expit(0.2 + 0.7 * T - 0.6 * U5 - 0.6 * U6)
         R1 = np.random.binomial(1, p_r1, size)
 
-        # M = f(R1, U7, U8)
-        eps_m = np.random.normal(0, 1, size)
-        M = 1 - R1 - U7 + U8 + eps_m
-
-        # Y = f(M, T, U9, U10)
-        eps_y = np.random.normal(0, 1, size)
-        Y = 1 + R2 + M + 1 * T + C1 + C2 + U9 + U10 + eps_y
+        M = 1 - R1 - U7 + U8 + np.random.normal(0, 1, size)
+        Y = 1 + R2 + M + 1 * T + C1 + C2 + U9 + U10 + np.random.normal(0, 1, size)
 
         data = pd.DataFrame({'C1': C1, 'C2': C2, 'R1': R1, 'R2': R2, 'Z': Z, 'T': T, 'M': M, 'Y': Y})
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw")
-        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw")
         ace_truth = 0.8
 
-        print(ace_nipw)
-        print(ace_anipw)
+        ace = CausalEffect(G, 'T', 'Y')
+        ace_nipw = ace.compute_effect(data, "n-ipw")
+        ace_anipw = ace.compute_effect(data, "anipw")
 
         self.assertEqual(ace.strategy, "nested-fixable")
         self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
@@ -488,13 +440,13 @@ class TestCounterfactualMean(unittest.TestCase):
 
         # ensure other methods don't work for this graph
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "p-ipw")
+            ace.compute_effect(data, "p-ipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "d-ipw")
+            ace.compute_effect(data, "d-ipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "apipw")
+            ace.compute_effect(data, "apipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "eff-apipw")
+            ace.compute_effect(data, "eff-apipw")
 
     def test_nested_fixable_Y_in_DT(self):
         np.random.seed(0)
@@ -504,41 +456,28 @@ class TestCounterfactualMean(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
-
-        # U1, U2, U3, U4
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 1.5, size)
         U3 = np.random.binomial(1, 0.3, size)
         U4 = np.random.uniform(0, 0.5, size)
 
-        # C
         C = np.random.normal(0, 1, size)
+        Z1 = U1 - U2 + 0.5 * U3 + U4 + np.random.normal(1, 1, size)
 
-        # Z1 = f(U1, U2, U3, U4)
-        eps_z1 = np.random.normal(1, 1, size)
-        Z1 = U1 - U2 + 0.5 * U3 + U4 + eps_z1
-
-        # Z2 = f(Z1)
         p_z2 = expit(0.4 - 0.4 * Z1)
         Z2 = np.random.binomial(1, p_z2, size)
 
-        # T1 = f(Z2, C, U1, U2)
         p_t = expit(0.2 + 0.2 * C + 0.5 * Z2 + U1 - U2)
         T = np.random.binomial(1, p_t, size)
 
-        # Y = f(A, C, U3, U4)
-        eps_y = np.random.normal(0, 1, size)
-        Y = 1 + T - 0.6 * C + U3 + U4 + eps_y
+        Y = 1 + T - 0.6 * C + U3 + U4 + np.random.normal(0, 1, size)
 
         ace_truth = 1
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-
+        ace = CausalEffect(G, 'T', 'Y')
         data = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y})
-        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
-        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
-        print(ace_anipw)
-        print(ace_nipw)
+        ace_nipw = ace.compute_effect(data, "n-ipw")
+        ace_anipw = ace.compute_effect(data, "anipw")
 
         self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_anipw - ace_truth) < TOL)
@@ -552,52 +491,28 @@ class TestCounterfactualMean(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
-        # U1, U2, U3, U4
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 1.5, size)
         U3 = np.random.binomial(1, 0.3, size)
         U4 = np.random.uniform(0, 0.5, size)
 
-        # C
         C = np.random.normal(0, 1, size)
-
-        # Z1 = f(U1, U2, U3, U4)
-        eps_z1 = np.random.normal(1, 1, size)
-        Z1 = U1 - U2 + 0.5 * U3 + U4 + eps_z1
-
-        # Z2 = f(Z1)
+        Z1 = U1 - U2 + 0.5 * U3 + U4 + np.random.normal(1, 1, size)
         Z2 = 0.4 - 0.4 * Z1 + np.random.normal(0, 1, size)
 
-        # T1 = f(Z2, C, U1, U2)
         p_t = expit(0.2 + 0.2 * C + 0.5 * Z2 + U1 - U2)
         T = np.random.binomial(1, p_t, size)
 
-        # Y = f(A, C, U3, U4)
-        eps_y = np.random.normal(0, 1, size)
-        Y = 1 + T - 0.6 * C + U3 + U4 + eps_y
+        Y = 1 + T - 0.6 * C + U3 + U4 + np.random.normal(0, 1, size)
 
         data = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y})
 
-        # Compute effect
-        # vertices_hidden = ['C', 'Z1', 'Z2', 'T', 'Y', 'U1', 'U2', 'U3', 'U4']
-        # di_edges_hidden = [('C', 'T'), ('C', 'Y'), ('Z1', 'Z2'), ('Z2', 'T'), ('T', 'Y'),
-        #                    ('U1', 'Z1'), ('U2', 'Z1'), ('U3', 'Z1'), ('U4', 'Z1'),
-        #                    ('U1', 'T'), ('U2', 'T'), ('U3', 'Y'), ('U4', 'Y')]
-        # G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
-        #
-        # data_hidden = pd.DataFrame({'Z1': Z1, 'Z2': Z2, 'C': C, 'T': T, 'Y': Y,
-        #                             'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4})
-        # ace_hidden = AverageCausalEffect(G_hidden, 'T', 'Y')
-        # ace_hidden_eff, _, _ = ace_hidden.bootstrap_ace(data_hidden, "eff-aipw", n_bootstraps=1)
-
         ace_truth = 1
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-
-        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
-        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
-        print(ace_anipw)
-        print(ace_nipw)
+        ace = CausalEffect(G, 'T', 'Y')
+        ace.n_order = ['C', 'Z1', 'Z2', 'T', 'Y' ]
+        ace_nipw = ace.compute_effect(data, "n-ipw")
+        ace_anipw = ace.compute_effect(data, "anipw")
 
         self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_anipw - ace_truth) < TOL)
@@ -611,42 +526,24 @@ class TestCounterfactualMean(unittest.TestCase):
         G = ADMG(vertices, di_edges, bi_edges)
 
         size = 2000
-        # U1, U2, U3, U4
         U1 = np.random.binomial(1, 0.4, size)
         U2 = np.random.uniform(0, 1.5, size)
 
-        # C
         C = -1 + 0.4 * U1 + 0.8 * U2 + np.random.normal(0, 1, size)
 
-        # T1 = f(Z2, C, U1, U2)
         p_t = expit(0.2 + 0.2 * U1 + 0.5 * U2)
         T = np.random.binomial(1, p_t, size)
 
-        # Y = f(A, C, U3, U4)
         p_y = expit(1 + 1.5 * T - 0.6 * C)
         Y = np.random.binomial(1, p_y, size)
 
         data = pd.DataFrame({'C': C, 'T': T, 'Y': Y})
 
-        # Compute effect
-        # vertices_hidden = ['C', 'T', 'Y', 'U1', 'U2']
-        # di_edges_hidden = [('C', 'Y'), ('T', 'Y'), ('U1', 'C'), ('U2', 'C'), ('U1', 'T'), ('U2', 'T')]
-        # G_hidden = ADMG(vertices_hidden, di_edges_hidden, [])
-        #
-        # data_hidden = pd.DataFrame({'C': C, 'T': T, 'Y': Y, 'U1': U1, 'U2': U2})
-        #
-        # ace_hidden = AverageCausalEffect(G_hidden, 'T', 'Y')
-        # ace_hidden_eff, _, _ = ace_hidden.bootstrap_ace(data_hidden, "eff-aipw", n_bootstraps=1)
-
         ace_truth = 1.5
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
-
-        ace_nipw, _, _ = ace.bootstrap_ace(data, "n-ipw", n_bootstraps=1)
-        ace_anipw, _, _ = ace.bootstrap_ace(data, "anipw", n_bootstraps=1)
-
-        print(ace_anipw)
-        print(ace_nipw)
+        ace = CausalEffect(G, 'T', 'Y')
+        ace_nipw = ace.compute_effect(data, "n-ipw")
+        ace_anipw = ace.compute_effect(data, "anipw")
 
         self.assertTrue(abs(ace_nipw - ace_truth) < TOL)
         self.assertTrue(abs(ace_anipw - ace_truth) < TOL)
@@ -660,12 +557,12 @@ class TestCounterfactualMean(unittest.TestCase):
 
         data = pd.DataFrame()
 
-        ace = AverageCausalEffect(G, 'T', 'Y')
+        ace = CausalEffect(G, 'T', 'Y')
         self.assertEqual(ace.strategy, "Not ID")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "n-ipw")
+            ace.compute_effect(data, "n-ipw")
         with self.assertRaises(RuntimeError):
-            ace.bootstrap_ace(data, "anipw")
+            ace.compute_effect(data, "anipw")
 
 
 if __name__ == '__main__':
