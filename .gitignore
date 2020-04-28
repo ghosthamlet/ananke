@@ -6,3 +6,7 @@
 env/
 docs/build/*
 .coverage
+tests/**/*.pdf
+tests/**/*.gv
+
+dist/

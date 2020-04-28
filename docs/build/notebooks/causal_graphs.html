@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Causal Inference with Graphical Models &#8212; ananke  documentation</title>
+    <title>Causal Inference with Graphical Models &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -12,11 +12,12 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ananke.graphs package" href="../ananke.graphs.html" />
+    <link rel="next" title="Structural Equation Models" href="linear_gaussian_sems.html" />
     <link rel="prev" title="Ananke: A module for causal inference" href="../index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -267,7 +268,7 @@ we currently support acyclic graphical models i.e., we do not allow for cyclic c
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_causal_graphs_1_0.svg" src="../_images/notebooks_causal_graphs_1_0.svg" /></div>
 </div>
-<p>All interventional distributions in causal models of a DAG are identified by application of the <a class="reference external" href="https://core.ac.uk/download/pdf/82537972.pdf">**g-formula**</a>. For example, <span class="math notranslate nohighlight">\(p(Y|{\rm do}(a))\)</span> written as <span class="math notranslate nohighlight">\(p(Y(a))\)</span> in potential outcomes notation which we will use more commonly here, is identified as</p>
+<p>All interventional distributions in causal models of a DAG are identified by application of the <a class="reference external" href="https://core.ac.uk/download/pdf/82537972.pdf">g-formula</a>. For example, <span class="math notranslate nohighlight">\(p(Y|{\rm do}(a))\)</span> written as <span class="math notranslate nohighlight">\(p(Y(a))\)</span> in potential outcomes notation which we will use more commonly here, is identified as</p>
 <div class="math notranslate nohighlight">
 \[p(Y(a))=\sum_{C, M}p(Y|M, C)p(M|A)p(C)|_{A=a}.\]</div>
 <p>But as alluded to earlier, this comes at a price. The assumption made by a DAG (in addition to conditional independence constraints that can be read off by the graphical criterion of d-separation) is that of causal sufficiency, i.e., the absence of bidirected edges assumes the absence of unmeasured common causes. If we are unwilling to assume causal sufficiency, we can impose generalized independence constraints given by <a class="reference external" href="https://arxiv.org/pdf/1701.06686.pdf">Nested Markov models</a> of an
@@ -393,7 +394,7 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">ananke</a></h1>
+<h1 class="logo"><a href="../index.html">ananke-causal</a></h1>
 
 
 
@@ -406,8 +407,10 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ananke.graphs.html">ananke.graphs package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../ananke.identification.html">ananke.identification package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html">Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
 </ul>
 
 <div class="relations">
@@ -415,7 +418,7 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
       <li>Previous: <a href="../index.html" title="previous chapter">Ananke: A module for causal inference</a></li>
-      <li>Next: <a href="../ananke.graphs.html" title="next chapter">ananke.graphs package</a></li>
+      <li>Next: <a href="linear_gaussian_sems.html" title="next chapter">Structural Equation Models</a></li>
   </ul></li>
 </ul>
 </div>
@@ -445,7 +448,7 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
