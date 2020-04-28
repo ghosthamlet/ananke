@@ -84,8 +84,9 @@ class ADMG(SG):
     def is_subgraph(self, other):
         """
         Check that this graph is a subgraph of other, meaning it has  a subset of edges and nodes of the other.
-        :param other:
-        :return:
+
+        :param other: an object of the ADMG class.
+        :return: boolean indicating whether the statement is True or not.
         """
         if set(self.vertices).issubset(set(other.vertices)) and \
                 set(self.di_edges).issubset(set(other.di_edges)) and \
@@ -98,8 +99,9 @@ class ADMG(SG):
         Check that this graph is an ancestral subgraph of the other.
         An ancestral subgraph over variables S and intervention b G(S(b)) of a larger graph G(V(b)) is defined as a
         subgraph, such that ancestors of each node s in S with respect to the graph G(V(b_i)) are contained in S.
-        :param other:
-        :return:
+
+        :param other: an object of the ADMG class.
+        :return: boolean indicating whether the statement is True or not.
         """
         if not self.is_subgraph(other):
             return False
