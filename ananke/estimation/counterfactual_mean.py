@@ -5,7 +5,6 @@ Class that provides an interface to estimation strategies for the counterfactual
 import numpy as np
 from scipy.stats import norm
 import statsmodels.api as sm
-from statsmodels.gam.generalized_additive_model import GLMGam
 from ananke.identification import OneLineID
 import copy
 
