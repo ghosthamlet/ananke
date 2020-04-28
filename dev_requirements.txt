@@ -5,3 +5,4 @@ pytest-cov
 ipykernel
 ipython
 sphinx_rtd_theme
+flake8

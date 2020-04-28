@@ -51,6 +51,15 @@ class TestOneLine(unittest.TestCase):
         one_id = OneLineID(G, ['A', 'B'], ['Y'])
         self.assertFalse(one_id.id())
 
+    def test_functional(self):
+        vertices = ["M", "A", "Y"]
+        di_edges = [("A", "M"), ("M", "Y")]
+        bi_edges = [("A", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        one_id = OneLineID(G, ['A'], ['Y'])
+        functional = one_id.functional()
+        self.assertEqual("ΣM ΦAY(p(V);G) ΦAM(p(V);G) ", functional)
+
 
 class TestOneLineGID(unittest.TestCase):
 
@@ -78,7 +87,7 @@ class TestOneLineGID(unittest.TestCase):
         outcomes = ["Y"]
         ol = identification.OneLineGID(G, interventions, outcomes)
         functional = ol.functional([{"X_1"}, {"X_2"}])
-        self.assertEqual("ΣW ΦX_2,Y p(V \ X_1 | do(X_1))ΦX_1,W p(V \ X_2 | do(X_2))", functional)
+        self.assertEqual("ΣW ΦX_2,Y p(V \\ X_1 | do(X_1))ΦX_1,W p(V \\ X_2 | do(X_2))", functional)
 
     def test_is_id_chain(self):
         vertices = ["A", "X", "W", "Y"]
@@ -89,7 +98,7 @@ class TestOneLineGID(unittest.TestCase):
         outcomes = ["Y"]
         ol = identification.OneLineGID(G, interventions, outcomes)
         status = ol.id([{"A", "X"}, {"A", "Y"}])
-        print(status)
+        self.assertFalse(status)
 
         vertices = ["A", "X", "Y"]
         di_edges = [("A", "X"), ("X", "Y")]
@@ -99,7 +108,7 @@ class TestOneLineGID(unittest.TestCase):
         outcomes = ["Y"]
         ol = identification.OneLineGID(G, interventions, outcomes)
         status = ol.id([{"A", "X"}, {"A", "Y"}])
-        print(status)
+        self.assertFalse(status)
 
         vertices = ["A", "W", "Y"]
         di_edges = [("A", "W"), ("W", "Y")]
@@ -109,7 +118,38 @@ class TestOneLineGID(unittest.TestCase):
         outcomes = ["Y"]
         ol = identification.OneLineGID(G, interventions, outcomes)
         status = ol.id([{"A"}, {"A", "Y"}])
-        print(status)
+        self.assertTrue(status)
+
+
+class TestOnelineAID(unittest.TestCase):
+
+    def test_oneline_aid(self):
+        vertices = ["X1", "X2", "W", "Y"]
+        di_edges = [("X1", "W"), ("W", "Y"), ("X2", "Y")]
+        bi_edges = [("X1", "X2"), ("X1", "W"), ("X2", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+
+        vertices = ["X1", "W"]
+        di_edges = [("X1", "W")]
+        bi_edges = [("X1", "W")]
+        G1 = ADMG(vertices, di_edges, bi_edges)
+        G1.fix(["X1"])
+
+        vertices = ["X1", "X2", "W", "Y"]
+        di_edges = [("X1", "W"), ("W", "Y"), ("X2", "Y")]
+        bi_edges = [("X1", "X2"), ("X1", "W"), ("X2", "Y")]
+        G2 = ADMG(vertices, di_edges, bi_edges)
+        G2.fix(["X2"])
+
+        interventions = ["X1", "X2"]
+        outcomes = ["Y"]
+        ol = identification.OnelineAID(G, interventions, outcomes)
+
+        experiments = [G1, G2]
+
+        self.assertTrue(ol.id(experiments=experiments))
+        self.assertEqual("ΣW  p(W | do(X1))ΦX1,W p(W,X1,Y | do(X2))", ol.functional(experiments))
+
 
 if __name__ == '__main__':
     unittest.main()
