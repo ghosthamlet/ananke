@@ -14,8 +14,9 @@ Run the following command::
     sudo pip3 install ananke-causal
 
 `gitlab <https://gitlab.com/causal/ananke>`_
+
 Documentation
-*************
+=============
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
