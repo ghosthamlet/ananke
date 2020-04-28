@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Index &#8212; ananke  documentation</title>
+    <title>Index &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -13,6 +13,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="#" />
@@ -46,12 +47,14 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
@@ -81,6 +84,12 @@
 </li>
       <li><a href="ananke.html#module-ananke">ananke (module)</a>
 </li>
+      <li><a href="ananke.estimation.html#module-ananke.estimation">ananke.estimation (module)</a>
+</li>
+      <li><a href="ananke.estimation.html#module-ananke.estimation.automated_if">ananke.estimation.automated_if (module)</a>
+</li>
+      <li><a href="ananke.estimation.html#module-ananke.estimation.counterfactual_mean">ananke.estimation.counterfactual_mean (module)</a>
+</li>
       <li><a href="ananke.graphs.html#module-ananke.graphs">ananke.graphs (module)</a>, <a href="stubs/ananke.graphs.html#module-ananke.graphs">[1]</a>
 </li>
       <li><a href="ananke.graphs.html#module-ananke.graphs.admg">ananke.graphs.admg (module)</a>
@@ -97,6 +106,8 @@
 </li>
       <li><a href="ananke.graphs.html#module-ananke.graphs.ig">ananke.graphs.ig (module)</a>
 </li>
+      <li><a href="ananke.graphs.html#module-ananke.graphs.missing_admg">ananke.graphs.missing_admg (module)</a>
+</li>
       <li><a href="ananke.graphs.html#module-ananke.graphs.sg">ananke.graphs.sg (module)</a>
 </li>
       <li><a href="ananke.graphs.html#module-ananke.graphs.ug">ananke.graphs.ug (module)</a>
@@ -109,9 +120,15 @@
 </li>
       <li><a href="ananke.identification.html#module-ananke.identification.one_line">ananke.identification.one_line (module)</a>
 </li>
+      <li><a href="ananke.models.html#module-ananke.models">ananke.models (module)</a>
+</li>
+      <li><a href="ananke.models.html#module-ananke.models.linear_gaussian_sem">ananke.models.linear_gaussian_sem (module)</a>
+</li>
       <li><a href="ananke.html#module-ananke.utils">ananke.utils (module)</a>
 </li>
       <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.ancestors">ancestors() (ananke.graphs.graph.Graph method)</a>
+</li>
+      <li><a href="ananke.estimation.html#ananke.estimation.automated_if.AutomatedIF">AutomatedIF (class in ananke.estimation.automated_if)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -137,9 +154,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ananke.graphs.html#ananke.graphs.cg.CG">CG (class in ananke.graphs.cg)</a>
 </li>
+      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.children">children() (ananke.graphs.graph.Graph method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.children">children() (ananke.graphs.graph.Graph method)</a>
+      <li><a href="ananke.estimation.html#ananke.estimation.automated_if.AutomatedIF.compute_if">compute_if() (ananke.estimation.automated_if.AutomatedIF method)</a>
+</li>
+      <li><a href="ananke.estimation.html#ananke.estimation.counterfactual_mean.CounterfactualMean">CounterfactualMean (class in ananke.estimation.counterfactual_mean)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -163,10 +184,10 @@
         <li><a href="ananke.graphs.html#ananke.graphs.sg.SG.delete_udedge">(ananke.graphs.sg.SG method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.descendants">descendants() (ananke.graphs.graph.Graph method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.directed_paths">directed_paths() (ananke.graphs.graph.Graph method)</a>
 </li>
       <li><a href="ananke.graphs.html#ananke.graphs.sg.SG.district">district() (ananke.graphs.sg.SG method)</a>
@@ -174,7 +195,13 @@
       <li><a href="ananke.graphs.html#ananke.graphs.sg.SG.districts">districts() (ananke.graphs.sg.SG property)</a>
 </li>
       <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.draw">draw() (ananke.graphs.graph.Graph method)</a>
+
+      <ul>
+        <li><a href="ananke.graphs.html#ananke.graphs.missing_admg.MissingADMG.draw">(ananke.graphs.missing_admg.MissingADMG method)</a>
 </li>
+        <li><a href="ananke.models.html#ananke.models.linear_gaussian_sem.LinearGaussianSEM.draw">(ananke.models.linear_gaussian_sem.LinearGaussianSEM method)</a>
+</li>
+      </ul></li>
       <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineID.draw_swig">draw_swig() (ananke.identification.one_line.OneLineID method)</a>
 </li>
   </ul></td>
@@ -182,6 +209,10 @@
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.estimation.html#ananke.estimation.counterfactual_mean.CounterfactualMean.estimate">estimate() (ananke.estimation.counterfactual_mean.CounterfactualMean method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineID.export_intermediates">export_intermediates() (ananke.identification.one_line.OneLineID method)</a>
 </li>
@@ -191,6 +222,8 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.models.html#ananke.models.linear_gaussian_sem.LinearGaussianSEM.fit">fit() (ananke.models.linear_gaussian_sem.LinearGaussianSEM method)</a>
+</li>
       <li><a href="ananke.graphs.html#ananke.graphs.admg.ADMG.fix">fix() (ananke.graphs.admg.ADMG method)</a>
 
       <ul>
@@ -205,7 +238,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGZID.functional">functional() (ananke.identification.one_line.OneLineGZID method)</a>
+      <li><a href="ananke.estimation.html#ananke.estimation.automated_if.AutomatedIF.format_density">format_density() (ananke.estimation.automated_if.AutomatedIF method)</a>
+</li>
+      <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGID.functional">functional() (ananke.identification.one_line.OneLineGID method)</a>
 
       <ul>
         <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineID.functional">(ananke.identification.one_line.OneLineID method)</a>
@@ -223,8 +258,6 @@
 
       <ul>
         <li><a href="ananke.graphs.html#ananke.graphs.ig.IG.get_intrinsic_sets">(ananke.graphs.ig.IG method)</a>
-</li>
-        <li><a href="ananke.graphs.html#ananke.graphs.admg.get_intrinsic_sets">(in module ananke.graphs.admg)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -245,15 +278,29 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGZID.id">id() (ananke.identification.one_line.OneLineGZID method)</a>
+      <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingFullID.id">id() (ananke.identification.missing_id.MissingFullID method)</a>
 
       <ul>
+        <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingTargetID.id">(ananke.identification.missing_id.MissingTargetID method)</a>
+</li>
+        <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGID.id">(ananke.identification.one_line.OneLineGID method)</a>
+</li>
         <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineID.id">(ananke.identification.one_line.OneLineID method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingTargetID.identify_propensity_score">identify_propensity_score() (ananke.identification.missing_id.MissingTargetID method)</a>
+</li>
       <li><a href="ananke.graphs.html#ananke.graphs.ig.IG">IG (class in ananke.graphs.ig)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.models.html#ananke.models.linear_gaussian_sem.LinearGaussianSEM">LinearGaussianSEM (class in ananke.models.linear_gaussian_sem)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -261,17 +308,21 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.graphs.html#ananke.graphs.admg.ADMG.m_connecting_paths">m_connecting_paths() (ananke.graphs.admg.ADMG method)</a>
-</li>
       <li><a href="ananke.graphs.html#ananke.graphs.ig.IG.maintain_subset_relation">maintain_subset_relation() (ananke.graphs.ig.IG method)</a>
+</li>
+      <li><a href="ananke.graphs.html#ananke.graphs.admg.ADMG.markov_pillow">markov_pillow() (ananke.graphs.admg.ADMG method)</a>
+</li>
+      <li><a href="ananke.graphs.html#ananke.graphs.admg.ADMG.maximal_arid_projection">maximal_arid_projection() (ananke.graphs.admg.ADMG method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.graphs.html#ananke.graphs.admg.ADMG.maximal_arid_projection">maximal_arid_projection() (ananke.graphs.admg.ADMG method)</a>
-</li>
       <li><a href="ananke.graphs.html#ananke.graphs.ig.IG.merge">merge() (ananke.graphs.ig.IG method)</a>
 </li>
-      <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingID">MissingID (class in ananke.identification.missing_id)</a>
+      <li><a href="ananke.graphs.html#ananke.graphs.missing_admg.MissingADMG">MissingADMG (class in ananke.graphs.missing_admg)</a>
+</li>
+      <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingFullID">MissingFullID (class in ananke.identification.missing_id)</a>
+</li>
+      <li><a href="ananke.identification.html#ananke.identification.missing_id.MissingTargetID">MissingTargetID (class in ananke.identification.missing_id)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -279,10 +330,12 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.neighbors">neighbors() (ananke.graphs.graph.Graph method)</a>
+      <li><a href="ananke.models.html#ananke.models.linear_gaussian_sem.LinearGaussianSEM.neg_loglikelihood">neg_loglikelihood() (ananke.models.linear_gaussian_sem.LinearGaussianSEM method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.neighbors">neighbors() (ananke.graphs.graph.Graph method)</a>
+</li>
       <li><a href="ananke.identification.html#ananke.identification.one_line.NotIdentifiedError">NotIdentifiedError</a>
 </li>
   </ul></td>
@@ -291,7 +344,7 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGZID">OneLineGZID (class in ananke.identification.one_line)</a>
+      <li><a href="ananke.identification.html#ananke.identification.one_line.OneLineGID">OneLineGID (class in ananke.identification.one_line)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -308,6 +361,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ananke.html#ananke.utils.powerset">powerset() (in module ananke.utils)</a>
+</li>
+      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.pre">pre() (ananke.graphs.graph.Graph method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -338,6 +393,18 @@
   </ul></td>
 </tr></table>
 
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.graphs.html#ananke.graphs.graph.Graph.topological_sort">topological_sort() (ananke.graphs.graph.Graph method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ananke.models.html#ananke.models.linear_gaussian_sem.LinearGaussianSEM.total_effect">total_effect() (ananke.models.linear_gaussian_sem.LinearGaussianSEM method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -362,7 +429,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">ananke</a></h1>
+<h1 class="logo"><a href="index.html">ananke-causal</a></h1>
 
 
 
@@ -414,7 +481,7 @@
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

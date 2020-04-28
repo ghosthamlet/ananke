@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>ananke.graphs.admg &#8212; ananke  documentation</title>
+    <title>ananke.graphs.admg &#8212; ananke-causal  documentation</title>
     <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,6 +63,29 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ADMG&quot;</span><span class="p">)</span>
 
+<div class="viewcode-block" id="ADMG.markov_pillow"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.ADMG.markov_pillow">[docs]</a>    <span class="k">def</span> <span class="nf">markov_pillow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">top_order</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the Markov pillow of a set of vertices. That is,</span>
+<span class="sd">        the Markov blanket of the vertices given a valid topological order</span>
+<span class="sd">        on the graph.</span>
+
+<span class="sd">        :param vertices: iterable of vertex names.</span>
+<span class="sd">        :param top_order: a valid topological order.</span>
+<span class="sd">        :return: set corresponding to Markov pillow.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the subgraph corresponding to the vertices and nodes prior to them</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">top_order</span><span class="p">)</span>
+        <span class="n">Gsub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">pre</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">vertices</span><span class="p">))</span>
+
+        <span class="c1"># Markov pillow is the Markov blanket (dis(v) union pa(dis(v)) setminus v)</span>
+        <span class="c1"># in this subgraph</span>
+        <span class="n">pillow</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+            <span class="n">pillow</span> <span class="o">=</span> <span class="n">pillow</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="n">pillow</span> <span class="o">=</span> <span class="n">pillow</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">parents</span><span class="p">(</span><span class="n">pillow</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pillow</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="ADMG.fix"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.ADMG.fix">[docs]</a>    <span class="k">def</span> <span class="nf">fix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
         <span class="c1"># TODO: there should only be one fixing operation implemented in SG</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -71,8 +95,8 @@
 <span class="sd">        :return: None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">vertices</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
+        <span class="c1">#if isinstance(vertices, str):</span>
+        <span class="c1">#    vertices = [vertices]</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
 
@@ -115,7 +139,6 @@
                     <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">break</span>
 
-        <span class="c1">#reachable_closure = set(G.vertices) - set(fixing_order)- set(v for v in self.vertices if self.vertices[v].fixed)</span>
         <span class="n">reachable_closure</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">vertices</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">reachable_closure</span><span class="p">,</span> <span class="n">fixing_order</span><span class="p">,</span> <span class="n">G</span></div>
@@ -129,16 +152,12 @@
 <span class="sd">        :return: a boolean indicating whether the set was fixable and a valid fixing order as a stack.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># if it&#39;s just a single vertex we&#39;re checking it&#39;s easy</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descendants</span><span class="p">([</span><span class="n">vertices</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">vertices</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="n">vertices</span><span class="p">]</span>
-            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[]</span>
-
+        <span class="c1"># keep track of vertices still left to fix</span>
+        <span class="c1"># and initialize a fixing order</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">remaining_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
         <span class="n">fixing_order</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># flag to check if we fixed a variable on each pass</span>
-        <span class="n">G</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># while we have more vertices to fix, and were able to perform a fix</span>
         <span class="k">while</span> <span class="n">remaining_vertices</span> <span class="ow">and</span> <span class="n">fixed</span><span class="p">:</span>
@@ -150,65 +169,83 @@
                 <span class="c1"># Check if any nodes are reachable via -&gt; AND &lt;-&gt;</span>
                 <span class="c1"># by looking at intersection of district and descendants</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">descendants</span><span class="p">([</span><span class="n">v</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">district</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">G</span><span class="o">.</span><span class="n">fix</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">G</span><span class="o">.</span><span class="n">fix</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
                     <span class="n">remaining_vertices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                     <span class="n">fixing_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                     <span class="n">fixed</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">break</span>
 
+            <span class="c1"># if unsuccessful, return failure and</span>
+            <span class="c1"># fixing order up until point of failure</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">fixed</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fixing_order</span>
 
+        <span class="c1"># if fixing vertices was successful, return success</span>
+        <span class="c1"># and the fixing order</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fixing_order</span></div>
 
-<div class="viewcode-block" id="ADMG.m_connecting_paths"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.ADMG.m_connecting_paths">[docs]</a>    <span class="k">def</span> <span class="nf">m_connecting_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="nb">set</span><span class="p">()):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get all m-connecting paths between x and y after conditioning on Z using BFS.</span>
-
-<span class="sd">        :param x: name of vertex x.</span>
-<span class="sd">        :param y: name of vertex y.</span>
-<span class="sd">        :param Z: name of set of vertices Z being conditioned on.</span>
-<span class="sd">        :return: list of m-connecting paths.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">queue</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">x</span><span class="p">]],</span> <span class="p">[])]</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">Z</span><span class="p">]</span>
-        <span class="n">ancestors_z</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestors</span><span class="p">(</span><span class="n">Z</span><span class="p">)])</span>
-
-        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
-
-            <span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">vertex_path</span><span class="p">,</span> <span class="n">edge_path</span><span class="p">)</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">children</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertex_path</span><span class="p">):</span>
-
-                <span class="k">if</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">Z</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">y</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">)]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">vertex_path</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;-&gt;&#39;</span><span class="p">)]))</span>
-
-            <span class="c1"># check colliders before doing parents/siblings</span>
-            <span class="c1"># if it is a collider v must be in ancestors_z</span>
-            <span class="k">if</span> <span class="n">edge_path</span> <span class="ow">and</span> <span class="p">(</span><span class="n">edge_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;-&gt;&#39;</span> <span class="ow">or</span> <span class="n">edge_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&lt;-&gt;&#39;</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ancestors_z</span><span class="p">:</span>
-                    <span class="k">continue</span>
-
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">parents</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertex_path</span><span class="p">):</span>
-
-                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">y</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&lt;-&#39;</span><span class="p">)]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">vertex_path</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&lt;-&#39;</span><span class="p">)]))</span>
-
-            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">siblings</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">vertex_path</span><span class="p">):</span>
-
-                <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">y</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&lt;-&gt;&#39;</span><span class="p">)]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">v</span><span class="p">,</span> <span class="n">vertex_path</span> <span class="o">+</span> <span class="p">[</span><span class="n">v</span><span class="p">],</span> <span class="n">edge_path</span> <span class="o">+</span> <span class="p">[(</span><span class="n">vertex</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;&lt;-&gt;&#39;</span><span class="p">)]))</span></div>
+    <span class="c1"># def _m_connecting_paths(self, x, y, Z=set()):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Get all m-connecting paths between x and y after conditioning on Z using BFS.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     :param x: name of vertex x.</span>
+    <span class="c1">#     :param y: name of vertex y.</span>
+    <span class="c1">#     :param Z: name of set of vertices Z being conditioned on.</span>
+    <span class="c1">#     :return: list of m-connecting paths.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1">#     queue = [(self.vertices[x], [self.vertices[x]], [])]</span>
+    <span class="c1">#     y = self.vertices[y]</span>
+    <span class="c1">#     ancestors_z = list([self.vertices[a] for a in self.ancestors(Z)])</span>
+    <span class="c1">#</span>
+    <span class="c1">#     while queue:</span>
+    <span class="c1">#</span>
+    <span class="c1">#         (vertex, vertex_path, edge_path) = queue.pop(0)</span>
+    <span class="c1">#</span>
+    <span class="c1">#         for v in vertex.children - set(vertex_path):</span>
+    <span class="c1">#</span>
+    <span class="c1">#             if vertex in Z:</span>
+    <span class="c1">#                 continue</span>
+    <span class="c1">#</span>
+    <span class="c1">#             if v == y:</span>
+    <span class="c1">#                 yield edge_path + [(vertex.name, v.name, &#39;-&gt;&#39;)]</span>
+    <span class="c1">#             else:</span>
+    <span class="c1">#                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, &#39;-&gt;&#39;)]))</span>
+    <span class="c1">#</span>
+    <span class="c1">#         # check colliders before doing parents/siblings</span>
+    <span class="c1">#         # if it is a collider v must be in ancestors_z</span>
+    <span class="c1">#         if edge_path and (edge_path[-1][-1] == &#39;-&gt;&#39; or edge_path[-1][-1] == &#39;&lt;-&gt;&#39;):</span>
+    <span class="c1">#             if vertex not in ancestors_z:</span>
+    <span class="c1">#                 continue</span>
+    <span class="c1">#</span>
+    <span class="c1">#         for v in vertex.parents - set(vertex_path):</span>
+    <span class="c1">#</span>
+    <span class="c1">#             if v == y:</span>
+    <span class="c1">#                 yield edge_path + [(vertex.name, v.name, &#39;&lt;-&#39;)]</span>
+    <span class="c1">#             else:</span>
+    <span class="c1">#                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, &#39;&lt;-&#39;)]))</span>
+    <span class="c1">#</span>
+    <span class="c1">#         for v in vertex.siblings - set(vertex_path):</span>
+    <span class="c1">#</span>
+    <span class="c1">#             if v == y:</span>
+    <span class="c1">#                 yield edge_path + [(vertex.name, v.name, &#39;&lt;-&gt;&#39;)]</span>
+    <span class="c1">#             else:</span>
+    <span class="c1">#                 queue.append((v, vertex_path + [v], edge_path + [(vertex.name, v.name, &#39;&lt;-&gt;&#39;)]))</span>
+    <span class="c1">#</span>
+    <span class="c1"># def _m_separation(self, x, y, Z=set()):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Test if x and y are m-separated after conditioning on Z.</span>
+    <span class="c1">#</span>
+    <span class="c1">#     :param x: name of vertex x.</span>
+    <span class="c1">#     :param y: name of vertex y.</span>
+    <span class="c1">#     :param Z: name of set of vertices Z being conditioned on.</span>
+    <span class="c1">#     :return: boolean True or False.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # if there are no m-connecting paths return True</span>
+    <span class="c1">#     if len(list(self._m_connecting_paths(x, y, Z))) == 0:</span>
+    <span class="c1">#         return True</span>
+    <span class="c1">#     return False</span>
 
 <div class="viewcode-block" id="ADMG.subgraph"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.ADMG.subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertices</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -236,7 +273,7 @@
 <span class="sd">        Computes intrinsic sets (and returns the fixing order for each intrinsic set).</span>
 
 
-<span class="sd">        :return:</span>
+<span class="sd">        :return: list of intrinsic sets and fixing orders used to reach each one</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ig</span> <span class="o">=</span> <span class="n">IG</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="n">intrinsic_sets</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">get_intrinsic_sets</span><span class="p">()</span>
@@ -291,40 +328,6 @@
                         <span class="n">bi_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">ADMG</span><span class="p">(</span><span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span> <span class="n">di_edges</span><span class="o">=</span><span class="n">di_edges</span><span class="p">,</span> <span class="n">bi_edges</span><span class="o">=</span><span class="n">bi_edges</span><span class="p">)</span></div></div>
-
-<div class="viewcode-block" id="get_intrinsic_sets"><a class="viewcode-back" href="../../../ananke.graphs.html#ananke.graphs.admg.get_intrinsic_sets">[docs]</a><span class="k">def</span> <span class="nf">get_intrinsic_sets</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes all intrinsic sets given an ADMG. Allows for fixed variables.</span>
-
-<span class="sd">    :param graph: ADMG</span>
-<span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">intrinsic</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span>
-    <span class="n">order_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">fixed_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">[</span><span class="n">v</span><span class="p">]</span><span class="o">.</span><span class="n">fixed</span><span class="p">:</span>
-            <span class="n">fixed_vertices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
-        <span class="n">fixable</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">fixable</span><span class="p">(</span><span class="n">vertices</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">-</span> <span class="n">fixed_vertices</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">fixable</span><span class="p">:</span>
-            <span class="n">intrinsic_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="n">var</span><span class="p">])</span>
-            <span class="n">intrinsic</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">intrinsic_set</span><span class="p">)</span>
-            <span class="n">order_dict</span><span class="p">[</span><span class="n">intrinsic_set</span><span class="p">]</span> <span class="o">=</span> <span class="n">order</span>
-    <span class="k">for</span> <span class="n">district</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">districts</span><span class="p">:</span>
-        <span class="c1"># There is possibly a more efficient way of doing this</span>
-        <span class="k">for</span> <span class="n">pset</span> <span class="ow">in</span> <span class="n">powerset</span><span class="p">(</span><span class="n">district</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
-            <span class="n">fixable</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">fixable</span><span class="p">(</span><span class="n">vertices</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">pset</span><span class="p">)</span> <span class="o">-</span> <span class="n">fixed_vertices</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">fixable</span><span class="p">:</span>
-                <span class="n">intrinsic_set</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pset</span><span class="p">))</span>
-                <span class="n">intrinsic</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">intrinsic_set</span><span class="p">)</span>
-                <span class="n">order_dict</span><span class="p">[</span><span class="n">intrinsic_set</span><span class="p">]</span> <span class="o">=</span> <span class="n">order</span>
-
-    <span class="k">return</span> <span class="n">intrinsic</span><span class="p">,</span> <span class="n">order_dict</span></div>
-
 </pre></div>
 
           </div>
@@ -333,7 +336,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../../index.html">ananke</a></h1>
+<h1 class="logo"><a href="../../../index.html">ananke-causal</a></h1>
 
 
 
@@ -387,7 +390,7 @@
       &copy;2019, Shpitser Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

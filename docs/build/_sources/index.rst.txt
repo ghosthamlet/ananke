@@ -28,11 +28,11 @@ Documentation
 
 Ananke Graphs
 =============
-:ref:`ananke.graphs`
+:doc:`ananke.graphs`
 
 Ananke Identification
 =====================
-:ref:`ananke.identification`
+:doc:`ananke.identification`
 
 
 Indices and tables

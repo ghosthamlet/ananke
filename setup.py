@@ -4,7 +4,7 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(name='ananke-causal',
-      version='0.1',
+      version='0.1.0',
       description='Python',
       url='',
       author='Rohit Bhattacharya',
