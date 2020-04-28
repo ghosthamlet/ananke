@@ -368,7 +368,7 @@ class AverageCausalEffect:
         indices_T0 = data.index[data[self.treatment] == 0]
 
         if len(mp_T) != 0:
-            formula = self.treatment + " ~ " + '+'.join(mp_T)  # + "+ ones"
+            formula = self.treatment + " ~ " + '+'.join(mp_T)
             model = model_binary(data, formula)
             prob = model.predict(data)
             prob[indices_T0] = 1 - prob[indices_T0]
@@ -385,7 +385,7 @@ class AverageCausalEffect:
 
             # fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
+            formula = V + " ~ " + '+'.join(mp_V)
 
             # p(V =v | .), p(V = v | . , T=1), p(V = v | ., T=0)
             if self.state_space_map_[V] == "binary":
@@ -421,7 +421,7 @@ class AverageCausalEffect:
 
             # fit a binary/continuous model for Y | mp(Y)
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            formula = self.outcome + " ~ " + '+'.join(mp_Y)
             if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
@@ -483,7 +483,7 @@ class AverageCausalEffect:
 
             # Fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
+            formula = V + " ~ " + '+'.join(mp_V)
 
             # p(V = 1 | .), p(V = 1 | . , T=assigned)
             if self.state_space_map_[V] == "binary":
@@ -511,7 +511,7 @@ class AverageCausalEffect:
         # special case for if the outcome is in M
         if self.outcome in M:
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            formula = self.outcome + " ~ " + '+'.join(mp_Y)
             if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
