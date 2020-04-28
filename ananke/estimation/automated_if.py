@@ -2,6 +2,7 @@
 Class for automated derivation of influence functions.
 """
 
+
 class AutomatedIF:
     """
     IF for a single treatment and single outcome.
