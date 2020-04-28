@@ -67,7 +67,7 @@ class OneLineID:
         """
         Run one line ID for the query.
 
-        :return: Returns True if p(Y(a)) is ID, else False.
+        :return: boolean that is True if p(Y(a)) is ID, else False.
         """
 
         self.fixing_orders = {}
@@ -89,9 +89,9 @@ class OneLineID:
     # TODO try to reduce functional
     def functional(self):
         """
-        Print the functional for identification.
+        Creates and returns a string for identifying functional.
 
-        :return:
+        :return: string representing the identifying functional.
         """
 
         if not self.id():
@@ -171,9 +171,9 @@ class OneLineGID:
         """
         Applies the naive one-line GID algorithm.
 
-        :param graph: Graph on which the query will be run
-        :param interventions: Iterable of treatment variables
-        :param outcomes: Iterable of outcome variables
+        :param graph: Graph on which the query will be run.
+        :param interventions: Iterable of treatment variables.
+        :param outcomes: Iterable of outcome variables.
         """
         self.graph = graph
         self.interventions = interventions
@@ -199,10 +199,10 @@ class OneLineGID:
 
     def functional(self, experiments=[set()]):
         """
-        Creates a string representing the identifying functional
+        Creates a string representing the identifying functional.
 
-        :param experiments: A list of sets denoting the interventions of the available experimental distributions
-        :return:
+        :param experiments: A list of sets denoting the interventions of the available experimental distributions.
+        :return: string representing the identifying functional.
         """
         if not self.id(experiments=experiments):
             raise NotIdentifiedError
@@ -238,10 +238,10 @@ class OneLineGID:
 
     def id(self, experiments=[set()]):
         """
-        Checks if identification query is identified given the set of experimental distributions
+        Checks if identification query is identified given the set of experimental distributions/
 
-        :param experiments: A list of sets denoting the interventions of the available experimental distributions
-        :return:
+        :param experiments: A list of sets denoting the interventions of the available experimental distributions.
+        :return: boolean indicating if query is ID or not.
         """
         required_intrinsic_sets = get_required_intrinsic_sets(self.Gystar)
         allowed_intrinsic_sets, allowed_intrinsic_dict, fixing_orders = self._allowed_intrinsic_sets(experiments)
@@ -261,7 +261,8 @@ class OneLineGID:
 def check_experiments_ancestral(admg, experiments):
     """
     Check that each experiment G(S(b_i)) is ancestral in ADMG G(V(b_i))
-https://simpleflying.com/
+    https://simpleflying.com/
+
     :param admg: An ADMG
     :param experiments: A list of ADMGs representing experiments
     :return:
