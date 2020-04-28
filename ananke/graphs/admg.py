@@ -67,6 +67,51 @@ class ADMG(SG):
         blanket = blanket.union(self.parents(blanket))
         return blanket - set(vertices)
 
+    @property
+    def fixed(self):
+        """
+        Returns all fixed nodes in the graph.
+
+        :return:
+        """
+        fixed_vertices = []
+        for v in self.vertices:
+            if self.vertices[v].fixed:
+                fixed_vertices.append(v)
+
+        return fixed_vertices
+
+    def is_subgraph(self, other):
+        """
+        Check that this graph is a subgraph of other, meaning it has  a subset of edges and nodes of the other.
+        :param other:
+        :return:
+        """
+        if set(self.vertices).issubset(set(other.vertices)) and \
+                set(self.di_edges).issubset(set(other.di_edges)) and \
+                set(self.bi_edges).issubset(set(other.bi_edges)):
+            return True
+        return False
+
+    def is_ancestral_subgraph(self, other):
+        """
+        Check that this graph is an ancestral subgraph of the other.
+        An ancestral subgraph over variables S and intervention b G(S(b)) of a larger graph G(V(b)) is defined as a
+        subgraph, such that ancestors of each node s in S with respect to the graph G(V(b_i)) are contained in S.
+        :param other:
+        :return:
+        """
+        if not self.is_subgraph(other):
+            return False
+
+        for v in self.vertices:
+            self_parents = set([item.name for item in self.vertices[v].parents])
+            other_parents = set([item.name for item in other.vertices[v].parents])
+            if self_parents != other_parents:
+                return False
+
+        return True
+
     def fix(self, vertices):
         # TODO: there should only be one fixing operation implemented in SG
         """
@@ -76,7 +121,7 @@ class ADMG(SG):
         :return: None.
         """
 
-        #if isinstance(vertices, str):
+        # if isinstance(vertices, str):
         #    vertices = [vertices]
 
         for v in vertices:
@@ -106,7 +151,8 @@ class ADMG(SG):
         """
 
         # initialize set of vertices that must still be fixed
-        remaining_vertices = set(self.vertices) - set(vertices) - set(v for v in self.vertices if self.vertices[v].fixed)
+        remaining_vertices = set(self.vertices) - set(vertices) - set(
+            v for v in self.vertices if self.vertices[v].fixed)
         fixing_order = []  # keep track of the valid fixing order
         fixed = True  # flag to track that a vertex was successfully fixed in a given pass
         G = copy.deepcopy(self)

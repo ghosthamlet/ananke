@@ -22,6 +22,50 @@ class TestADMG(unittest.TestCase):
         self.assertCountEqual(([{'X1', 'X2', 'U'}, {'A1'}, {'A2'}, {'Y1', 'Y2'}]), (G.districts))
         self.assertEqual(G.district('X2'), {'X1', 'X2', 'U'})
 
+    def test_fixed(self):
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        G.fix(["X_1"])
+        self.assertEqual(G.fixed, ["X_1"])
+
+    def test_is_subgraph(self):
+        vertices = ["X_1",  "W"]
+        di_edges = [("X_1", "W"), ]
+        bi_edges = [("X_1", "W")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        G.fix(["X_1"])
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G1 = ADMG(vertices, di_edges, bi_edges)
+        self.assertTrue(G.is_subgraph(G1))
+
+    def test_is_ancestral_subgraph(self):
+        vertices = ["X_1",  "W"]
+        di_edges = [("X_1", "W") ]
+        bi_edges = [("X_1", "W")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        G.fix(["X_1"])
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G1 = ADMG(vertices, di_edges, bi_edges)
+        G1.fix(["X_1"])
+        self.assertTrue(G.is_ancestral_subgraph(G1))
+
+        vertices = ["X_2", "W", "Y"]
+        di_edges = [("W", "Y"), ("X_2", "Y")]
+        bi_edges = [ ("X_2", "Y")]
+        G = ADMG(vertices, di_edges, bi_edges)
+        vertices = ["X_1", "X_2", "W", "Y"]
+        di_edges = [("X_1", "W"), ("W", "Y"), ("X_2", "Y")]
+        bi_edges = [("X_1", "W"), ("X_2", "Y"), ("X_1", "X_2")]
+        G1 = ADMG(vertices, di_edges, bi_edges)
+        G1.fix(["X_1"])
+        self.assertFalse(G.is_ancestral_subgraph(G1))
+
     def test_subgraph(self):
 
         vertices = ["A", "B", "C", "D", "Y"]
