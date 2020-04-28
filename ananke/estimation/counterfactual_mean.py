@@ -9,7 +9,7 @@ from ananke.identification import OneLineID
 import copy
 
 
-class AverageCausalEffect:
+class CausalEffect:
     """
     Provides an interface to various estimation strategies for the ACE: E[Y(1) - Y(0)].
     """
@@ -52,14 +52,14 @@ class AverageCausalEffect:
         if len(self.graph.district(treatment).intersection(self.graph.descendants([treatment]))) == 1:
             self.strategy = "a-fixable"
             if self.is_mb_shielded:
-                print("\n Treatment is a-fixable and graph is mb-shielded. \n\n Available estimators are:\n" +
+                print("\n Treatment is a-fixable and graph is mb-shielded. \n\n Available estimators are:\n \n" +
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n" +
                       "4. Efficient Generalized AIPW (eff-aipw) \n \n" +
                       "Suggested estimator is Efficient Generalized AIPW \n")
             else:
-                print("\n Treatment is a-fixable.\n\n Available estimators are :\n" +
+                print("\n Treatment is a-fixable.\n\n Available estimators are :\n \n" +
                       "1. IPW (ipw)\n" +
                       "2. Outcome regression (gformula)\n" +
                       "3. Generalized AIPW (aipw)\n \n" +
@@ -68,14 +68,14 @@ class AverageCausalEffect:
         elif len(self.graph.district(treatment).intersection(self.graph.children([treatment]))) == 0:
             self.strategy = "p-fixable"
             if self.is_mb_shielded:
-                print("\n Treatment is p-fixable and graph is mb-shielded. \n\n Available estimators are:\n" +
+                print("\n Treatment is p-fixable and graph is mb-shielded. \n\n Available estimators are:\n\n" +
                       "1. Primal IPW (p-ipw)\n" +
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw)\n" +
                       "4. Efficient APIPW (eff-apipw) \n \n" +
                       "Suggested estimator is Efficient APIPW \n")
             else:
-                print("\n Treatment is p-fixable. \n\n Available estimators are:\n" +
+                print("\n Treatment is p-fixable. \n\n Available estimators are:\n \n" +
                       "1. Primal IPW (p-ipw)\n" +
                       "2. Dual IPW (d-ipw)\n" +
                       "3. APIPW (apipw) \n\n" +
@@ -83,7 +83,7 @@ class AverageCausalEffect:
 
         elif self.one_id.id():
             self.strategy = "nested-fixable"
-            print("\n Effect is identified. \n \n Available estimators:\n" +
+            print("\n Effect is identified. \n \n Available estimators:\n \n" +
                   "1. Nested IPW (n-ipw)\n" +
                   "2. Augmented NIPW (anipw) \n\n" +
                   "Suggested estimator is Augmented NIPW \n")
@@ -368,7 +368,7 @@ class AverageCausalEffect:
         indices_T0 = data.index[data[self.treatment] == 0]
 
         if len(mp_T) != 0:
-            formula = self.treatment + " ~ " + '+'.join(mp_T)  # + "+ ones"
+            formula = self.treatment + " ~ " + '+'.join(mp_T)
             model = model_binary(data, formula)
             prob = model.predict(data)
             prob[indices_T0] = 1 - prob[indices_T0]
@@ -385,7 +385,7 @@ class AverageCausalEffect:
 
             # fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
+            formula = V + " ~ " + '+'.join(mp_V)
 
             # p(V =v | .), p(V = v | . , T=1), p(V = v | ., T=0)
             if self.state_space_map_[V] == "binary":
@@ -421,7 +421,7 @@ class AverageCausalEffect:
 
             # fit a binary/continuous model for Y | mp(Y)
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            formula = self.outcome + " ~ " + '+'.join(mp_Y)
             if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
@@ -483,7 +483,7 @@ class AverageCausalEffect:
 
             # Fit V | mp(V)
             mp_V = self.graph.markov_pillow([V], self.p_order)
-            formula = V + " ~ " + '+'.join(mp_V) #+ "+ ones"
+            formula = V + " ~ " + '+'.join(mp_V)
 
             # p(V = 1 | .), p(V = 1 | . , T=assigned)
             if self.state_space_map_[V] == "binary":
@@ -511,7 +511,7 @@ class AverageCausalEffect:
         # special case for if the outcome is in M
         if self.outcome in M:
             mp_Y = self.graph.markov_pillow([self.outcome], self.p_order)
-            formula = self.outcome + " ~ " + '+'.join(mp_Y) #+ "+ ones"
+            formula = self.outcome + " ~ " + '+'.join(mp_Y)
             if self.state_space_map_[self.outcome] == "binary":
                 model = model_binary(data, formula)
             else:
@@ -941,7 +941,7 @@ class AverageCausalEffect:
         # return ANIPW estimate
         return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
-    def bootstrap_ace(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=5, Ql=0.025, Qu=0.975):
+    def compute_effect(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=0, Ql=0.025, Qu=0.975):
         """
         Bootstrap functionality to compute the Average Causal Effect if the outcome is continuous
         or the Causal Odds Ratio if the outcome is binary. Returns the point estimate
@@ -952,7 +952,7 @@ class AverageCausalEffect:
         :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
         :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
         :param n_bootstraps: number of bootstraps.
-        :return: three floats corresponding to ACE/OR, lower quantile, upper quantile.
+        :return: one float corresponding to ACE/OR if n_bootstraps=0, else three floats corresponding to ACE/OR, lower quantile, upper quantile.
         """
 
         # instantiate modeling strategy with defaults
@@ -982,28 +982,30 @@ class AverageCausalEffect:
         else:
             ace = point_estimate_T1 - point_estimate_T0
 
-        ace_vec = []
+        if n_bootstraps > 0:
+            ace_vec = []
 
-        # iterate over bootstraps
-        for iter in range(n_bootstraps):
+            # iterate over bootstraps
+            for iter in range(n_bootstraps):
 
-            # resample the data with replacement
-            data_sampled = data.sample(len(data), replace=True)
-            data_sampled.reset_index(drop=True, inplace=True)
+                # resample the data with replacement
+                data_sampled = data.sample(len(data), replace=True)
+                data_sampled.reset_index(drop=True, inplace=True)
 
-            # estimate ACE in resampled data
-            estimate_T1 = method(data_sampled, 1, model_binary, model_continuous)
-            estimate_T0 = method(data_sampled, 0, model_binary, model_continuous)
+                # estimate ACE in resampled data
+                estimate_T1 = method(data_sampled, 1, model_binary, model_continuous)
+                estimate_T0 = method(data_sampled, 0, model_binary, model_continuous)
 
-            # if Y is binary report log of odds ration, if Y is continuous report ACE
-            if self.state_space_map_[self.outcome] == "binary":
-                ace_vec.append(np.log((estimate_T1/(1-estimate_T1))/(estimate_T0/(1-estimate_T0))))
-            else:
-                ace_vec.append(estimate_T1 - estimate_T0)
+                # if Y is binary report log of odds ration, if Y is continuous report ACE
+                if self.state_space_map_[self.outcome] == "binary":
+                    ace_vec.append(np.log((estimate_T1/(1-estimate_T1))/(estimate_T0/(1-estimate_T0))))
+                else:
+                    ace_vec.append(estimate_T1 - estimate_T0)
 
-        # quantile calculation
-        quantiles = np.quantile(ace_vec, q=[Ql, Qu])
-        q_low = quantiles[0]
-        q_up = quantiles[1]
+            # calculate the quantiles
+            quantiles = np.quantile(ace_vec, q=[Ql, Qu])
+            q_low = quantiles[0]
+            q_up = quantiles[1]
+            return ace, q_low, q_up
 
-        return ace, q_low, q_up
+        return ace
