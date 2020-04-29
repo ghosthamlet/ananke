@@ -941,17 +941,18 @@ class CausalEffect:
         # return ANIPW estimate
         return np.mean((indices / prob_T) * (Y - Yhat_vec) + Yhat_vec)
 
-    def compute_effect(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=0, Ql=0.025, Qu=0.975):
+    def compute_effect(self, data, estimator, model_binary=None, model_continuous=None, n_bootstraps=0, alpha=0.05):
         """
         Bootstrap functionality to compute the Average Causal Effect if the outcome is continuous
         or the Causal Odds Ratio if the outcome is binary. Returns the point estimate
-        as well as lower and upper quantiles for a user specified confidence interval.
+        as well as lower and upper quantiles for a user specified confidence level.
 
         :param data: pandas data frame containing the data.
         :param estimator: string indicating what estimator to use: e.g. eff-apipw.
         :param model_binary: string specifying modeling strategy to use for binary variables: e.g. glm-binary.
         :param model_continuous: string specifying modeling strategy to use for continuous variables: e.g. glm-continuous.
         :param n_bootstraps: number of bootstraps.
+        :param alpha: the significance level with the default value of 0.05.
         :return: one float corresponding to ACE/OR if n_bootstraps=0, else three floats corresponding to ACE/OR, lower quantile, upper quantile.
         """
 
@@ -984,6 +985,9 @@ class CausalEffect:
 
         if n_bootstraps > 0:
             ace_vec = []
+
+            Ql = alpha/2
+            Qu = 1 - alpha/2
 
             # iterate over bootstraps
             for iter in range(n_bootstraps):

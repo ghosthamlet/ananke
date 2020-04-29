@@ -7,3 +7,4 @@ ipython
 sphinx_rtd_theme
 flake8
 tox
+sphinxcontrib-bibtex

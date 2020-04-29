@@ -34,6 +34,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosummary',
+    'sphinxcontrib.bibtex',
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting'
 ]
