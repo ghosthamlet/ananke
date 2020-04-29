@@ -1,14 +1,21 @@
+# IDE 
+*.idea
+env/
+
+# Python build objects
 *~
 *.egg-info
-*.idea
 *.pyc
 *.ipynb_checkpoints
-env/
 docs/build/*
+
+# PyPI packaging
+dist/
+build/
+
+# Testing 
+.tox/
 .coverage
 tests/**/*.pdf
 tests/**/*.gv
-
-dist/
-build/
-.tox/
+intermediates/
