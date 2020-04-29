@@ -13,17 +13,21 @@ Run the following command::
 
     sudo pip3 install ananke-causal
 
-gitlab_ 
-.. _gitlab: https://gitlab.com/causal/ananke
+`gitlab <https://gitlab.com/causal/ananke>`_
 
 Documentation
 *************
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
+   notebooks/quickstart.ipynb
    notebooks/causal_graphs.ipynb
    notebooks/linear_gaussian_sems.ipynb
+   notebooks/estimation.ipynb
+   notebooks/identification_surrogates.ipynb
+   
 
 Ananke Graphs
 =============
