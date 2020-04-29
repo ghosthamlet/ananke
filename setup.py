@@ -18,4 +18,5 @@ setup(name='ananke-causal',
       author_email='rbhatta8@jhu.edu',
       install_requires=requirements,
       packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+      package_data={'ananke.datasets': ['simulated/*.csv']},
       zip_safe=False)

@@ -24,9 +24,9 @@ Documentation
    
    notebooks/quickstart.ipynb
    notebooks/causal_graphs.ipynb
-   notebooks/linear_gaussian_sems.ipynb
    notebooks/estimation.ipynb
    notebooks/identification_surrogates.ipynb
+   notebooks/linear_gaussian_sems.ipynb
    
 
 Ananke Graphs
@@ -37,8 +37,15 @@ Ananke Identification
 =====================
 :doc:`ananke.identification`
 
+Ananke Estimation
+=====================
+:doc:`ananke.estimation`
 
-Indices and tables
+Ananke Models
+=====================
+:doc:`ananke.models`
+
+Indices and Tables
 ==================
 
 * :ref:`genindex`
