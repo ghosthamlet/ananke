@@ -7,3 +7,11 @@ tests:
     - pip3 install -r dev_requirements.txt
     - python3 -m pytest tests/
     - pytest --cov=ananke tests/
+
+production:
+  script:
+    - apt-get update -qy
+    - apt-get install -y python3 python3-pip
+    - tox
+  only:
+    - master
