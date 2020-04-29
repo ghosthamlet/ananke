@@ -11,7 +11,7 @@ requirements = [
 ]
 
 setup(name='ananke-causal',
-      version='0.1.2',
+      version='0.1.3',
       description='Python',
       url='',
       author='Rohit Bhattacharya',
