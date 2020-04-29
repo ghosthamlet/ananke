@@ -10,3 +10,4 @@ tests/**/*.pdf
 tests/**/*.gv
 
 dist/
+build/
