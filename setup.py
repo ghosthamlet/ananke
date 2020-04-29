@@ -1,7 +1,14 @@
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+requirements = [
+        "networkx",
+        "graphviz",
+        "autograd",
+        "scipy",
+        "numpy",
+        "pandas",
+        "statsmodels"
+]
 
 setup(name='ananke-causal',
       version='0.1.2',
