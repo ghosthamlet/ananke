@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -10,5 +10,5 @@ setup(name='ananke-causal',
       author='Rohit Bhattacharya',
       author_email='rbhatta8@jhu.edu',
       install_requires=requirements,
-      packages=['ananke'],
+      packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
       zip_safe=False)

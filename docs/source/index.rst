@@ -16,7 +16,8 @@ Run the following command::
 `gitlab <https://gitlab.com/causal/ananke>`_
 
 Documentation
-=============
+*************
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
