@@ -9,9 +9,9 @@ Ananke: A module for causal inference
 How to install
 ==============
 
-Run the following command::
+Requires Python 3.7 or higher. Run the following command::
 
-    sudo pip3 install ananke-causal
+    pip3 install ananke-causal
 
 Check out the `gitlab <https://gitlab.com/causal/ananke>`_!
 
