@@ -1,39 +1,158 @@
 
-<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>Causal Inference with Graphical Models &#8212; ananke-causal  documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Causal Inference with Graphical Models &mdash; ananke-causal  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Structural Equation Models" href="linear_gaussian_sems.html" />
-    <link rel="prev" title="Ananke: A module for causal inference" href="../index.html" />
+    <link rel="next" title="Linear Structural Equation Models" href="linear_gaussian_sems.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
           
 
-          <div class="body" role="main">
+          
+            <a href="../index.html" class="icon icon-home"> ananke-causal
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Causal Inference with Graphical Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html">Linear Structural Equation Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="estimation.html">Semiparametric Inference For Causal Effects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identification_surrogates.html">Identification With Surrogates</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ananke-causal</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Causal Inference with Graphical Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/notebooks/causal_graphs.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   
 <style>
@@ -234,14 +353,38 @@ div.rendered_html tbody tr:nth-child(odd) {
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
 <div class="section" id="Causal-Inference-with-Graphical-Models">
 <h1>Causal Inference with Graphical Models<a class="headerlink" href="#Causal-Inference-with-Graphical-Models" title="Permalink to this headline">¶</a></h1>
-<p>Broadly speaking, in causal inference, we are interested in using data from observational studies (as opposed to randomized control trials), in order to answer questions of the following form – What is the (causal) effect, on some outcome(s) <span class="math notranslate nohighlight">\(Y\)</span>, of setting (possibly contrary to fact) some variable(s) <span class="math notranslate nohighlight">\(A\)</span> to value(s) <span class="math notranslate nohighlight">\(a\)</span>, via an <strong>intervention</strong>. That is to say, causal inference concerns itself with the expression of counterfactual distributions obtained from observational
-distributions through the process of interventions. Causal effects are sometimes determined using RCTs, but these are often expensive or unethical – think forcing a random portion of the population to smoke to determine the effect of smoking on lung cancer. The goal of causal inference then is to determine whether such causal effects can be teased out from purely observational data. When such counterfactual quantities can be written as functions of the observed data, they are said to be
-<strong>identified</strong>. Not all causal effects can be identified, but many can – if we impose enough assumptions on the observed data distribution. Assumptions then, is the price we pay for identifiability, and so being transparent about our assumptions when making causal claims is paramount. This is where <strong>graphical models</strong> allow us to concisely, and intuitively state our set of assumptions. In the words of Miguel Hernán, “Graphical models allow us to draw our assumptions before our conclusions.”</p>
-<p>A graph <span class="math notranslate nohighlight">\({\cal G}\)</span> is defined by a set of vertices <span class="math notranslate nohighlight">\({\bf V}\)</span> and edges that could be directed (e.g., <span class="math notranslate nohighlight">\(X \rightarrow\)</span> Y) interpreted as <span class="math notranslate nohighlight">\(X\)</span> being a direct cause of <span class="math notranslate nohighlight">\(Y\)</span>, bidirected (e.g., <span class="math notranslate nohighlight">\(X \leftrightarrow Y\)</span>) interpreted as the existence of unmeasured common causes of both <span class="math notranslate nohighlight">\(X\)</span> and <span class="math notranslate nohighlight">\(Y\)</span> (<span class="math notranslate nohighlight">\(X \leftarrow {\bf U} \rightarrow Y\)</span>), or undirected (e.g., <span class="math notranslate nohighlight">\(X - Y\)</span>) interpreted as a symmetric relationship between <span class="math notranslate nohighlight">\(X\)</span> and <span class="math notranslate nohighlight">\(Y\)</span>. In Ananke,
-we currently support acyclic graphical models i.e., we do not allow for cyclic causality. So how exactly do graphs help us encode assumptions? Consider the <strong>Directed Acyclic Graph (DAG)</strong> below.</p>
+<p>Broadly speaking, in causal inference we are interested in using data from observational studies (as opposed to randomized controlled trials), in order to answer questions of the following form – What is the causal effect of setting via an <strong>intervention</strong> (possibly contrary to fact) some variable <span class="math notranslate nohighlight">\(A\)</span> to value <span class="math notranslate nohighlight">\(a\)</span> on some outcome <span class="math notranslate nohighlight">\(Y.\)</span> That is, causal inference concerns itself with the expression of counterfactual distributions obtained from observational distributions through
+the process of interventions. Causal effects may sometimes be determined using randomized controlled trials (RCTs), but these are often expensive or unethical – think forcing a random portion of the population to smoke to determine the effect of smoking on lung cancer. Also note that RCTs themselves may be subject to all kinds of messiness such as missing data and dropout from clinical trials so that even if data from an RCT were available, causal inference helps eliminate bias in the estimate
+of the causal effect arising from such messiness.</p>
+<p>The goal of causal inference then is to determine whether such causal effects can be teased out from purely observational data or messy data. When such counterfactual quantities can be written as functions of the observed data, they are said to be <strong>identified</strong>. Not all causal effects can be identified, but many can – if we impose enough assumptions on the observed data distribution. Assumptions then, is the price we pay for identifiability, and so being transparent about our assumptions when
+making causal claims is paramount. This is where <strong>graphical models</strong> allow us to concisely, and intuitively state our set of assumptions. In the words of Miguel Hernán, “Graphical models allow us to draw our assumptions before our conclusions.”</p>
+<p>A graph <span class="math notranslate nohighlight">\({\cal G}\)</span> is defined by a set of vertices <span class="math notranslate nohighlight">\(V\)</span> and edges that could be directed (e.g., <span class="math notranslate nohighlight">\(X \rightarrow\)</span> Y) interpreted as <span class="math notranslate nohighlight">\(X\)</span> being a direct cause of <span class="math notranslate nohighlight">\(Y\)</span>, bidirected (e.g., <span class="math notranslate nohighlight">\(X \leftrightarrow Y\)</span>) interpreted as the existence of unmeasured common causes of both <span class="math notranslate nohighlight">\(X\)</span> and <span class="math notranslate nohighlight">\(Y\)</span> (<span class="math notranslate nohighlight">\(X \leftarrow U \rightarrow Y\)</span>), or undirected (e.g., <span class="math notranslate nohighlight">\(X - Y\)</span>) interpreted as a symmetric relationship between <span class="math notranslate nohighlight">\(X\)</span> and <span class="math notranslate nohighlight">\(Y\)</span>. In Ananke, we currently
+support acyclic graphical models i.e., we do not allow for cyclic causality. So how exactly do graphs help us encode assumptions? Consider the <strong>Directed Acyclic Graph (DAG)</strong> below.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -294,16 +437,16 @@ we currently support acyclic graphical models i.e., we do not allow for cyclic c
 <img alt="../_images/notebooks_causal_graphs_3_0.svg" src="../_images/notebooks_causal_graphs_3_0.svg" /></div>
 </div>
 <p>In this case <span class="math notranslate nohighlight">\(p(Y(a))\)</span> is still identified but not all interventional distributions of an ADMG are identified. A sound and complete algorithm for identification in ADMGs is known due to <a class="reference external" href="http://new.aaai.org/Papers/AAAI/2002/AAAI02-085.pdf">Tian and Pearl</a>, and <a class="reference external" href="https://ftp.cs.ucla.edu/pub/stat_ser/r327.pdf">Shpitser and Pearl</a>. In Ananke, we use a purely <a class="reference external" href="https://arxiv.org/pdf/1701.06686.pdf">graphical formulation</a> of the aforementioned works that uses the fixing operation
-(<span class="math notranslate nohighlight">\(\phi\)</span>) on nested Markov models, in order to answer identification queries (example below). Note that some work is still required for Ananke to produce a simplified identifying functional in terms of the original data distribution <span class="math notranslate nohighlight">\(p({\bf V})\)</span>.</p>
+(<span class="math notranslate nohighlight">\(\phi\)</span>) on nested Markov models, in order to answer identification queries. The following is an example of identification using Ananke for the front-door graph shown above.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">outcomes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span>
-<span class="n">interventions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
-<span class="n">id_pya</span> <span class="o">=</span> <span class="n">identification</span><span class="o">.</span><span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">admg</span><span class="p">,</span> <span class="n">interventions</span><span class="o">=</span><span class="n">interventions</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="n">outcomes</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Identifed =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
+<span class="n">treatments</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span>
+<span class="n">id_pya</span> <span class="o">=</span> <span class="n">identification</span><span class="o">.</span><span class="n">OneLineID</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">admg</span><span class="p">,</span> <span class="n">treatments</span><span class="o">=</span><span class="n">treatments</span><span class="p">,</span> <span class="n">outcomes</span><span class="o">=</span><span class="n">outcomes</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Identifed =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">id</span><span class="p">(),</span> <span class="s1">&#39;; Functional =&#39;</span><span class="p">,</span> <span class="n">id_pya</span><span class="o">.</span><span class="n">functional</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -312,7 +455,8 @@ we currently support acyclic graphical models i.e., we do not allow for cyclic c
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Identifed = True ; Functional = ΣM ΦAM(p(V);G) ΦAY(p(V);G)
+{(&#39;M&#39;,): [&#39;Y&#39;, &#39;A&#39;], (&#39;Y&#39;,): [&#39;M&#39;, &#39;A&#39;]}
+Identifed = True ; Functional = ΣM ΦAY(p(V);G) ΦAM(p(V);G)
 </pre></div></div>
 </div>
 <p>Another implicit assumption made in the above examples was that our data consisted of independent and identically distributed (iid) samples. <strong>Chain Graphs (CGs)</strong>, consisting of directed and undirected edges such that there are no partially directed cycles, have emerged as a popular graphical model of <strong>interference</strong> (a violation of the independence assumption). Consider a scenario in which our population consists of dyads (say couples) capable of influencing each others outcomes. This may be
@@ -388,76 +532,52 @@ bidirected edges is a CG. A BG is an ADMG with no directed edges, and a UG is a 
 </div>
 
 
+           </div>
+           
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">ananke-causal</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Causal Inference with Graphical Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html">Structural Equation Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Arid-Graphs">Arid Graphs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Fitting-and-Causal-Effect-Estimation">Fitting and Causal Effect Estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linear_gaussian_sems.html#Model-Selection">Model Selection</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../index.html" title="previous chapter">Ananke: A module for causal inference</a></li>
-      <li>Next: <a href="linear_gaussian_sems.html" title="next chapter">Structural Equation Models</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="linear_gaussian_sems.html" class="btn btn-neutral float-right" title="Linear Structural Equation Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  
 
+  <hr/>
 
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, The Ananke Team
 
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-
-
-
+</footer>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Shpitser Lab.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/notebooks/causal_graphs.ipynb.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

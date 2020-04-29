@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+   ananke.datasets
    ananke.estimation
    ananke.graphs
    ananke.identification

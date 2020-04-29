@@ -13,7 +13,7 @@ Run the following command::
 
     sudo pip3 install ananke-causal
 
-`gitlab <https://gitlab.com/causal/ananke>`_
+Check out the `gitlab <https://gitlab.com/causal/ananke>`_!
 
 Documentation
 *************
@@ -27,7 +27,20 @@ Documentation
    notebooks/linear_gaussian_sems.ipynb
    notebooks/estimation.ipynb
    notebooks/identification_surrogates.ipynb
+
+Citation
+========
+If you enjoyed this package, we would appreciate the following citations:
+
+.. bibliography:: references.bib
+   :all: 
    
+Contributors
+===========
+* Rohit Bhattacharya
+* Jaron Lee
+* Razieh Nabi
+
 
 Ananke Graphs
 =============

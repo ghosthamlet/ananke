@@ -12,8 +12,8 @@ requirements = [
 
 setup(name='ananke-causal',
       version='0.1.3',
-      description='Python',
-      url='',
+      description='Ananke, named for the Greek primordial goddess of necessity and causality, is a python package for causal inference using the language of graphical models.',
+      url='https://gitlab.com/causal/ananke',
       author='Rohit Bhattacharya',
       author_email='rbhatta8@jhu.edu',
       install_requires=requirements,

@@ -8,23 +8,39 @@ Ananke: A module for causal inference
 
 How to install
 ==============
-1. Install python3
-2. Install ananke::
 
-   >>> sudo pip3 -e install ananke/
-3. Test installation by running::
+Run the following command::
 
-   >>> import ananke
+    sudo pip3 install ananke-causal
 
+Check out the `gitlab <https://gitlab.com/causal/ananke>`_!
 
 Documentation
 *************
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
+   notebooks/quickstart.ipynb
    notebooks/causal_graphs.ipynb
    notebooks/linear_gaussian_sems.ipynb
+   notebooks/estimation.ipynb
+   notebooks/identification_surrogates.ipynb
+
+Citation
+========
+If you enjoyed this package, we would appreciate the following citations:
+
+.. bibliography:: references.bib
+   :all: 
+   
+Contributors
+===========
+* Rohit Bhattacharya
+* Jaron Lee
+* Razieh Nabi
+
 
 Ananke Graphs
 =============

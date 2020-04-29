@@ -59,9 +59,11 @@ pytest --cov=ananke tests/  # to generate the base report
 ## Running tests through tox
 Tox runs tests as if they were installed from the pypi repository. Run `tox` in the project root to run the pytest tests in a virtualenv with ananke installed as a non-editable package.
 
+## Sphinx docs
+
 ## Building docs
 
 * To build docs, run `bash docs/run.sh`
 * Add tutorial notebooks in `docs/notebooks`. These are automatically built into webpages.
-
+* Maintain a `references.bib` in `docs/source`. 
 
