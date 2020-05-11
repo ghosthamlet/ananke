@@ -56,10 +56,11 @@ class TestGraph(unittest.TestCase):
         # test there are no directed paths from Y to A
         self.assertEqual([], G.directed_paths(['Y'], ['A']))
         A_to_Y_paths = G.directed_paths(['A'], ['Y'])
-        # TODO: How to assert equality of these paths
+
+        # check that all 3 directed paths are recovered
         true_paths = [[('A', 'D'), ('D', 'Y')], [('A', 'B'), ('B', 'D'), ('D', 'Y')],
                       [('A', 'B'), ('B', 'C'), ('C', 'Y')]]
-        print(A_to_Y_paths)
+        self.assertEqual(sorted(A_to_Y_paths), sorted(true_paths))
 
     def test_subgraph(self):
 
